@@ -192,7 +192,7 @@ description = "normal"
         r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_init","arguments":{{"path":"{}"}}}}}}"#,
         dir.path().display()
     );
-    let resp = mcp_request(&req);
+    let _resp = mcp_request(&req);
 
     // Should create valid YAML, not break
     if dir.path().join("project.faf").exists() {
