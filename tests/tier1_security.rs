@@ -252,5 +252,4 @@ edition = "2021"
         text.contains("$(whoami)") || text.contains("test-"),
         "Shell chars should be treated as literals"
     );
-
 }

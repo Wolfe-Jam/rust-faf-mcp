@@ -93,11 +93,11 @@ fn t3_minimal_faf_low_score() {
     );
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
-    assert!(text.contains("Missing"), "Minimal .faf should show missing fields");
     assert!(
-        text.contains("faf_init"),
-        "Should suggest running faf_init"
+        text.contains("Missing"),
+        "Minimal .faf should show missing fields"
     );
+    assert!(text.contains("faf_init"), "Should suggest running faf_init");
 }
 
 #[test]

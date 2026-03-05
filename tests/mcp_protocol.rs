@@ -41,14 +41,13 @@ fn test_initialize() {
 #[test]
 fn test_tools_list() {
     let resp = mcp_request(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#);
-    let tools = resp["result"]["tools"].as_array().expect("tools should be array");
+    let tools = resp["result"]["tools"]
+        .as_array()
+        .expect("tools should be array");
 
     assert_eq!(tools.len(), 5);
 
-    let names: Vec<&str> = tools
-        .iter()
-        .map(|t| t["name"].as_str().unwrap())
-        .collect();
+    let names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
     assert!(names.contains(&"faf_init"));
     assert!(names.contains(&"faf_git"));
     assert!(names.contains(&"faf_read"));
@@ -59,7 +58,9 @@ fn test_tools_list() {
 #[test]
 fn test_tools_have_schemas() {
     let resp = mcp_request(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#);
-    let tools = resp["result"]["tools"].as_array().expect("tools should be array");
+    let tools = resp["result"]["tools"]
+        .as_array()
+        .expect("tools should be array");
 
     for tool in tools {
         assert!(
@@ -77,9 +78,7 @@ fn test_tools_have_schemas() {
 
 #[test]
 fn test_faf_git_required_url() {
-    let resp = mcp_request(
-        r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#,
-    );
+    let resp = mcp_request(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#);
     let tools = resp["result"]["tools"].as_array().unwrap();
     let faf_git = tools.iter().find(|t| t["name"] == "faf_git").unwrap();
 
@@ -118,9 +117,7 @@ fn test_resources_read() {
 
 #[test]
 fn test_unknown_method() {
-    let resp = mcp_request(
-        r#"{"jsonrpc":"2.0","id":1,"method":"nonexistent/method","params":{}}"#,
-    );
+    let resp = mcp_request(r#"{"jsonrpc":"2.0","id":1,"method":"nonexistent/method","params":{}}"#);
     let result = &resp["result"];
     assert!(result["error"].is_object());
     assert_eq!(result["error"]["code"], -32601);
@@ -143,8 +140,6 @@ fn test_jsonrpc_id_preserved() {
 
 #[test]
 fn test_string_id_preserved() {
-    let resp = mcp_request(
-        r#"{"jsonrpc":"2.0","id":"abc-123","method":"initialize","params":{}}"#,
-    );
+    let resp = mcp_request(r#"{"jsonrpc":"2.0","id":"abc-123","method":"initialize","params":{}}"#);
     assert_eq!(resp["id"], "abc-123");
 }
