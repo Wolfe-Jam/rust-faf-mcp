@@ -1,0 +1,16 @@
+# Build
+target/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Test artifacts
+*.log

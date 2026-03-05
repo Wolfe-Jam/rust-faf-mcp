@@ -1,0 +1,31 @@
+[package]
+name = "rust-faf-mcp"
+version = "0.1.0"
+edition = "2021"
+authors = ["wolfejam <wolfejam@faf.one>"]
+description = "Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml"
+license = "MIT"
+repository = "https://github.com/Wolfe-Jam/rust-faf-mcp"
+homepage = "https://faf.one"
+documentation = "https://docs.rs/rust-faf-mcp"
+readme = "README.md"
+keywords = ["faf", "mcp", "ai-context", "rust", "model-context-protocol"]
+categories = ["development-tools", "command-line-utilities"]
+
+[dependencies]
+faf-rust-sdk = "1.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml_ng = "0.10"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+toml = "0.8"
+
+[[bin]]
+name = "rust-faf-mcp"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
