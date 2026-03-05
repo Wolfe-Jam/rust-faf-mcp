@@ -9,7 +9,7 @@ repository = "https://github.com/Wolfe-Jam/rust-faf-mcp"
 homepage = "https://faf.one"
 documentation = "https://docs.rs/rust-faf-mcp"
 readme = "README.md"
-keywords = ["faf", "mcp", "ai-context", "rust", "model-context-protocol"]
+keywords = ["faf", "mcp", "ai-context", "rust", "mcp-server"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
