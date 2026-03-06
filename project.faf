@@ -1,4 +1,4 @@
-faf_version: '3.3'
+faf_version: "3.3"
 project:
   name: rust-faf-mcp
   goal: Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
@@ -39,3 +39,6 @@ tags:
 state:
   phase: production
   version: 0.1.0
+metadata:
+  last_claude_sync: 2026-03-06T07:51:38.701Z
+  bi_sync: active
