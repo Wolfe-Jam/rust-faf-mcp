@@ -13,7 +13,7 @@ keywords = ["faf", "mcp", "ai-context", "rust", "mcp-server"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
-faf-rust-sdk = "1.1"
+faf-rust-sdk = "1.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml_ng = "0.10"
