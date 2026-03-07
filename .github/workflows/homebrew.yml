@@ -1,0 +1,36 @@
+name: Update Homebrew
+on:
+  release:
+    types: [published]
+
+jobs:
+  homebrew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets and compute SHA256
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          BASE="https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v${VERSION}"
+
+          curl -sL "${BASE}/rust-faf-mcp-${VERSION}-aarch64-apple-darwin.tar.gz" -o arm64-mac.tar.gz
+          curl -sL "${BASE}/rust-faf-mcp-${VERSION}-x86_64-apple-darwin.tar.gz" -o x86-mac.tar.gz
+          curl -sL "${BASE}/rust-faf-mcp-${VERSION}-x86_64-unknown-linux-gnu.tar.gz" -o x86-linux.tar.gz
+
+          echo "SHA_ARM64=$(shasum -a 256 arm64-mac.tar.gz | cut -d\" \" -f1)" >> $GITHUB_ENV
+          echo "SHA_X86_MAC=$(shasum -a 256 x86-mac.tar.gz | cut -d\" \" -f1)" >> $GITHUB_ENV
+          echo "SHA_X86_LINUX=$(shasum -a 256 x86-linux.tar.gz | cut -d\" \" -f1)" >> $GITHUB_ENV
+
+      - name: Update Homebrew formula
+        run: |
+          gh workflow run update-formula.yml \
+            -R Wolfe-Jam/homebrew-faf \
+            -f formula=rust-faf-mcp \
+            -f version=$VERSION \
+            -f sha256_arm64_macos=$SHA_ARM64 \
+            -f sha256_x86_macos=$SHA_X86_MAC \
+            -f sha256_x86_linux=$SHA_X86_LINUX
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
