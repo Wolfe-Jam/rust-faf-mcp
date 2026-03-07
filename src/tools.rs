@@ -548,7 +548,7 @@ fn build_faf_yaml(info: &DetectedProject<'_>) -> String {
 // ─── Tool: faf_git ─────────────────────────────────────────────────────
 
 /// Generate project.faf from a GitHub repository URL
-pub fn faf_git(arguments: &Value) -> Value {
+pub async fn faf_git(arguments: &Value) -> Value {
     let url = match arguments.get("url").and_then(|u| u.as_str()) {
         Some(u) => u,
         None => return error_response("Missing required argument: url"),
@@ -563,7 +563,7 @@ pub fn faf_git(arguments: &Value) -> Value {
     // Fetch repo metadata from GitHub API
     let api_url = format!("https://api.github.com/repos/{}/{}", owner, repo);
 
-    let client = match reqwest::blocking::Client::builder()
+    let client = match reqwest::Client::builder()
         .user_agent("rust-faf-mcp")
         .build()
     {
@@ -571,7 +571,7 @@ pub fn faf_git(arguments: &Value) -> Value {
         Err(e) => return error_response(&format!("HTTP client error: {}", e)),
     };
 
-    let response = match client.get(&api_url).send() {
+    let response = match client.get(&api_url).send().await {
         Ok(r) => r,
         Err(e) => return error_response(&format!("GitHub API error: {}", e)),
     };
@@ -585,7 +585,7 @@ pub fn faf_git(arguments: &Value) -> Value {
         ));
     }
 
-    let repo_data: Value = match response.json() {
+    let repo_data: Value = match response.json().await {
         Ok(v) => v,
         Err(e) => return error_response(&format!("Failed to parse GitHub response: {}", e)),
     };

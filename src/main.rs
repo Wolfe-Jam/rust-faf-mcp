@@ -3,7 +3,7 @@
 //! 5 tools: faf_init, faf_git, faf_read, faf_score, faf_sync
 //! stdio JSON-RPC, powered by faf-rust-sdk
 
-use std::io::{self, BufRead, Write};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 
 use serde_json::{json, Value};
 
@@ -20,7 +20,7 @@ impl McpServer {
     }
 
     /// Route JSON-RPC request to handler
-    fn handle_request(&mut self, request: &Value) -> Value {
+    async fn handle_request(&mut self, request: &Value) -> Value {
         let method = request.get("method").and_then(|m| m.as_str()).unwrap_or("");
         let id = request.get("id").cloned();
         let params = request.get("params").cloned().unwrap_or(json!({}));
@@ -36,7 +36,7 @@ impl McpServer {
                 return json!({});
             }
             "tools/list" => self.handle_tools_list(),
-            "tools/call" => self.handle_tools_call(&params),
+            "tools/call" => self.handle_tools_call(&params).await,
             "resources/list" => self.handle_resources_list(),
             "resources/read" => self.handle_resources_read(&params),
             _ => json!({
@@ -145,13 +145,13 @@ impl McpServer {
         })
     }
 
-    fn handle_tools_call(&self, params: &Value) -> Value {
+    async fn handle_tools_call(&self, params: &Value) -> Value {
         let tool_name = params.get("name").and_then(|n| n.as_str()).unwrap_or("");
         let arguments = params.get("arguments").cloned().unwrap_or(json!({}));
 
         match tool_name {
             "faf_init" => tools::faf_init(&arguments),
-            "faf_git" => tools::faf_git(&arguments),
+            "faf_git" => tools::faf_git(&arguments).await,
             "faf_read" => tools::faf_read(&arguments),
             "faf_score" => tools::faf_score(&arguments),
             "faf_sync" => tools::faf_sync(&arguments),
@@ -208,27 +208,32 @@ impl McpServer {
     }
 }
 
-fn main() {
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
     eprintln!(
         "rust-faf-mcp v{} — MCP Server Starting...",
         env!("CARGO_PKG_VERSION")
     );
 
-    let stdin = io::stdin();
-    let mut stdout = io::stdout();
+    let stdin = tokio::io::stdin();
+    let mut stdout = tokio::io::stdout();
     let mut server = McpServer::new();
+    let mut reader = BufReader::new(stdin);
+    let mut line = String::new();
 
-    for line in stdin.lock().lines() {
-        let line = match line {
-            Ok(l) => l,
-            Err(_) => break,
-        };
+    loop {
+        line.clear();
+        match reader.read_line(&mut line).await {
+            Ok(0) | Err(_) => break,
+            Ok(_) => {}
+        }
 
-        if line.is_empty() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
             continue;
         }
 
-        let request: Value = match serde_json::from_str(&line) {
+        let request: Value = match serde_json::from_str(trimmed) {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("[rust-faf-mcp] Parse error: {}", e);
@@ -236,12 +241,13 @@ fn main() {
             }
         };
 
-        let response = server.handle_request(&request);
+        let response = server.handle_request(&request).await;
 
         if response != json!({}) {
-            let response_str = serde_json::to_string(&response).unwrap();
-            writeln!(stdout, "{}", response_str).unwrap();
-            stdout.flush().unwrap();
+            let mut response_str = serde_json::to_string(&response).unwrap();
+            response_str.push('\n');
+            stdout.write_all(response_str.as_bytes()).await.unwrap();
+            stdout.flush().await.unwrap();
         }
     }
 }
