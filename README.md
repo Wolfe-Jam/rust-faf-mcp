@@ -22,7 +22,9 @@ brew install Wolfe-Jam/faf/rust-faf-mcp
 claude mcp add faf rust-faf-mcp
 ```
 
-### Claude Desktop / generic MCP client
+### WARP / Cursor / Zed / Claude Desktop
+
+Any MCP client that supports stdio:
 
 ```json
 {
@@ -34,7 +36,7 @@ claude mcp add faf rust-faf-mcp
 }
 ```
 
-The server speaks JSON-RPC over stdio. No flags, no config files, no network listener.
+No flags, no config files, no network listener. Pure stdio JSON-RPC.
 
 ## Tools
 
