@@ -2,27 +2,57 @@
 //! "Polish that separates championship from midfield"
 
 use std::fs;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};
+use std::thread;
+use std::time::Duration;
+
+const INIT_REQUEST: &str = r#"{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.0"}}}"#;
+const INIT_NOTIFICATION: &str = r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#;
+
+fn binary_path() -> std::path::PathBuf {
+    let mut path = std::env::current_exe().unwrap();
+    path.pop();
+    path.pop();
+    path.push("rust-faf-mcp");
+    path
+}
 
 fn mcp_request(json: &str) -> serde_json::Value {
-    let mut child = Command::new("cargo")
-        .args(["run", "--quiet"])
+    let mut child = Command::new(binary_path())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
         .expect("Failed to start server");
 
-    let stdin = child.stdin.as_mut().expect("Failed to open stdin");
+    let mut stdin = child.stdin.take().expect("Failed to open stdin");
+    let stdout = child.stdout.take().expect("Failed to open stdout");
+    let mut reader = BufReader::new(stdout);
+
+    stdin.write_all(INIT_REQUEST.as_bytes()).unwrap();
+    stdin.write_all(b"\n").unwrap();
+    stdin.flush().unwrap();
+
+    let mut _init_resp = String::new();
+    reader.read_line(&mut _init_resp).unwrap();
+
+    stdin.write_all(INIT_NOTIFICATION.as_bytes()).unwrap();
+    stdin.write_all(b"\n").unwrap();
+    stdin.flush().unwrap();
+    thread::sleep(Duration::from_millis(100));
+
     stdin.write_all(json.as_bytes()).expect("Failed to write");
     stdin.write_all(b"\n").expect("Failed to write newline");
-    drop(child.stdin.take());
+    stdin.flush().unwrap();
 
-    let output = child.wait_with_output().expect("Failed to read output");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let first_line = stdout.lines().next().unwrap_or("");
-    serde_json::from_str(first_line).unwrap_or(serde_json::json!({}))
+    let mut resp_line = String::new();
+    reader.read_line(&mut resp_line).unwrap();
+
+    drop(stdin);
+    child.wait().unwrap();
+
+    serde_json::from_str(resp_line.trim()).unwrap_or(serde_json::json!({}))
 }
 
 fn extract_text(resp: &serde_json::Value) -> String {
