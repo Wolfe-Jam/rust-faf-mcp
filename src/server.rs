@@ -26,6 +26,16 @@ pub struct GitParams {
     pub url: String,
 }
 
+#[derive(Deserialize, Serialize, JsonSchema)]
+pub struct CompressParams {
+    #[schemars(description = "Project directory or .faf file path (default: current directory)")]
+    pub path: Option<String>,
+    #[schemars(
+        description = "Compression level: minimal (names only), standard (names + goals), full (everything minus extras). Default: standard"
+    )]
+    pub level: Option<String>,
+}
+
 // ─── Value → Result<String, String> adapter ─────────────────────────────
 
 fn value_to_string_result(value: serde_json::Value) -> Result<String, String> {
@@ -98,6 +108,30 @@ impl FafServer {
     async fn faf_sync(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_sync(&args))
+    }
+
+    #[tool(
+        description = "Compress project.faf for token-limited contexts. Levels: minimal (names only), standard (names + goals), full (everything minus extras)."
+    )]
+    async fn faf_compress(&self, params: Parameters<CompressParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_compress(&args))
+    }
+
+    #[tool(
+        description = "Find the nearest project.faf by walking up the directory tree from the given path."
+    )]
+    async fn faf_discover(&self, params: Parameters<PathParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_discover(&args))
+    }
+
+    #[tool(
+        description = "Estimate token count for project.faf at each compression level. Shows minimal/standard/full token counts."
+    )]
+    async fn faf_tokens(&self, params: Parameters<PathParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_tokens(&args))
     }
 }
 

@@ -403,3 +403,146 @@ fn test_faf_git_invalid_url() {
     let resp = mcp_request(req);
     assert_eq!(resp["result"]["isError"], true);
 }
+
+// ─── faf_compress tests ────────────────────────────────────────────────
+
+#[test]
+fn test_faf_compress_standard() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = r#"faf_version: "3.3"
+project:
+  name: "compress-test"
+  goal: "Test compression"
+  main_language: "Rust"
+instant_context:
+  what_building: "A compression test"
+  tech_stack: "Rust"
+"#;
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_compress","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(
+        text.contains("compress-test"),
+        "Should contain project name"
+    );
+    assert!(text.contains("standard"), "Should show compression level");
+    assert!(text.contains("tokens"), "Should show token estimate");
+}
+
+#[test]
+fn test_faf_compress_minimal_level() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = r#"faf_version: "3.3"
+project:
+  name: "min-compress"
+  goal: "Test minimal"
+  main_language: "Rust"
+"#;
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_compress","arguments":{{"path":"{}","level":"minimal"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(text.contains("minimal"), "Should show minimal level");
+}
+
+#[test]
+fn test_faf_compress_invalid_level() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = "faf_version: \"3.3\"\nproject:\n  name: \"bad-level\"\n";
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_compress","arguments":{{"path":"{}","level":"invalid"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(
+        resp["result"]["isError"], true,
+        "Invalid level should error"
+    );
+}
+
+#[test]
+fn test_faf_compress_no_faf_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_compress","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
+}
+
+// ─── faf_discover tests ───────────────────────────────────────────────
+
+#[test]
+fn test_faf_discover_finds_faf() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = "faf_version: \"3.3\"\nproject:\n  name: \"discover-me\"\n";
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_discover","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(text.contains("Found project.faf"), "Should find the file");
+    assert!(text.contains("discover-me"), "Should show project name");
+}
+
+#[test]
+fn test_faf_discover_no_faf() {
+    let dir = tempfile::tempdir().unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_discover","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
+}
+
+// ─── faf_tokens tests ─────────────────────────────────────────────────
+
+#[test]
+fn test_faf_tokens_shows_estimates() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = r#"faf_version: "3.3"
+project:
+  name: "token-test"
+  goal: "Test token counting"
+  main_language: "Rust"
+"#;
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_tokens","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(text.contains("token-test"), "Should show project name");
+    assert!(text.contains("Minimal"), "Should show minimal level");
+    assert!(text.contains("Standard"), "Should show standard level");
+    assert!(text.contains("Full"), "Should show full level");
+}
+
+#[test]
+fn test_faf_tokens_no_faf_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_tokens","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
+}

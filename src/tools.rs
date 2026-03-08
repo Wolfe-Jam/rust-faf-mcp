@@ -1,6 +1,6 @@
 //! Tool implementations for rust-faf-mcp
 //!
-//! 5 tools powered by faf-rust-sdk
+//! 8 tools powered by faf-rust-sdk
 
 use std::collections::HashMap;
 use std::fs;
@@ -935,6 +935,178 @@ pub fn faf_sync(arguments: &Value) -> Value {
             claude_path.display()
         ))
     }
+}
+
+// ─── Tool: faf_compress ─────────────────────────────────────────────────
+
+/// Compress project.faf for token-limited contexts
+pub fn faf_compress(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+    let level_str = arguments
+        .get("level")
+        .and_then(|l| l.as_str())
+        .unwrap_or("standard");
+
+    let level = match level_str.to_lowercase().as_str() {
+        "minimal" => faf_rust_sdk::CompressionLevel::Minimal,
+        "standard" => faf_rust_sdk::CompressionLevel::Standard,
+        "full" => faf_rust_sdk::CompressionLevel::Full,
+        _ => {
+            return error_response(&format!(
+                "Invalid compression level: '{}'. Use: minimal, standard, full",
+                level_str
+            ))
+        }
+    };
+
+    let faf_path = if dir.extension().map(|e| e == "faf").unwrap_or(false) && dir.is_file() {
+        dir.clone()
+    } else {
+        match find_faf(&dir) {
+            Some(p) => p,
+            None => {
+                return error_response(&format!(
+                    "No project.faf found in {}. Run faf_init first.",
+                    dir.display()
+                ))
+            }
+        }
+    };
+
+    let content = match fs::read_to_string(&faf_path) {
+        Ok(c) => c,
+        Err(e) => return error_response(&format!("Failed to read: {}", e)),
+    };
+
+    let faf = match faf_rust_sdk::parse(&content) {
+        Ok(f) => f,
+        Err(e) => return error_response(&format!("Failed to parse: {}", e)),
+    };
+
+    let compressed = faf_rust_sdk::compress(&faf, level);
+    let tokens = faf_rust_sdk::estimate_tokens(level);
+
+    let yaml = match serde_yaml_ng::to_string(&compressed) {
+        Ok(y) => y,
+        Err(e) => return error_response(&format!("Failed to serialize compressed .faf: {}", e)),
+    };
+
+    let output = format!(
+        "Compressed project.faf ({} level)\n\
+         Project: {}\n\
+         Estimated tokens: ~{}\n\n\
+         ---\n{}\n---\n",
+        level_str,
+        faf.project_name(),
+        tokens,
+        yaml
+    );
+
+    text_response(&output)
+}
+
+// ─── Tool: faf_discover ─────────────────────────────────────────────────
+
+/// Find the nearest project.faf by walking up the directory tree
+pub fn faf_discover(arguments: &Value) -> Value {
+    let start = arguments
+        .get("path")
+        .and_then(|p| p.as_str())
+        .map(PathBuf::from);
+
+    match faf_rust_sdk::find_faf_file(start.as_ref()) {
+        Some(path) => {
+            // Read and parse to show basic info
+            let content = match fs::read_to_string(&path) {
+                Ok(c) => c,
+                Err(e) => {
+                    return text_response(&format!(
+                        "Found project.faf at: {}\n(Could not read: {})",
+                        path.display(),
+                        e
+                    ))
+                }
+            };
+
+            let mut output = format!("Found project.faf at: {}\n", path.display());
+
+            if let Ok(faf) = faf_rust_sdk::parse(&content) {
+                let score = faf_rust_sdk::validate(&faf).score;
+                output.push_str(&format!(
+                    "Project: {}\nScore: {}% {}\n",
+                    faf.project_name(),
+                    score,
+                    tier_badge(score)
+                ));
+            }
+
+            text_response(&output)
+        }
+        None => error_response(&format!(
+            "No project.faf found searching from {}",
+            start
+                .as_ref()
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|| "current directory".to_string())
+        )),
+    }
+}
+
+// ─── Tool: faf_tokens ─────────────────────────────────────────────────
+
+/// Estimate token count for project.faf at each compression level
+pub fn faf_tokens(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+
+    let faf_path = if dir.extension().map(|e| e == "faf").unwrap_or(false) && dir.is_file() {
+        dir.clone()
+    } else {
+        match find_faf(&dir) {
+            Some(p) => p,
+            None => {
+                return error_response(&format!(
+                    "No project.faf found in {}. Run faf_init first.",
+                    dir.display()
+                ))
+            }
+        }
+    };
+
+    let content = match fs::read_to_string(&faf_path) {
+        Ok(c) => c,
+        Err(e) => return error_response(&format!("Failed to read: {}", e)),
+    };
+
+    let faf = match faf_rust_sdk::parse(&content) {
+        Ok(f) => f,
+        Err(e) => return error_response(&format!("Failed to parse: {}", e)),
+    };
+
+    let score = faf_rust_sdk::validate(&faf).score;
+    let t_min = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Minimal);
+    let t_std = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Standard);
+    let t_full = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Full);
+
+    let output = format!(
+        "Token Estimates for '{}'\n\
+         Score: {}% {}\n\n\
+         ┌──────────┬────────┬─────────────────────────────────┐\n\
+         │ Level    │ Tokens │ Description                     │\n\
+         ├──────────┼────────┼─────────────────────────────────┤\n\
+         │ Minimal  │ ~{:<5}│ Names only                      │\n\
+         │ Standard │ ~{:<5}│ Names + goals                   │\n\
+         │ Full     │ ~{:<5}│ Everything minus extras         │\n\
+         └──────────┴────────┴─────────────────────────────────┘\n\n\
+         Use faf_compress with level=minimal|standard|full to get compressed output.",
+        faf.project_name(),
+        score,
+        tier_badge(score),
+        t_min,
+        t_std,
+        t_full,
+    );
+
+    text_response(&output)
 }
 
 /// Generate CLAUDE.md sync section from parsed FAF
