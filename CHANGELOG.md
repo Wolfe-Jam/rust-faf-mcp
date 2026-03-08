@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2026-03-08
+
+### Fixed
+- README on crates.io now reflects v0.2.0 content (8 tools, 91 tests, install options)
+
 ## [0.2.0] - 2026-03-07
 
 ### Added

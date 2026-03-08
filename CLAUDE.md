@@ -19,7 +19,7 @@
 
 **FAF Score:** 100% 🏆 Trophy
 
-*Synced by rust-faf-mcp v0.2.0 — IANA application/vnd.faf+yaml*
+*Synced by rust-faf-mcp v0.2.1 — IANA application/vnd.faf+yaml*
 <!-- FAF-SYNC-END -->
 ---
 
