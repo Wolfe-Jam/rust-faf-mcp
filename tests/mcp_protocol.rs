@@ -89,7 +89,7 @@ fn test_initialize() {
 
     assert_eq!(result["protocolVersion"], "2024-11-05");
     assert_eq!(result["serverInfo"]["name"], "rust-faf-mcp");
-    assert_eq!(result["serverInfo"]["version"], "0.1.0");
+    assert_eq!(result["serverInfo"]["version"], env!("CARGO_PKG_VERSION"));
     assert!(result["capabilities"]["tools"].is_object());
     assert!(result["capabilities"]["resources"].is_object());
 }
