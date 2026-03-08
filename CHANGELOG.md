@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2026-03-08
+
+### Changed
+- Description: "RMCP-powered MCP server" — RMCP front and center
+- Keyword: `#rmcp` replaces `#mcp-server`
+
 ## [0.2.1] - 2026-03-08
 
 ### Fixed

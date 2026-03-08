@@ -1,15 +1,15 @@
 [package]
 name = "rust-faf-mcp"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["wolfejam <wolfejam@faf.one>"]
-description = "Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml"
+description = "RMCP-powered MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml"
 license = "MIT"
 repository = "https://github.com/Wolfe-Jam/rust-faf-mcp"
 homepage = "https://faf.one"
 documentation = "https://docs.rs/rust-faf-mcp"
 readme = "README.md"
-keywords = ["faf", "mcp", "ai-context", "rust", "mcp-server"]
+keywords = ["faf", "mcp", "ai-context", "rust", "rmcp"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
