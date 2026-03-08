@@ -2,7 +2,7 @@
 
 Rust MCP server for [FAF](https://faf.one) (Foundational AI-context Format) — IANA-registered `application/vnd.faf+yaml`.
 
-5 tools. 49 tests. Powered by [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk).
+8 tools. 91 tests. Powered by [rmcp](https://crates.io/crates/rmcp) + [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk).
 
 ## What is FAF?
 
@@ -37,6 +37,9 @@ Stdio-based MCP server. Add to your MCP client config:
 | `faf_read` | Read and display project.faf with parsed structure and score. |
 | `faf_score` | Score AI-readiness (0-100%) with tier badge, breakdown, and suggestions. |
 | `faf_sync` | Bi-directional sync between project.faf and CLAUDE.md. Preserves custom content. |
+| `faf_compress` | Compress project.faf for token-limited contexts. Levels: minimal, standard, full. |
+| `faf_discover` | Find the nearest project.faf by walking up the directory tree. |
+| `faf_tokens` | Estimate token count at each compression level. |
 
 ## The Loop
 
@@ -61,13 +64,14 @@ Low score? Run `faf_init` again. It detects what's missing and fills it in.
 
 ## Testing
 
-49 tests across 3 WJTTC tiers:
+91 tests across 4 WJTTC tiers:
 
 | Tier | Focus | Tests |
 |------|-------|-------|
 | T1 BRAKES | Security (path traversal, injection, malformed input) | 12 |
-| T2 ENGINE | Core (MCP protocol, all 5 tools, language detection) | 27 |
+| T2 ENGINE | Core (corrupt YAML, pipelines, sync replacement, dual manifests, schemas) | 35 |
 | T3 AERO | Edge cases (unicode, boundaries, URL parsing) | 10 |
+| Functional | All 8 tools + MCP protocol | 34 |
 
 ```bash
 cargo test
