@@ -1,6 +1,6 @@
 //! Tool implementations for rust-faf-mcp
 //!
-//! 8 tools powered by faf-rust-sdk
+//! 9 tools powered by faf-rust-sdk
 
 use std::collections::HashMap;
 use std::fs;
@@ -1105,6 +1105,118 @@ pub fn faf_tokens(arguments: &Value) -> Value {
         t_std,
         t_full,
     );
+
+    text_response(&output)
+}
+
+// ─── Tool: faf_auto ──────────────────────────────────────────────────
+
+/// Zero to AI context in one command: init → enhance → sync → score → report
+pub fn faf_auto(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+
+    if !dir.exists() {
+        return error_response(&format!("Directory not found: {}", dir.display()));
+    }
+
+    let mut steps: Vec<String> = Vec::new();
+
+    // Capture before score
+    let before_score = find_faf(&dir)
+        .and_then(|p| fs::read_to_string(&p).ok())
+        .and_then(|c| faf_rust_sdk::parse(&c).ok())
+        .map(|f| faf_rust_sdk::validate(&f).score)
+        .unwrap_or(0);
+
+    // Step 1: Init (create or enhance)
+    match find_faf(&dir) {
+        None => {
+            faf_init_create(&dir);
+            steps.push("Created project.faf".to_string());
+        }
+        Some(faf_path) => {
+            faf_init_enhance(&dir, &faf_path);
+            steps.push("Enhanced project.faf".to_string());
+        }
+    }
+
+    // Step 2: Second pass if score still below 85
+    if let Some(faf_path) = find_faf(&dir) {
+        if let Ok(content) = fs::read_to_string(&faf_path) {
+            if let Ok(faf) = faf_rust_sdk::parse(&content) {
+                if faf_rust_sdk::validate(&faf).score < 85 {
+                    faf_init_enhance(&dir, &faf_path);
+                    steps.push("Second enhancement pass".to_string());
+                }
+            }
+        }
+    }
+
+    // Step 3: Sync → generate CLAUDE.md
+    if let Some(faf_path) = find_faf(&dir) {
+        if let Ok(content) = fs::read_to_string(&faf_path) {
+            if let Ok(faf) = faf_rust_sdk::parse(&content) {
+                let score = faf_rust_sdk::validate(&faf).score;
+                let claude_md = generate_claude_md(&faf, score);
+                let claude_path = dir.join("CLAUDE.md");
+
+                if claude_path.exists() {
+                    let existing = fs::read_to_string(&claude_path).unwrap_or_default();
+                    if let (Some(start), Some(end)) = (
+                        existing.find("<!-- FAF-SYNC-START -->"),
+                        existing.find("<!-- FAF-SYNC-END -->"),
+                    ) {
+                        let mut updated = String::new();
+                        updated.push_str(&existing[..start]);
+                        updated.push_str(&claude_md);
+                        updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
+                        let _ = fs::write(&claude_path, &updated);
+                        steps.push("Updated CLAUDE.md sync section".to_string());
+                    } else {
+                        let mut updated = existing;
+                        updated.push_str("\n\n");
+                        updated.push_str(&claude_md);
+                        let _ = fs::write(&claude_path, &updated);
+                        steps.push("Appended sync to CLAUDE.md".to_string());
+                    }
+                } else {
+                    let header = format!("# CLAUDE.md - {}\n\n{}\n", faf.project_name(), claude_md);
+                    let _ = fs::write(&claude_path, &header);
+                    steps.push("Created CLAUDE.md".to_string());
+                }
+            }
+        }
+    }
+
+    // Step 4: Final score + report
+    let after_score = find_faf(&dir)
+        .and_then(|p| fs::read_to_string(&p).ok())
+        .and_then(|c| faf_rust_sdk::parse(&c).ok())
+        .map(|f| faf_rust_sdk::validate(&f).score)
+        .unwrap_or(0);
+
+    let delta = if after_score > before_score {
+        format!(" (+{})", after_score - before_score)
+    } else if before_score == 0 && after_score > 0 {
+        " (new)".to_string()
+    } else {
+        String::new()
+    };
+
+    let mut output = format!(
+        "faf_auto complete\n\
+         ━━━━━━━━━━━━━━━━━\n\
+         Score: {}% → {}%{} {}\n\
+         Steps:\n",
+        before_score,
+        after_score,
+        delta,
+        tier_badge(after_score)
+    );
+    for (i, step) in steps.iter().enumerate() {
+        output.push_str(&format!("  {}. {}\n", i + 1, step));
+    }
+    output.push_str(&format!("\nPath: {}\n", dir.display()));
 
     text_response(&output)
 }

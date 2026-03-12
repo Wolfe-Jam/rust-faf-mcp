@@ -1,6 +1,6 @@
 [package]
 name = "rust-faf-mcp"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 authors = ["wolfejam <wolfejam@faf.one>"]
 description = "RMCP-powered MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml"

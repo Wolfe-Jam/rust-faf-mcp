@@ -15,8 +15,7 @@ use std::time::Duration;
 
 const INIT_REQUEST: &str = r#"{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.0.0"}}}"#;
 const INIT_NOTIFICATION: &str = r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#;
-const TOOLS_LIST_REQUEST: &str =
-    r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#;
+const TOOLS_LIST_REQUEST: &str = r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#;
 
 fn project_root() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -45,7 +44,9 @@ fn read_server_json() -> serde_json::Value {
 fn read_cargo_toml() -> toml::Value {
     let path = project_root().join("Cargo.toml");
     let content = fs::read_to_string(&path).expect("Cargo.toml must exist");
-    content.parse::<toml::Value>().expect("Cargo.toml must be valid TOML")
+    content
+        .parse::<toml::Value>()
+        .expect("Cargo.toml must be valid TOML")
 }
 
 fn get_server_tools() -> Vec<String> {
@@ -106,7 +107,10 @@ fn t4_manifest_exists() {
 #[test]
 fn t4_manifest_required_fields() {
     let m = read_manifest();
-    assert!(m["manifest_version"].is_string(), "manifest_version required");
+    assert!(
+        m["manifest_version"].is_string(),
+        "manifest_version required"
+    );
     assert!(m["name"].is_string(), "name required");
     assert!(m["version"].is_string(), "version required");
     assert!(m["description"].is_string(), "description required");
@@ -178,11 +182,7 @@ fn t4_manifest_author_fields() {
 #[test]
 fn t4_manifest_license_is_mit() {
     let m = read_manifest();
-    assert_eq!(
-        m["license"].as_str().unwrap(),
-        "MIT",
-        "license must be MIT"
-    );
+    assert_eq!(m["license"].as_str().unwrap(), "MIT", "license must be MIT");
 }
 
 #[test]
@@ -191,11 +191,7 @@ fn t4_manifest_tools_have_name_and_description() {
     let tools = m["tools"].as_array().unwrap();
     assert!(!tools.is_empty(), "tools must not be empty");
     for (i, tool) in tools.iter().enumerate() {
-        assert!(
-            tool["name"].is_string(),
-            "tool[{}] must have name",
-            i
-        );
+        assert!(tool["name"].is_string(), "tool[{}] must have name", i);
         assert!(
             tool["description"].is_string(),
             "tool[{}] must have description",

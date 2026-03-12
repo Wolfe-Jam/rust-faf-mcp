@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] - 2026-03-12
+
+### Added
+- `faf_auto` — zero to AI context in one command (init → enhance → sync → score → report)
+- Tier 4 aero test suite (21 tests — manifest/server cross-validation, drift detection)
+
+### Changed
+- 9 tools (was 8), 112 tests (was 91)
+- README rewritten — value prop, badges, faf_auto quickstart, grouped tools, ecosystem table
+
 ## [0.2.2] - 2026-03-08
 
 ### Changed

@@ -133,6 +133,14 @@ impl FafServer {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_tokens(&args))
     }
+
+    #[tool(
+        description = "Zero to AI context in one command. Creates .faf, enhances to max score, syncs CLAUDE.md. Run once, done forever."
+    )]
+    async fn faf_auto(&self, params: Parameters<PathParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_auto(&args))
+    }
 }
 
 // ─── ServerHandler ──────────────────────────────────────────────────────

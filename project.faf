@@ -3,10 +3,10 @@ project:
   name: rust-faf-mcp
   goal: Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
   main_language: Rust
-  version: 0.2.2
+  version: 0.3.0
   license: MIT
 instant_context:
-  what_building: Rust MCP server — 8 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens) powered by rmcp SDK + faf-rust-sdk
+  what_building: Rust MCP server — 9 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto) powered by rmcp SDK + faf-rust-sdk
   tech_stack: Rust 2021, rmcp 1.1, faf-rust-sdk 1.3, serde, reqwest, tokio
   key_files:
     - Cargo.toml
@@ -24,7 +24,7 @@ instant_context:
 stack:
   backend: Rust
   build_tool: cargo
-  testing: cargo test (91 tests, WJTTC 4-tier)
+  testing: cargo test (112 tests, WJTTC 4-tier)
   registry: crates.io
 human_context:
   who: wolfejam
@@ -39,7 +39,7 @@ tags:
   - model-context-protocol
 state:
   phase: production
-  version: 0.2.2
+  version: 0.3.0
 metadata:
-  last_claude_sync: 2026-03-06T07:51:38.701Z
+  last_claude_sync: 2026-03-12T18:01:45.035Z
   bi_sync: active
