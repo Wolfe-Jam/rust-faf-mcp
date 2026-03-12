@@ -1,7 +1,7 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.1.0
-**Date:** 2026-03-05
+**Project:** rust-faf-mcp v0.2.2
+**Date:** 2026-03-12
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)
 
@@ -12,9 +12,10 @@
 | Tier | Category | Tests | Focus |
 |------|----------|-------|-------|
 | T1 | BRAKES (Security) | 14 | Path traversal, injection, malformed JSON |
-| T2 | ENGINE (Core) | 27 | MCP protocol, 5 tools, language detection |
+| T2 | ENGINE (Core) | 35 | MCP protocol, 8 tools, language detection |
 | T3 | AERO (Edge Cases) | 12 | Unicode, emoji, boundaries, stress |
-| **Total** | | **53** | |
+| T4 | AERO (Packaging) | 21 | MCPB manifest, server.json, tool drift |
+| **Total** | | **112** | |
 
 ---
 
@@ -115,6 +116,45 @@
 | owner/repo shorthand | Parsed correctly | |
 | URL with .git suffix | Stripped | |
 | URL with trailing slash | Stripped | |
+
+---
+
+## Tier 4: AERO SYSTEMS (Packaging & Registry)
+
+### T4.1 - manifest.json Structure (10 tests)
+- manifest.json exists
+- Required fields present (manifest_version, name, version, description, server, tools)
+- manifest_version is 0.3
+- server.type is "binary"
+- entry_point matches binary name
+- mcp_config present with command
+- name matches Cargo.toml package name
+- author fields present (name, email)
+- license is MIT
+- All tools have name + description, snake_case with faf_ prefix
+
+### T4.2 - Version Sync (1 test)
+- manifest.json version matches Cargo.toml version
+
+### T4.3 - server.json Structure (6 tests)
+- server.json exists
+- Required fields present (name, description, version, repository, packages)
+- $schema references modelcontextprotocol.io
+- name uses io.github. prefix
+- version matches Cargo.toml
+- MCPB package has registryType, identifier (.mcpb URL), fileSha256 (64 hex chars), stdio transport
+
+### T4.4 - Cross-Validation: Manifest ↔ Server (2 tests)
+- manifest.json tool count matches live server tools/list count
+- manifest.json tool names match live server tool names exactly (drift detection)
+
+### T4.5 - Cross-Validation: manifest.json ↔ server.json (1 test)
+- Versions match across both files
+
+### Why This Tier Matters
+The Tier 4 drift detection test (`t4_manifest_tools_match_server_exactly`) would have
+caught the original manifest.json shipping with `faf_validate` and `faf_about` instead
+of the actual `faf_git` and `faf_sync`. We break it, so they never know it was broken.
 
 ---
 

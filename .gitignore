@@ -17,3 +17,6 @@ Thumbs.db
 
 # MCPB bundles (hosted on GitHub Releases)
 *.mcpb
+
+# MCP Registry tokens
+.mcpregistry_*

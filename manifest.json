@@ -37,14 +37,14 @@
     }
   },
   "tools": [
-    { "name": "faf_read", "description": "Read and parse .faf project files" },
-    { "name": "faf_validate", "description": "Validate .faf file structure" },
-    { "name": "faf_score", "description": "Calculate AI-readiness score" },
-    { "name": "faf_init", "description": "Create new .faf project file" },
-    { "name": "faf_discover", "description": "Find .faf files in directory" },
+    { "name": "faf_init", "description": "Create or enhance a project.faf file" },
+    { "name": "faf_git", "description": "Generate .faf from a GitHub repo URL" },
+    { "name": "faf_read", "description": "Read and display project.faf contents" },
+    { "name": "faf_score", "description": "Score AI-readiness (0-100%)" },
+    { "name": "faf_sync", "description": "Bi-directional sync .faf with CLAUDE.md" },
     { "name": "faf_compress", "description": "Compress .faf for token efficiency" },
-    { "name": "faf_tokens", "description": "Estimate token count" },
-    { "name": "faf_about", "description": "Learn about FAF format" }
+    { "name": "faf_discover", "description": "Find nearest project.faf" },
+    { "name": "faf_tokens", "description": "Estimate token count" }
   ],
   "compatibility": {
     "claude_desktop": ">=0.10.0",

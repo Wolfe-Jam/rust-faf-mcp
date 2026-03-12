@@ -12,7 +12,7 @@
     {
       "registryType": "mcpb",
       "identifier": "https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v0.2.2/rust-faf-mcp-darwin-arm64.mcpb",
-      "fileSha256": "ce1436170cd0936a006c984d9b715783a5d30e1fd3a9653f4cae3051be72c2c5",
+      "fileSha256": "d17d31a401edfa2a916c572330279023cd2f37e978668c14675b10eed541912b",
       "transport": {
         "type": "stdio"
       }
