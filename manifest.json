@@ -1,0 +1,53 @@
+{
+  "manifest_version": "0.3",
+  "name": "rust-faf-mcp",
+  "display_name": "FAF - Rust RMCP Edition",
+  "version": "0.2.2",
+  "description": "RMCP-powered FAF server. 8 tools. Rust-native MCP for IANA-registered .faf format.",
+  "long_description": "Rust-native MCP server for FAF (Foundational AI-context Format). Built with rmcp SDK v1.1 and faf-rust-sdk. 8 tools for reading, validating, scoring, and managing .faf project DNA files.\n\n**Tools:** faf_read, faf_validate, faf_score, faf_init, faf_discover, faf_compress, faf_tokens, faf_about\n\n**Why Rust?** Zero-dependency binary. No Node.js, no Python, no runtime. Just the binary.\n\n**91 tests passing. IANA-registered MIME type (application/vnd.faf+yaml).**",
+  "author": {
+    "name": "Wolfejam",
+    "email": "team@faf.one",
+    "url": "https://wolfejam.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wolfe-Jam/rust-faf-mcp.git"
+  },
+  "homepage": "https://faf.one",
+  "documentation": "https://github.com/Wolfe-Jam/rust-faf-mcp#readme",
+  "support": "https://github.com/Wolfe-Jam/rust-faf-mcp/issues",
+  "license": "MIT",
+  "keywords": [
+    "faf",
+    "rust",
+    "rmcp",
+    "mcp",
+    "ai-context",
+    "iana",
+    "persistent-context",
+    "ai-memory"
+  ],
+  "server": {
+    "type": "binary",
+    "entry_point": "rust-faf-mcp",
+    "mcp_config": {
+      "command": "./rust-faf-mcp",
+      "args": []
+    }
+  },
+  "tools": [
+    { "name": "faf_read", "description": "Read and parse .faf project files" },
+    { "name": "faf_validate", "description": "Validate .faf file structure" },
+    { "name": "faf_score", "description": "Calculate AI-readiness score" },
+    { "name": "faf_init", "description": "Create new .faf project file" },
+    { "name": "faf_discover", "description": "Find .faf files in directory" },
+    { "name": "faf_compress", "description": "Compress .faf for token efficiency" },
+    { "name": "faf_tokens", "description": "Estimate token count" },
+    { "name": "faf_about", "description": "Learn about FAF format" }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "linux"]
+  }
+}

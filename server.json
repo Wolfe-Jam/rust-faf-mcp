@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Wolfe-Jam/rust-faf-mcp",
+  "description": "RMCP-powered FAF server. 8 tools. Rust-native. IANA-registered .faf format.",
+  "repository": {
+    "url": "https://github.com/Wolfe-Jam/rust-faf-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://faf.one",
+  "version": "0.2.2",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v0.2.2/rust-faf-mcp-darwin-arm64.mcpb",
+      "fileSha256": "ce1436170cd0936a006c984d9b715783a5d30e1fd3a9653f4cae3051be72c2c5",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
