@@ -10,6 +10,10 @@
 
 Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server for [FAF](https://faf.one) — structured AI project context in YAML (`application/vnd.faf+yaml`). Single binary, stdio transport, 4.3 MB stripped. Built on [`rmcp`](https://crates.io/crates/rmcp) and [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk).
 
+<a href="https://glama.ai/mcp/servers/Wolfe-Jam/rust-faf-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/Wolfe-Jam/rust-faf-mcp/badge" alt="rust-faf-mcp RMCP MCP server" />
+</a>
+
 ## Quickstart
 
 ```bash
