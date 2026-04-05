@@ -172,6 +172,8 @@ cargo build --release
 
 **Edition**: 2021 | **LTO**: enabled | **Strip**: symbols
 
+If `rust-faf-mcp` has been useful, consider starring the repo — it helps others find it.
+
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)

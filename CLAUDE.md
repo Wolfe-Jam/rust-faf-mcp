@@ -1,3 +1,5 @@
+<!-- faf: rust-faf-mcp | Rust | Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml -->
+
 # CLAUDE.md - rust-faf-mcp
 
 <!-- FAF-SYNC-START -->

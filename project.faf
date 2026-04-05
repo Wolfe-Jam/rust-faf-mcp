@@ -5,6 +5,8 @@ project:
   main_language: Rust
   version: 0.3.0
   license: MIT
+  type: mcp
+  framework: rmcp
 instant_context:
   what_building: Rust MCP server — 9 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto) powered by rmcp SDK + faf-rust-sdk
   tech_stack: Rust 2021, rmcp 1.1, faf-rust-sdk 1.3, serde, reqwest, tokio
@@ -26,11 +28,31 @@ stack:
   build_tool: cargo
   testing: cargo test (112 tests, WJTTC 4-tier)
   registry: crates.io
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  api_type: MCP (stdio/SSE)
+  runtime: Rust
+  database: slotignored
+  connection: slotignored
+  hosting: Docker
+  build: cargo build --release
+  cicd: GitHub Actions
+  monorepo_tool: slotignored
+  package_manager: slotignored
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
 human_context:
   who: wolfejam
   what: Rust-native MCP server for FAF format
   why: First downstream consumer of faf-rust-sdk, completing the Rust FAF ecosystem
   how: rmcp SDK stdio transport, one binary, zero config
+  where: Docker, crates.io, CLI, GitHub Actions
+  when: March 2025 - Rust FAF ecosystem completion
 tags:
   - faf
   - mcp
@@ -43,3 +65,9 @@ state:
 metadata:
   last_claude_sync: 2026-03-12T18:01:45.035Z
   bi_sync: active
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
