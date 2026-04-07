@@ -1,0 +1,17 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["Wolfe-Jam"],
+  "name": "rust-faf-mcp",
+  "description": "Rust-native MCP server for persistent AI context. Single 4.3MB binary with stdio transport using IANA-registered .faf format. Built on rmcp and faf-rust-sdk for maximum performance.",
+  "author": "Wolfe-Jam",
+  "homepage": "https://crates.io/crates/rust-faf-mcp",
+  "repository": "https://github.com/Wolfe-Jam/rust-faf-mcp",
+  "license": "MIT",
+  "categories": ["Developer Tools", "System Tools", "Performance"],
+  "keywords": ["faf", "rust", "native", "context", "ai-readiness", "mcp", "project-context", "iana", "rmcp"],
+  "relatedServers": [
+    "claude-faf-mcp",
+    "grok-faf-mcp", 
+    "gemini-faf-mcp"
+  ]
+}
