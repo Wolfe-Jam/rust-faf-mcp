@@ -49,7 +49,7 @@ brew install Wolfe-Jam/faf/rust-faf-mcp
 ```
 faf_auto complete
 ━━━━━━━━━━━━━━━━━
-Score: 0% → 85% (+85) 🥈 Silver
+Score: 0% → 85% (+85) ◇ BRONZE
 Steps:
   1. Created project.faf
   2. Second enhancement pass
