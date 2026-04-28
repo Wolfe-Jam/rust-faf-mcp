@@ -1,7 +1,10 @@
 # rust-faf-mcp
 
-> **Stop re-explaining your project to every AI session.**
-> One `.faf` file holds your persistent project context. Every AI reads it once and knows what you're building.
+**Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
+
+**FAF defines. MD instructs. AI codes.**
+
+> Stop re-explaining your project to every AI session. One `.faf` file holds your persistent project context. Every AI reads it once and knows what you're building.
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![Tests](https://img.shields.io/badge/tests-112%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
