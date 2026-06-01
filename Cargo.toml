@@ -11,6 +11,10 @@ documentation = "https://docs.rs/rust-faf-mcp"
 readme = "README.md"
 keywords = ["faf", "mcp", "ai-context", "rust", "rmcp"]
 categories = ["development-tools", "command-line-utilities"]
+# SEP-2127 server-card.json is staged on-disk for future use, but not yet ready
+# to publish (spec still moving, identity + tool count need a sync pass). Per
+# stage-not-ship-early posture, exclude until SEP-2127 stabilizes.
+exclude = [".well-known/"]
 
 [dependencies]
 faf-rust-sdk = "1.3"
