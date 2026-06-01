@@ -1,4 +1,5 @@
 <!-- faf: rust-faf-mcp | Rust | mcp-server | RMCP — the Rust-native MCP server for FAF (Foundational AI-context Format). Single binary, stdio transport, 4.3 MB stripped. cargo install rust-faf-mcp. Built on the rmcp Rust MCP SDK + faf-rust-sdk. -->
+<!-- mcp-name: io.github.Wolfe-Jam/rust-faf-mcp -->
 
 
 # rust-faf-mcp
