@@ -29,12 +29,12 @@
     "source": "github"
   },
   "websiteUrl": "https://faf.one",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "packages": [
     {
       "registryType": "mcpb",
-      "identifier": "https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v0.3.0/rust-faf-mcp-darwin-arm64.mcpb",
-      "fileSha256": "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5",
+      "identifier": "https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v0.3.1/rust-faf-mcp-darwin-arm64.mcpb",
+      "fileSha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "transport": {
         "type": "stdio"
       }

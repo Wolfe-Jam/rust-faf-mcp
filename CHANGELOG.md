@@ -1,6 +1,18 @@
 # Changelog
 
-## [0.3.0] - 2026-03-12
+## [0.3.1] - 2026-06-01
+
+### Fixed
+- MCP Registry validation: surfaced `mcp-name: io.github.Wolfe-Jam/rust-faf-mcp` as visible markdown in the README's Links section. crates.io strips HTML comments during markdown→HTML rendering, so the hidden-comment form added in v0.3.0 was invisible to substring-matching validators. v0.3.1 is the recommended version for any MCP Registry tooling that checks crates.io README content (e.g., modelcontextprotocol/registry#1207). v0.3.0 remains installable; the binary is identical.
+
+### Changed
+- Cargo packaging excludes `.well-known/` (SEP-2127 server-card staging) to keep the published tarball clean while the spec stabilizes.
+- `CLAUDE.md` bi-sync timestamp refreshed to 2026-06-01 (previous stamp was 12 weeks stale; cosmetic — does not affect bi-sync behavior).
+
+### Known limitation
+- `server.json` `fileSha256` is set to a zero-sentinel placeholder for the v0.3.1 MCPB package because the v0.3.1 GitHub-Release MCPB binary is built by CI on tag push, so the real sha is not available at cargo-publish time. The intended registration path for v0.3.1 is via `registryType: cargo` (depends on modelcontextprotocol/registry#1207 merging). A follow-up will either compute and overwrite the sha post-CI, or replace the MCPB package entry with `cargo` once the validator ships.
+
+## [0.3.0] - 2026-03-12 (published 2026-06-01)
 
 ### Added
 - `faf_auto` — zero to AI context in one command (init → enhance → sync → score → report)

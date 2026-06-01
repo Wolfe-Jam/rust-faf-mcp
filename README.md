@@ -188,6 +188,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 - [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk) — the parser this depends on
 - [faf.one](https://faf.one) — FAF home
 - [IANA registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
+- MCP Registry name: `mcp-name: io.github.Wolfe-Jam/rust-faf-mcp`
 - [CHANGELOG](CHANGELOG.md)
 
 ## License
