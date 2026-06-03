@@ -32,9 +32,10 @@
   "version": "0.3.1",
   "packages": [
     {
-      "registryType": "mcpb",
-      "identifier": "https://github.com/Wolfe-Jam/rust-faf-mcp/releases/download/v0.3.1/rust-faf-mcp-darwin-arm64.mcpb",
-      "fileSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "registryType": "cargo",
+      "registryBaseUrl": "https://crates.io",
+      "identifier": "rust-faf-mcp",
+      "version": "0.3.1",
       "transport": {
         "type": "stdio"
       }

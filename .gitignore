@@ -20,3 +20,6 @@ Thumbs.db
 
 # MCP Registry tokens
 .mcpregistry_*
+
+# mcp-publisher CLI binary (downloaded from registry releases, not source)
+bin/
