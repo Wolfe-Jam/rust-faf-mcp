@@ -277,30 +277,34 @@ fn t4_server_json_version_matches_cargo() {
 }
 
 #[test]
-fn t4_server_json_package_has_mcpb() {
+fn t4_server_json_package_is_cargo() {
+    // Registers via the cargo (crates.io) package type — modelcontextprotocol/registry#1207.
+    // (Was mcpb; switched 2026-06-03 once cargo became a first-class registry type.)
     let s = read_server_json();
+    let cargo = read_cargo_toml();
     let packages = s["packages"].as_array().unwrap();
     assert!(!packages.is_empty(), "packages must not be empty");
 
     let pkg = &packages[0];
     assert_eq!(
         pkg["registryType"].as_str().unwrap(),
-        "mcpb",
-        "package registryType must be mcpb"
+        "cargo",
+        "package registryType must be cargo (crates.io registration)"
     );
-    assert!(
-        pkg["identifier"].as_str().unwrap().ends_with(".mcpb"),
-        "identifier must be a .mcpb URL"
+    assert_eq!(
+        pkg["registryBaseUrl"].as_str().unwrap(),
+        "https://crates.io",
+        "cargo registryBaseUrl must be https://crates.io"
     );
-    assert!(
-        pkg["fileSha256"].is_string(),
-        "fileSha256 required for mcpb package"
+    assert_eq!(
+        pkg["identifier"].as_str().unwrap(),
+        cargo["package"]["name"].as_str().unwrap(),
+        "cargo identifier must be the crate name (matches Cargo.toml)"
     );
-    let sha = pkg["fileSha256"].as_str().unwrap();
-    assert_eq!(sha.len(), 64, "SHA-256 must be 64 hex chars");
-    assert!(
-        sha.chars().all(|c| c.is_ascii_hexdigit()),
-        "SHA-256 must be hex only"
+    assert_eq!(
+        pkg["version"].as_str().unwrap(),
+        cargo["package"]["version"].as_str().unwrap(),
+        "package version must match Cargo.toml"
     );
 }
 
