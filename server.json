@@ -30,6 +30,12 @@
   },
   "websiteUrl": "https://faf.one",
   "version": "0.3.1",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcpaas.live/rust/mcp/v1"
+    }
+  ],
   "packages": [
     {
       "registryType": "cargo",
