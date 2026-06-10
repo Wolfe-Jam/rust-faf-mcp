@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Removed
+- Deleted the stale `.well-known/mcp/server-card.json` staging artifact and the now-moot `exclude = [".well-known/"]` from `Cargo.toml`. The staged card was off-spec (pre-#2525 `authentication`/`capabilities`, inline `tools`, deprecated `.well-known` path) and carried no `one.faf/context` rider. Discovery is served by the live endpoint (`remotes: mcpaas.live/rust/mcp/v1`); a conformant static card, if ever needed, will be generated via faf-server-card-ref rather than hand-staged.
+
 ## [0.3.1] - 2026-06-01
 
 ### Fixed
