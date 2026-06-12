@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- rmcp 1.1 → 1.7 (six minors; brings 2025-11-25 MCP protocol support, HTTP Origin/Host validation upstream, session-resumability plumbing). Zero source-API breakage; one semantic change handled: rmcp ≥1.7's `#[tool_handler]` defaults its router to `Self::tool_router()` (rebuilt per call), so the handler is now explicitly pointed at the cached `self.tool_router` field to keep build-once routing. SEP-2575 stateless (2026-07-28 spec) is NOT yet in rmcp — tracked upstream in rust-sdk#869; stdio transport is unaffected either way.
+
 ### Added
 - crates.io Trusted Publishing: `publish-crate.yml` publishes on GitHub Release via OIDC (`rust-lang/crates-io-auth-action`) — no long-lived `CRATES_IO_TOKEN`. Requires the crate's Trusted Publishing config on crates.io (repo `Wolfe-Jam/rust-faf-mcp`, workflow `publish-crate.yml`, environment `crates-io`) before first use; enforce-only mode can be flipped on crates.io once proven.
 - Security audit CI: `audit.yml` runs `cargo audit` (RustSec) weekly and on any `Cargo.toml`/`Cargo.lock` change.
