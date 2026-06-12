@@ -141,7 +141,9 @@ impl FafServer {
 
 // ─── ServerHandler ──────────────────────────────────────────────────────
 
-#[tool_handler]
+// rmcp ≥1.7 defaults the handler router to `Self::tool_router()` (rebuilt per call);
+// point it at the cached field to keep build-once routing.
+#[tool_handler(router = self.tool_router)]
 impl ServerHandler for FafServer {
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::new(
