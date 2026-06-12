@@ -6,7 +6,7 @@ use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::*;
 use rmcp::service::RequestContext;
-use rmcp::{tool, tool_handler, tool_router, RoleServer, ServerHandler};
+use rmcp::{RoleServer, ServerHandler, tool, tool_handler, tool_router};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -48,11 +48,7 @@ fn value_to_string_result(value: serde_json::Value) -> Result<String, String> {
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
 
-    if is_error {
-        Err(text)
-    } else {
-        Ok(text)
-    }
+    if is_error { Err(text) } else { Ok(text) }
 }
 
 // ─── FafServer ──────────────────────────────────────────────────────────
@@ -168,11 +164,9 @@ impl ServerHandler for FafServer {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
-        Ok(ListResourcesResult::with_all_items(vec![RawResource::new(
-            "faf://scoring/weights",
-            "FAF Scoring Weights",
-        )
-        .no_annotation()]))
+        Ok(ListResourcesResult::with_all_items(vec![
+            RawResource::new("faf://scoring/weights", "FAF Scoring Weights").no_annotation(),
+        ]))
     }
 
     async fn read_resource(

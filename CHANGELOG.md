@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- crates.io Trusted Publishing: `publish-crate.yml` publishes on GitHub Release via OIDC (`rust-lang/crates-io-auth-action`) — no long-lived `CRATES_IO_TOKEN`. Requires the crate's Trusted Publishing config on crates.io (repo `Wolfe-Jam/rust-faf-mcp`, workflow `publish-crate.yml`, environment `crates-io`) before first use; enforce-only mode can be flipped on crates.io once proven.
+- Security audit CI: `audit.yml` runs `cargo audit` (RustSec) weekly and on any `Cargo.toml`/`Cargo.lock` change.
+
+### Changed
+- Edition 2021 → 2024 (MSRV-aware resolver v3 comes with it); explicit `rust-version = "1.85"` so the MSRV is declared and resolver-visible to downstream users.
+
 ### Removed
 - Deleted the stale `.well-known/mcp/server-card.json` staging artifact and the now-moot `exclude = [".well-known/"]` from `Cargo.toml`. The staged card was off-spec (pre-#2525 `authentication`/`capabilities`, inline `tools`, deprecated `.well-known` path) and carried no `one.faf/context` rider. Discovery is served by the live endpoint (`remotes: mcpaas.live/rust/mcp/v1`); a conformant static card, if ever needed, will be generated via faf-server-card-ref rather than hand-staged.
 
