@@ -7,7 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use faf_rust_sdk::{self, FafFile};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 
@@ -722,7 +722,7 @@ pub fn faf_read(arguments: &Value) -> Value {
                 return error_response(&format!(
                     "No project.faf found in {}. Run faf_init first.",
                     dir.display()
-                ))
+                ));
             }
         }
     };
@@ -784,7 +784,7 @@ pub fn faf_score(arguments: &Value) -> Value {
                 return error_response(&format!(
                     "No project.faf found in {}. Run faf_init first.",
                     dir.display()
-                ))
+                ));
             }
         }
     };
@@ -850,7 +850,7 @@ pub fn faf_sync(arguments: &Value) -> Value {
             return error_response(&format!(
                 "No project.faf found in {}. Run faf_init first.",
                 dir.display()
-            ))
+            ));
         }
     };
     let claude_path = dir.join("CLAUDE.md");
@@ -955,7 +955,7 @@ pub fn faf_compress(arguments: &Value) -> Value {
             return error_response(&format!(
                 "Invalid compression level: '{}'. Use: minimal, standard, full",
                 level_str
-            ))
+            ));
         }
     };
 
@@ -968,7 +968,7 @@ pub fn faf_compress(arguments: &Value) -> Value {
                 return error_response(&format!(
                     "No project.faf found in {}. Run faf_init first.",
                     dir.display()
-                ))
+                ));
             }
         }
     };
@@ -1024,7 +1024,7 @@ pub fn faf_discover(arguments: &Value) -> Value {
                         "Found project.faf at: {}\n(Could not read: {})",
                         path.display(),
                         e
-                    ))
+                    ));
                 }
             };
 
@@ -1067,7 +1067,7 @@ pub fn faf_tokens(arguments: &Value) -> Value {
                 return error_response(&format!(
                     "No project.faf found in {}. Run faf_init first.",
                     dir.display()
-                ))
+                ));
             }
         }
     };

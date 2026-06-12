@@ -1,7 +1,8 @@
 [package]
 name = "rust-faf-mcp"
 version = "0.3.1"
-edition = "2021"
+edition = "2024"
+rust-version = "1.85"
 authors = ["wolfejam <wolfejam@faf.one>"]
 description = "Persistent Project Context for Rust MCP clients. IANA-registered .faf format, Rust-native MCP server, single binary."
 license = "MIT"
