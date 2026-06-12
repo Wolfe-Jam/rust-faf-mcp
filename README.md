@@ -79,7 +79,7 @@ project:
   license: MIT
 instant_context:
   what_building: REST API for user management
-  tech_stack: Rust 2021
+  tech_stack: Rust 2024
   key_files:
     - Cargo.toml
     - src/main.rs
@@ -178,7 +178,7 @@ cargo build --release
 # Binary at target/release/rust-faf-mcp (4.3 MB)
 ```
 
-**Edition**: 2021 | **LTO**: enabled | **Strip**: symbols
+**Edition**: 2024 | **LTO**: enabled | **Strip**: symbols
 
 If `rust-faf-mcp` has been useful, consider starring the repo — it helps others find it.
 
