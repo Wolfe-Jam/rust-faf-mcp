@@ -2,18 +2,25 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-17 — The one.faf Edition
+
+**one.faf identity · rmcp 1.7 · solid cargo-native Rust MCP for Rust devs**
+
 ### Changed
+- **Registry identity → `one.faf/rust-faf-mcp`** (from `io.github.Wolfe-Jam/rust-faf-mcp`). Display title **Rust FAF**. Visible README `mcp-name` token updated for crates.io validation. Joins the fleet (`one.faf/claude-faf-mcp`, `one.faf/grok-faf-mcp`, `one.faf/faf-mcp`, `one.faf/gemini-faf-mcp`).
 - rmcp 1.1 → 1.7 (six minors; brings 2025-11-25 MCP protocol support, HTTP Origin/Host validation upstream, session-resumability plumbing). Zero source-API breakage; one semantic change handled: rmcp ≥1.7's `#[tool_handler]` defaults its router to `Self::tool_router()` (rebuilt per call), so the handler is now explicitly pointed at the cached `self.tool_router` field to keep build-once routing. SEP-2575 stateless (2026-07-28 spec) is NOT yet in rmcp — tracked upstream in rust-sdk#869; stdio transport is unaffected either way.
+- Edition 2021 → 2024 (MSRV-aware resolver v3 comes with it); explicit `rust-version = "1.85"` so the MSRV is declared and resolver-visible to downstream users.
 
 ### Added
 - crates.io Trusted Publishing: `publish-crate.yml` publishes on GitHub Release via OIDC (`rust-lang/crates-io-auth-action`) — no long-lived `CRATES_IO_TOKEN`. Requires the crate's Trusted Publishing config on crates.io (repo `Wolfe-Jam/rust-faf-mcp`, workflow `publish-crate.yml`, environment `crates-io`) before first use; enforce-only mode can be flipped on crates.io once proven.
 - Security audit CI: `audit.yml` runs `cargo audit` (RustSec) weekly and on any `Cargo.toml`/`Cargo.lock` change.
 
-### Changed
-- Edition 2021 → 2024 (MSRV-aware resolver v3 comes with it); explicit `rust-version = "1.85"` so the MSRV is declared and resolver-visible to downstream users.
-
 ### Removed
 - Deleted the stale `.well-known/mcp/server-card.json` staging artifact and the now-moot `exclude = [".well-known/"]` from `Cargo.toml`. The staged card was off-spec (pre-#2525 `authentication`/`capabilities`, inline `tools`, deprecated `.well-known` path) and carried no `one.faf/context` rider. Discovery is served by the live endpoint (`remotes: mcpaas.live/rust/mcp/v1`); a conformant static card, if ever needed, will be generated via faf-server-card-ref rather than hand-staged.
+
+### Notes
+- Product fit: solid 9-tool binary for **Rust** MCP hosts (`cargo install`) — not a Grok parity chase.
+- MCP Registry publish of `one.faf/*` requires DNS auth (not GitHub OIDC). Deprecate the old `io.github…` entry after the new one is live.
 
 ## [0.3.1] - 2026-06-01
 

@@ -254,9 +254,10 @@ fn t4_server_json_has_schema() {
 fn t4_server_json_name_format() {
     let s = read_server_json();
     let name = s["name"].as_str().unwrap();
+    // Fleet identity: DNS-verified one.faf/* (was io.github.Wolfe-Jam/* through 0.3.1).
     assert!(
-        name.starts_with("io.github."),
-        "server.json name must use io.github. prefix, got: {}",
+        name.starts_with("one.faf/"),
+        "server.json name must use one.faf/ prefix, got: {}",
         name
     );
     assert!(

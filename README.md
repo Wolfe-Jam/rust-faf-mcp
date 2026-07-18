@@ -1,10 +1,12 @@
 <!-- faf: rust-faf-mcp | Rust | mcp-server | RMCP — the Rust-native MCP server for FAF (Foundational AI-context Format). Single binary, stdio transport, 4.3 MB stripped. cargo install rust-faf-mcp. Built on the rmcp Rust MCP SDK + faf-rust-sdk. -->
-<!-- mcp-name: io.github.Wolfe-Jam/rust-faf-mcp -->
+<!-- mcp-name: one.faf/rust-faf-mcp -->
 
 
 # rust-faf-mcp
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
+
+**The one.faf Edition (v0.4.0)** — `one.faf/rust-faf-mcp` · rmcp 1.7 · solid cargo-native Rust MCP for Rust devs
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -188,7 +190,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 - [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk) — the parser this depends on
 - [faf.one](https://faf.one) — FAF home
 - [IANA registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
-- MCP Registry name: `mcp-name: io.github.Wolfe-Jam/rust-faf-mcp`
+- MCP Registry name: `mcp-name: one.faf/rust-faf-mcp`
 - [CHANGELOG](CHANGELOG.md)
 
 ## License

@@ -140,7 +140,7 @@
 - server.json exists
 - Required fields present (name, description, version, repository, packages)
 - $schema references modelcontextprotocol.io
-- name uses io.github. prefix
+- name uses one.faf/ prefix
 - version matches Cargo.toml
 - MCPB package has registryType, identifier (.mcpb URL), fileSha256 (64 hex chars), stdio transport
 

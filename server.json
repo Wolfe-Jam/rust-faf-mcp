@@ -1,6 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.Wolfe-Jam/rust-faf-mcp",
+  "name": "one.faf/rust-faf-mcp",
+  "title": "Rust FAF",
   "description": "Persistent project context — Rust-native MCP server. IANA-registered .faf format.",
   "icons": [
     {
@@ -29,7 +30,7 @@
     "source": "github"
   },
   "websiteUrl": "https://faf.one",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "remotes": [
     {
       "type": "streamable-http",
@@ -41,7 +42,7 @@
       "registryType": "cargo",
       "registryBaseUrl": "https://crates.io",
       "identifier": "rust-faf-mcp",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "transport": {
         "type": "stdio"
       }
