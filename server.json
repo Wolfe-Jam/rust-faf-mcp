@@ -2,27 +2,35 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "one.faf/rust-faf-mcp",
   "title": "Rust FAF",
-  "description": "Persistent project context — Rust-native MCP server. IANA-registered .faf format.",
+  "description": "Persistent project context \u2014 Rust-native MCP server. IANA-registered .faf format.",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/Wolfe-Jam/faf-mcp/main/assets/icons/faf-icon-48.png",
       "mimeType": "image/png",
-      "sizes": ["48x48"]
+      "sizes": [
+        "48x48"
+      ]
     },
     {
       "src": "https://raw.githubusercontent.com/Wolfe-Jam/faf-mcp/main/assets/icons/faf-icon-128.png",
       "mimeType": "image/png",
-      "sizes": ["128x128"]
+      "sizes": [
+        "128x128"
+      ]
     },
     {
       "src": "https://raw.githubusercontent.com/Wolfe-Jam/faf-mcp/main/assets/icons/faf-icon-256.png",
       "mimeType": "image/png",
-      "sizes": ["256x256"]
+      "sizes": [
+        "256x256"
+      ]
     },
     {
       "src": "https://raw.githubusercontent.com/Wolfe-Jam/faf-mcp/main/assets/icons/faf-icon-512.png",
       "mimeType": "image/png",
-      "sizes": ["512x512"]
+      "sizes": [
+        "512x512"
+      ]
     }
   ],
   "repository": {
@@ -31,12 +39,6 @@
   },
   "websiteUrl": "https://faf.one",
   "version": "0.4.0",
-  "remotes": [
-    {
-      "type": "streamable-http",
-      "url": "https://mcpaas.live/rust/mcp/v1"
-    }
-  ],
   "packages": [
     {
       "registryType": "cargo",
