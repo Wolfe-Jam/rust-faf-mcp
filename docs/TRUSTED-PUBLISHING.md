@@ -1,6 +1,7 @@
 # crates.io Trusted Publishing — rust-faf-mcp
 
-**Status:** workflow + GitHub env ready · **crates.io config required (one-time, owner UI)**
+**Status:** ✅ workflow + GitHub env + **crates.io Trusted Publishing config confirmed** (2026-07-20)  
+**CI prove-out:** optional `gh workflow run` — not required until next version (0.4.0 already on crates.io)
 
 ## Already in place
 
