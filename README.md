@@ -146,6 +146,11 @@ Tools return `serde_json::Value`. The server adapts them to `Result<String, Stri
 
 ```bash
 cargo test    # runs all 112
+
+# Full ship bar (same gates as GitHub CI — run before push)
+bash scripts/ci.sh
+# Optional: block push on red CI twin
+bash scripts/install-hooks.sh
 ```
 
 | File | Tests | Coverage |
