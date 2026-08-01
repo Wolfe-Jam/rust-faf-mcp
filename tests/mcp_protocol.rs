@@ -168,7 +168,7 @@ fn test_resources_read() {
     let contents = resp["result"]["contents"]
         .as_array()
         .expect("contents should be array");
-    assert_eq!(contents[0]["mimeType"], "text");
+    assert_eq!(contents[0]["mimeType"], "text/plain");  // rmcp 3.x ResourceContents::text default
 
     let text = contents[0]["text"].as_str().unwrap();
     let weights: serde_json::Value = serde_json::from_str(text).expect("should be valid JSON");

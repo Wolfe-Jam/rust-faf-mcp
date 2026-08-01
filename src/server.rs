@@ -167,7 +167,7 @@ impl ServerHandler for FafServer {
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
         Ok(ListResourcesResult::with_all_items(vec![
-            RawResource::new("faf://scoring/weights", "FAF Scoring Weights").no_annotation(),
+            Resource::new("faf://scoring/weights", "FAF Scoring Weights"),
         ]))
     }
 
@@ -175,7 +175,7 @@ impl ServerHandler for FafServer {
         &self,
         request: ReadResourceRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<ReadResourceResult, ErrorData> {
+    ) -> Result<ReadResourceResponse, ErrorData> {
         let uri = &request.uri;
 
         match uri.as_str() {
@@ -195,12 +195,14 @@ impl ServerHandler for FafServer {
                 Ok(ReadResourceResult::new(vec![ResourceContents::text(
                     serde_json::to_string_pretty(&weights).unwrap(),
                     uri,
-                )]))
+                )])
+                .into())
             }
             _ => Ok(ReadResourceResult::new(vec![ResourceContents::text(
                 "Resource not found",
                 uri,
-            )])),
+            )])
+            .into()),
         }
     }
 }
