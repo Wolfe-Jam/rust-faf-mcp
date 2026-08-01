@@ -166,9 +166,10 @@ impl ServerHandler for FafServer {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
-        Ok(ListResourcesResult::with_all_items(vec![
-            Resource::new("faf://scoring/weights", "FAF Scoring Weights"),
-        ]))
+        Ok(ListResourcesResult::with_all_items(vec![Resource::new(
+            "faf://scoring/weights",
+            "FAF Scoring Weights",
+        )]))
     }
 
     async fn read_resource(
