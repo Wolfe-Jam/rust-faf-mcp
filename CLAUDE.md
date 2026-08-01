@@ -7,7 +7,7 @@
 
 **Goal:** Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
 
-**Stack:** Rust 2024, rmcp 1.7, faf-rust-sdk 1.3, serde, reqwest, tokio
+**Stack:** Rust 2024, rmcp 3.0.1, faf-rust-sdk 1.3, serde, reqwest, tokio
 
 **Building:** Rust MCP server — 9 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto) powered by rmcp SDK + faf-rust-sdk · registry `one.faf/rust-faf-mcp`
 

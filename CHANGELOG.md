@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+- **rmcp 1.7 → 3.0.1** (MCP Tier 1 assessed foundation). Resource API port (`Resource`, `ReadResourceResponse` / `ReadResourceResult::into`). Docs and `manifest.json` brought in line with Cargo.toml.
+- Local ship bar: `scripts/ci.sh` mirrors GitHub CI (fmt · clippy · test · release); optional pre-push via `scripts/install-hooks.sh`.
+
 ## [0.4.0] - 2026-07-17 — The one.faf Edition
 
 **one.faf identity · rmcp 1.7 · solid cargo-native Rust MCP for Rust devs**

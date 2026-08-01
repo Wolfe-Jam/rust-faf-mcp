@@ -61,10 +61,10 @@ CHANGELOG.md     # Release notes; update on every version bump
 ## Architecture (load-bearing)
 
 - **Split:** `tools.rs` owns behavior; `server.rs` owns MCP wiring. Tools return `serde_json::Value` (`content[0].text` + optional `isError`). Server adapts via `value_to_string_result` → `Result<String, String>` for rmcp.
-- **rmcp ≥1.7:** `#[tool_handler(router = self.tool_router)]` must pin the **cached** router field. Do not drop this — default rebuilds the router per call.
+- **rmcp 3.0.1:** `#[tool_handler(router = self.tool_router)]` must pin the **cached** router field. Do not drop this — default rebuilds the router per call. (Same rule since ≥1.7; wire is Tier-1 assessed cut.)
 - **Runtime:** `tokio` `current_thread` only. Logging goes to **stderr** so stdout stays pure JSON-RPC.
 - **HTTP:** `reqwest` is used only by `faf_git` (GitHub API). Everything else is local filesystem.
-- **SDK:** `faf-rust-sdk` 1.3 for parse / validate / compress / discover / score. Prefer composing the SDK over reimplementing scoring or YAML shape.
+- **SDK:** `faf-rust-sdk` **1.3** (current Cargo pin) for parse / validate / compress / discover / score. Foundation **3.x** is monorepo `faf-rust` — bump is a separate product decision. Prefer composing the SDK over reimplementing scoring or YAML shape.
 - **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas are generated; keep descriptions accurate when adding tools.
 
 ### The nine tools

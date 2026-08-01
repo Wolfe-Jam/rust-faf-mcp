@@ -6,7 +6,7 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The one.faf Edition (v0.4.0)** — `one.faf/rust-faf-mcp` · rmcp 1.7 · solid cargo-native Rust MCP for Rust devs
+**The one.faf Edition (v0.4.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -135,8 +135,8 @@ src/
 
 - **Runtime**: `tokio` single-threaded (`current_thread`)
 - **HTTP**: `reqwest` async (only used by `faf_git` for GitHub API)
-- **SDK**: `faf-rust-sdk` 1.3 for parsing, validation, compression, discovery
-- **Server**: `rmcp` 1.1 with `#[tool_router]` macro — handles JSON-RPC, schema generation, transport
+- **SDK**: `faf-rust-sdk` **1.3** (Cargo pin — parse / validate / compress / discover; foundation **3.x** lives in [faf-rust](https://github.com/Wolfe-Jam/faf-rust))
+- **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, schema generation, stdio transport (Tier-1 assessed SDK cut)
 
 Tools return `serde_json::Value`. The server adapts them to `Result<String, String>` for rmcp's `IntoCallToolResult`.
 
