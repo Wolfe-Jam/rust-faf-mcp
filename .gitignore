@@ -21,5 +21,9 @@ Thumbs.db
 # MCP Registry tokens
 .mcpregistry_*
 
-# mcp-publisher CLI binary (downloaded from registry releases, not source)
+# Local mcp-publisher download dir (not the npm package entrypoint — that lives in npm/)
 bin/
+
+# npm local
+node_modules/
+package-lock.json

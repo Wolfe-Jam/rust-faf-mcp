@@ -2,9 +2,21 @@
 
 ## [Unreleased]
 
-### Changed
-- **rmcp 1.7 → 3.0.1** (MCP Tier 1 assessed foundation). Resource API port (`Resource`, `ReadResourceResponse` / `ReadResourceResult::into`). Docs and `manifest.json` brought in line with Cargo.toml.
-- Local ship bar: `scripts/ci.sh` mirrors GitHub CI (fmt · clippy · test · release); optional pre-push via `scripts/install-hooks.sh`.
+## [0.4.1] - 2026-08-08 — Dual-package path (cargo + npm)
+
+### Added
+- **npm package `rust-faf-mcp`** — downloader shim (`npx rust-faf-mcp`) fetches versioned GitHub Release binaries (`rust-faf-mcp-${VERSION}-${target}.tar.gz`). Supported hosts: darwin arm64/x64 · linux x64.
+- **`mcpName`: `one.faf/rust-faf-mcp`** in package.json (Registry npm validator requirement — FAF product identity, not io.github).
+- **Dual-package `server.json`** — cargo + npm, both stdio, same version.
+- **`scripts/mcp-dist-post.sh`** — three-file lockstep + mcpName gate + dual server.json emit.
+- **`publish-npm.yml`** — OIDC Trusted Publishing for npm on release published (env `npm`; workflow filename must match Trusted Publisher UI).
+
+### Unchanged
+- Registry identity **`one.faf/rust-faf-mcp`** · DNS auth for Registry · MCPB · crates OIDC via `publish-crate.yml` + env `crates-io` · release binary matrix.
+
+### Notes
+- Second-server receipt for Rust-First Phase 2A-recipe (portable dual-package path).
+- Do not copy mcp-better's `io.github` identity.
 
 ## [0.4.0] - 2026-07-17 — The one.faf Edition
 

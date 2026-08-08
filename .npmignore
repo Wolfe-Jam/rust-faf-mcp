@@ -1,0 +1,16 @@
+# Never ship local mcp-publisher download or junk under bin/
+bin/mcp-publisher
+bin/mcp-publisher.exe
+bin/LICENSE
+bin/README.md
+target/
+*.mcpb
+.github/
+scripts/
+tests/
+src/
+project.faf
+CLAUDE.md
+AGENTS.md
+Cargo.toml
+Cargo.lock

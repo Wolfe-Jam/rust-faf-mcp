@@ -23,8 +23,13 @@ Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) serv
 ## Quickstart
 
 ```bash
+# Rust toolchain:
 cargo install rust-faf-mcp
+
+# No Rust (downloads GH Release binary for darwin/linux x64):
+npx rust-faf-mcp
 ```
+
 
 Then point any MCP client at it:
 
@@ -192,6 +197,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)
+- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx rust-faf-mcp` (no Rust toolchain; downloads GH Release binary)
 - [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk) — the parser this depends on
 - [faf.one](https://faf.one) — FAF home
 - [IANA registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
