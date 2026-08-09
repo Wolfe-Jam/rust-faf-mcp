@@ -2,7 +2,8 @@
 
 **Canonical guide:** [Shipping a dual-package Rust MCP server](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) (textbook + product examples, including this repo).
 
-This server is the **product** worked example (`one.faf/rust-faf-mcp` @ dual cargo+npm).
+This server is the **product** worked example (`one.faf/rust-faf-mcp` @ dual cargo+npm).  
+Stdio wire: **NDJSON** (newline JSON-RPC) — see guide [§12 Stdio wire hygiene](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md#12-stdio-wire-hygiene).
 
 Related:
 
