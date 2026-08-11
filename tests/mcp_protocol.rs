@@ -156,8 +156,10 @@ fn test_resources_list() {
         .as_array()
         .expect("resources should be array");
 
-    assert_eq!(resources.len(), 1);
-    assert_eq!(resources[0]["uri"], "faf://scoring/weights");
+    assert_eq!(resources.len(), 2);
+    let uris: Vec<&str> = resources.iter().filter_map(|r| r["uri"].as_str()).collect();
+    assert!(uris.contains(&"faf://scoring/weights"));
+    assert!(uris.contains(&"skill://faf-context/SKILL.md"));
 }
 
 #[test]

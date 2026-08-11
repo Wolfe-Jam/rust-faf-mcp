@@ -200,6 +200,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 - [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx rust-faf-mcp` (no Rust toolchain; downloads GH Release binary)
 - [Dual-package publish guide](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) — cargo + npm (this server is the product example)
 - [docs/DUAL-PACKAGE.md](./docs/DUAL-PACKAGE.md) — pointer + OIDC docs for this repo
+- [docs/SKILLS-OVER-MCP.md](./docs/SKILLS-OVER-MCP.md) — J1 Agent Skill `faf-context` (skills/list · digests)
 - [faf-rust-sdk](https://crates.io/crates/faf-rust-sdk) — the parser this depends on
 - [faf.one](https://faf.one) — FAF home
 - [IANA registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`

@@ -7,6 +7,7 @@ use rmcp::ServiceExt;
 use tracing_subscriber::EnvFilter;
 
 mod server;
+mod skills;
 mod tools;
 
 #[tokio::main(flavor = "current_thread")]

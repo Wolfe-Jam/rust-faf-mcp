@@ -1,6 +1,7 @@
 //! rmcp-based MCP server for FAF
 //!
-//! FafServer with tool routing and resource support
+//! FafServer with tool routing, resources, and J1 Agent Skills
+//! (`io.modelcontextprotocol/skills` — product skill `faf-context`).
 
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::wrapper::Parameters;
@@ -9,7 +10,9 @@ use rmcp::service::RequestContext;
 use rmcp::{RoleServer, ServerHandler, tool, tool_handler, tool_router};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
+use crate::skills::{SKILLS_EXTENSION_ID, SkillCatalog, handle_skills_method};
 use crate::tools;
 
 // ─── Parameter structs ──────────────────────────────────────────────────
@@ -56,13 +59,29 @@ fn value_to_string_result(value: serde_json::Value) -> Result<String, String> {
 #[derive(Debug, Clone)]
 pub struct FafServer {
     tool_router: ToolRouter<Self>,
+    skills: SkillCatalog,
 }
 
 impl FafServer {
     pub fn new() -> Self {
+        let skills = SkillCatalog::load_faf_context().unwrap_or_else(|e| {
+            panic!("failed to load faf-context skill: {e}");
+        });
         Self {
             tool_router: Self::tool_router(),
+            skills,
         }
+    }
+
+    #[cfg(test)]
+    pub fn skills(&self) -> &SkillCatalog {
+        &self.skills
+    }
+}
+
+impl Default for FafServer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -146,16 +165,24 @@ impl FafServer {
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for FafServer {
     fn get_info(&self) -> ServerInfo {
+        let mut extensions = ExtensionCapabilities::new();
+        extensions.insert(
+            SKILLS_EXTENSION_ID.to_string(),
+            serde_json::from_value(json!({})).expect("empty object"),
+        );
         let mut info = ServerInfo::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
+                .enable_extensions_with(extensions)
                 .build(),
         );
         info.server_info = Implementation::new("rust-faf-mcp", env!("CARGO_PKG_VERSION"));
         info.instructions = Some(
             "Rust MCP server for FAF (Foundational AI-context Format) \
-             — IANA-registered application/vnd.faf+yaml"
+             — IANA-registered application/vnd.faf+yaml · identity one.faf/rust-faf-mcp. \
+             Skills: extension io.modelcontextprotocol/skills — skills/list · skills/get · \
+             resources/read skill://faf-context/SKILL.md (digests)."
                 .into(),
         );
         info
@@ -166,10 +193,12 @@ impl ServerHandler for FafServer {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
-        Ok(ListResourcesResult::with_all_items(vec![Resource::new(
+        let mut resources = vec![Resource::new(
             "faf://scoring/weights",
             "FAF Scoring Weights",
-        )]))
+        )];
+        resources.extend(self.skills.list_resources_meta());
+        Ok(ListResourcesResult::with_all_items(resources))
     }
 
     async fn read_resource(
@@ -178,6 +207,14 @@ impl ServerHandler for FafServer {
         _context: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResponse, ErrorData> {
         let uri = &request.uri;
+
+        if let Some(res) = self.skills.find_resource(uri.as_str()) {
+            return Ok(ReadResourceResult::new(vec![ResourceContents::text(
+                res.text.as_ref(),
+                res.uri.clone(),
+            )])
+            .into());
+        }
 
         match uri.as_str() {
             "faf://scoring/weights" => {
@@ -205,5 +242,75 @@ impl ServerHandler for FafServer {
             )])
             .into()),
         }
+    }
+
+    /// `skills/list` · `skills/get` — rmcp has no first-class skills methods yet.
+    async fn on_custom_request(
+        &self,
+        request: CustomRequest,
+        _context: RequestContext<RoleServer>,
+    ) -> Result<CustomResult, ErrorData> {
+        let CustomRequest { method, params, .. } = request;
+        handle_skills_method(&self.skills, method.as_str(), params.as_ref())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::skills::{FAF_CONTEXT_SKILL_URI, handle_skills_method};
+
+    #[test]
+    fn skills_extension_advertised() {
+        let server = FafServer::new();
+        let info = server.get_info();
+        let ext = info.capabilities.extensions.expect("extensions");
+        assert!(ext.contains_key(SKILLS_EXTENSION_ID));
+    }
+
+    #[test]
+    fn skills_list_get_read_digest_match() {
+        let server = FafServer::new();
+        let list = handle_skills_method(server.skills(), "skills/list", None).unwrap();
+        let skills = list.0["skills"].as_array().unwrap();
+        assert_eq!(skills.len(), 1);
+        assert_eq!(skills[0]["uri"], FAF_CONTEXT_SKILL_URI);
+        let digest = skills[0]["resources"][0]["digest"].as_str().unwrap();
+        let get = handle_skills_method(
+            server.skills(),
+            "skills/get",
+            Some(&json!({"uri": FAF_CONTEXT_SKILL_URI})),
+        )
+        .unwrap();
+        assert_eq!(get.0["uri"], FAF_CONTEXT_SKILL_URI);
+        let res = server
+            .skills()
+            .find_resource(FAF_CONTEXT_SKILL_URI)
+            .unwrap();
+        assert_eq!(res.digest, digest);
+        use sha2::{Digest, Sha256};
+        let recomputed = format!(
+            "sha256:{}",
+            Sha256::digest(res.text.as_bytes())
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>()
+        );
+        assert_eq!(recomputed, digest);
+    }
+
+    #[test]
+    fn faf_scoring_resource_still_listed() {
+        let server = FafServer::new();
+        // list_resources is async — exercise catalog merge via public skill meta + known URI
+        let meta = server.skills().list_resources_meta();
+        assert!(meta.iter().any(|r| r.uri == FAF_CONTEXT_SKILL_URI));
+        // weights still served via match arm
+        assert!(
+            server
+                .skills()
+                .find_resource("faf://scoring/weights")
+                .is_none()
+        );
     }
 }
