@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+type: software
+message: "If you use rust-faf-mcp in your work, please cite the FAF Context paper in `preferred-citation`. The Agents paper in `references` is the companion for the agentic era."
+title: "rust-faf-mcp — Rust-native MCP server for the .faf format"
+authors:
+  - family-names: Wolfe
+    given-names: James
+    orcid: "https://orcid.org/0009-0007-0801-3841"
+    affiliation: "FAF Foundation"
+license: MIT
+repository-code: "https://github.com/Wolfe-Jam/rust-faf-mcp"
+url: "https://faf.one"
+keywords:
+  - mcp
+  - rust
+  - .faf
+  - .fafa
+  - IANA-registered
+preferred-citation:
+  type: article
+  title: "Format-Driven AI Context Architecture: The .faf Standard for Persistent Project Understanding"
+  authors:
+    - family-names: Wolfe
+      given-names: James
+      orcid: "https://orcid.org/0009-0007-0801-3841"
+      affiliation: "FAF Foundation"
+  year: 2025
+  month: 11
+  doi: 10.5281/zenodo.18251362
+  url: "https://doi.org/10.5281/zenodo.18251362"
+  publisher:
+    name: "Zenodo"
+references:
+  - type: article
+    title: "Why Agents Need a Passport: .fafa — Portable Identity for the Agentic Era"
+    authors:
+      - family-names: Wolfe
+        given-names: James
+        orcid: "https://orcid.org/0009-0007-0801-3841"
+        affiliation: "FAF Foundation"
+    year: 2026
+    month: 8
+    doi: 10.5281/zenodo.21951641
+    url: "https://doi.org/10.5281/zenodo.21951641"
+    publisher:
+      name: "Zenodo"

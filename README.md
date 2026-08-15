@@ -207,6 +207,14 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 - MCP Registry name: `mcp-name: one.faf/rust-faf-mcp`
 - [CHANGELOG](CHANGELOG.md)
 
+## Citation
+
+If you use `rust-faf-mcp` or the `.faf` / `.fafa` formats in research or production, please cite the format papers:
+
+> Wolfe, J. (2025). *Format-Driven AI Context Architecture: The .faf Standard for Persistent Project Understanding*. Zenodo. https://doi.org/10.5281/zenodo.18251362
+
+> Wolfe, J. (2026). *Why Agents Need a Passport: .fafa — Portable Identity for the Agentic Era*. Zenodo. https://doi.org/10.5281/zenodo.21951641
+
 ## License
 
 MIT
