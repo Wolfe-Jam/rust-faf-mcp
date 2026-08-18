@@ -267,6 +267,25 @@ fn t4_server_json_name_format() {
 }
 
 #[test]
+fn t4_server_json_has_faf_context_block() {
+    let s = read_server_json();
+    let ctx = &s["_meta"]["io.modelcontextprotocol.registry/publisher-provided"]["one.faf/context"];
+    assert_eq!(ctx["faf"], "./project.faf");
+    assert_eq!(ctx["mediaType"], "application/vnd.faf+yaml");
+    assert_eq!(
+        ctx["iana"],
+        "https://www.iana.org/assignments/media-types/application/vnd.faf+yaml"
+    );
+    assert_eq!(ctx["deterministic"], true);
+    assert!(ctx["generated"].is_string(), "generated stamp required");
+    assert!(
+        ctx["version"].is_null(),
+        "do not bake unofficial version into the block"
+    );
+    assert!(ctx["score"].is_null(), "do not bake a score into the block");
+}
+
+#[test]
 fn t4_server_json_version_matches_cargo() {
     let s = read_server_json();
     let cargo = read_cargo_toml();

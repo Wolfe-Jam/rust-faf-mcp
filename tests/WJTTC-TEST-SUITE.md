@@ -14,7 +14,7 @@
 | T1 | BRAKES (Security) | 14 | Path traversal, injection, malformed JSON |
 | T2 | ENGINE (Core) | 35 | MCP protocol, 9 tools, language detection |
 | T3 | AERO (Edge Cases) | 12 | Unicode, emoji, boundaries, stress |
-| T4 | AERO (Packaging) | 21 | MCPB manifest, server.json, tool drift |
+| T4 | AERO (Packaging) | 22 | MCPB manifest, server.json, tool drift |
 | **Total** | | **112** | |
 
 ---
@@ -136,7 +136,7 @@
 ### T4.2 - Version Sync (1 test)
 - manifest.json version matches Cargo.toml version
 
-### T4.3 - server.json Structure (6 tests)
+### T4.3 - server.json Structure (7 tests)
 - server.json exists
 - Required fields present (name, description, version, repository, packages)
 - $schema references modelcontextprotocol.io

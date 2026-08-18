@@ -1,29 +1,8 @@
 {
-  "name": "one.faf/rust-faf-mcp",
-  "description": "Persistent project context \u2014 Rust-native MCP server. IANA-registered .faf format.",
-  "version": "0.4.1",
-  "packages": [
-    {
-      "registryType": "cargo",
-      "registryBaseUrl": "https://crates.io",
-      "identifier": "rust-faf-mcp",
-      "version": "0.4.1",
-      "transport": {
-        "type": "stdio"
-      }
-    },
-    {
-      "registryType": "npm",
-      "registryBaseUrl": "https://registry.npmjs.org",
-      "identifier": "rust-faf-mcp",
-      "version": "0.4.1",
-      "transport": {
-        "type": "stdio"
-      }
-    }
-  ],
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "one.faf/rust-faf-mcp",
   "title": "Rust FAF",
+  "description": "Persistent project context — Rust-native MCP server. IANA-registered .faf format.",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/Wolfe-Jam/faf-mcp/main/assets/icons/faf-icon-48.png",
@@ -54,9 +33,41 @@
       ]
     }
   ],
+  "version": "0.4.1",
   "repository": {
     "url": "https://github.com/Wolfe-Jam/rust-faf-mcp",
     "source": "github"
   },
-  "websiteUrl": "https://faf.one"
+  "websiteUrl": "https://faf.one",
+  "packages": [
+    {
+      "registryType": "cargo",
+      "registryBaseUrl": "https://crates.io",
+      "identifier": "rust-faf-mcp",
+      "version": "0.4.1",
+      "transport": {
+        "type": "stdio"
+      }
+    },
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "rust-faf-mcp",
+      "version": "0.4.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "one.faf/context": {
+        "faf": "./project.faf",
+        "mediaType": "application/vnd.faf+yaml",
+        "iana": "https://www.iana.org/assignments/media-types/application/vnd.faf+yaml",
+        "deterministic": true,
+        "generated": "2026-08-17T00:00:00.000Z"
+      }
+    }
+  }
 }

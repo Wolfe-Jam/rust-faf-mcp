@@ -35,7 +35,7 @@ Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JS
 | `tests/tier1_security.rs` | Path traversal, null bytes, injection, oversized/malformed input |
 | `tests/tier2_engine.rs` | Corrupt YAML, sync, pipelines, dual manifests, direct paths |
 | `tests/tier3_edge_cases.rs` | Unicode/CJK, score boundaries, GitHub URL parsing |
-| `tests/tier4_aero.rs` | Manifest / server.json / version cross-validation |
+| `tests/tier4_aero.rs` | Manifest / server.json / version / context-block cross-validation |
 
 ## Where things live
 
