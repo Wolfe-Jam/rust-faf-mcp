@@ -54,11 +54,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          # Do not set registry-url: it injects a dummy NODE_AUTH_TOKEN and
-          # always-auth, which npm now treats as a GAT and 404s the PUT.
-          # Trusted Publishing uses the job OIDC id-token instead.
+          registry-url: "https://registry.npmjs.org"
 
-      - name: npm publish (OIDC Trusted Publishing — no NODE_AUTH_TOKEN)
-        run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ""
+      - name: npm publish (OIDC Trusted Publishing)
+        run: |
+          unset NODE_AUTH_TOKEN
+          npm publish --access public --provenance
