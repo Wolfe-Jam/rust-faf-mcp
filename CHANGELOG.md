@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-08-19
+
+Registry card now emits the same context block as the JS fleet.
+
+### Changed
+- Registry `server.json` `_meta` now includes `one.faf/context` under `publisher-provided` — the same context block as the JS fleet. Git had it; published **0.4.1** did not.
+- README / project.faf test count **112 → 117** to match live `cargo test` (4 skills unit tests + 1 context-block aero test that had already landed).
+- Patch only. No new tools. No new edition (still **The one.faf Edition**).
+
+### Unchanged
+- 9 tools · dual cargo+npm · identity `one.faf/rust-faf-mcp` · OIDC on GitHub Release.
+
 ## [0.4.1] - 2026-08-08 — Dual-package path (cargo + npm)
 
 ### Added

@@ -15,7 +15,7 @@
 | T2 | ENGINE (Core) | 35 | MCP protocol, 9 tools, language detection |
 | T3 | AERO (Edge Cases) | 12 | Unicode, emoji, boundaries, stress |
 | T4 | AERO (Packaging) | 22 | MCPB manifest, server.json, tool drift |
-| **Total** | | **112** | |
+| **Total** | | **117** (live `cargo test` 2026-08-19) | |
 
 ---
 

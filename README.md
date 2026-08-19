@@ -6,7 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The one.faf Edition (v0.4.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
+**The one.faf Edition (v0.4.2)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
+
+**v0.4.2** — Registry card now emits the same context block as the JS fleet.
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -14,7 +16,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![FAF Trophy 100%](https://img.shields.io/badge/FAF-%F0%9F%8F%86%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-112%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![Tests](https://img.shields.io/badge/tests-117%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -147,10 +149,10 @@ Tools return `serde_json::Value`. The server adapts them to `Result<String, Stri
 
 ## Testing
 
-112 tests across 6 files:
+117 tests (113 integration + 4 unit):
 
 ```bash
-cargo test    # runs all 112
+cargo test    # runs all 117
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -166,6 +168,7 @@ bash scripts/install-hooks.sh
 | `tier2_engine.rs` | 35 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
 | `tier3_edge_cases.rs` | 10 | Unicode, CJK, score boundaries, unknown fields, GitHub URL parsing |
 | `tier4_aero.rs` | 22 | Manifest structure, version sync, server.json, context block, manifest-server cross-validation |
+| `src` unit | 4 | Skills extension digest + scoring resource |
 
 Tests spawn the compiled binary as a subprocess and communicate via stdin/stdout JSON-RPC — true integration tests against the real server.
 

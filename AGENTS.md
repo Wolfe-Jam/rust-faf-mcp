@@ -1,6 +1,6 @@
 # AGENTS.md — rust-faf-mcp
 
-Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, nine tools, no network listener by default. **v0.4.0** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
+Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, nine tools, no network listener by default. **v0.4.2** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
 
 ## Setup & build
 
@@ -21,7 +21,7 @@ brew install Wolfe-Jam/faf/rust-faf-mcp   # macOS prebuilt, when formula is curr
 ## Run the tests
 
 ```bash
-cargo test                   # all 112 integration tests — must pass before done
+cargo test                   # all 117 tests — must pass before done
 cargo fmt --check            # matches CI
 cargo clippy -- -D warnings  # matches CI
 ```
@@ -109,7 +109,7 @@ A change is done when:
 
 1. `cargo fmt --check` is clean  
 2. `cargo clippy -- -D warnings` is clean  
-3. `cargo test` — **112** tests green (or updated count if you added/removed tests intentionally)  
+3. `cargo test` — **117** tests green (or updated count if you added/removed tests intentionally)  
 4. If version or tool surface changed: multi-surface version sync + `CHANGELOG.md` entry  
 5. Commit message is clear (Conventional Commits preferred: `feat:`, `fix:`, `chore:`)
 
