@@ -33,6 +33,35 @@ jobs:
           MV=$(python3 -c "import json; print(json.load(open('server.json'))['version'])")
           [ "$TAG" = "$MV" ] || { echo "::error::server.json $MV != tag $TAG"; exit 1; }
 
+      - name: Wait for npm + crates.io to resolve this version
+        # publish-npm.yml and publish-crate.yml fire off the same release:published
+        # event with no ordering guarantee between parallel jobs — mcp-publisher
+        # validates each server.json package entry against its live registry, so a
+        # sibling job that hasn't finished yet reads as a 400 here. Poll both
+        # instead of racing them (2 failed runs on 0.4.3, 2026-08-20, before this
+        # gate existed — see CHANGELOG).
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          NPM_PKG=$(python3 -c "import json; print(next(p['identifier'] for p in json.load(open('server.json'))['packages'] if p['registryType']=='npm'))")
+          CRATE=$(python3 -c "import json; print(next(p['identifier'] for p in json.load(open('server.json'))['packages'] if p['registryType']=='cargo'))")
+
+          echo "Waiting for npm ${NPM_PKG}@${VERSION} and crates.io ${CRATE}@${VERSION} to be live..."
+          for i in $(seq 1 30); do
+            npm_ok=false; crates_ok=false
+            curl -fsSL "https://registry.npmjs.org/${NPM_PKG}/${VERSION}" >/dev/null 2>&1 && npm_ok=true
+            curl -fsSL "https://crates.io/api/v1/crates/${CRATE}/${VERSION}" -H "User-Agent: rust-faf-mcp-ci" 2>/dev/null \
+              | grep -q "\"num\":\"${VERSION}\"" && crates_ok=true
+            if [ "$npm_ok" = true ] && [ "$crates_ok" = true ]; then
+              echo "Both registries confirm ${VERSION} live."
+              exit 0
+            fi
+            echo "  attempt ${i}/30 — npm=${npm_ok} crates.io=${crates_ok}, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Timed out after 5m waiting for npm/crates.io to publish ${VERSION}."
+          exit 1
+
       - name: Validate server.json
         run: ./mcp-publisher validate
 
