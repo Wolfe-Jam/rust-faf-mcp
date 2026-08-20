@@ -10,6 +10,9 @@ npm Trusted Publishing (OIDC) fixed. Patch only — no new edition, no source/to
 - `publish-npm.yml`: `actions/setup-node`'s `registry-url` input injects `always-auth` + a dummy `NODE_AUTH_TOKEN` into `.npmrc` by default. npm treated that as a granular access token and 404'd the OIDC Trusted Publishing token exchange. Unset the dummy token so the job's own OIDC `id-token` is what authenticates (`fbed9b8`, `6a249bf`).
 - npmjs.com's Trusted Publisher was also never linked for this repo (Settings → Publishing access → Trusted Publisher, pointed at `Wolfe-Jam/rust-faf-mcp` / `publish-npm.yml`) — the missing half of the same failure. Confirmed live 2026-08-20: a manual `workflow_dispatch` run got past the OIDC exchange cleanly (only failed on npm's normal "can't republish an existing version" guard against 0.4.2).
 
+### Added
+- `rust-toolchain.toml` — pins local dev to `channel = "stable"` + `components = ["rustfmt", "clippy"]`, matching the same pattern already used in `mcp-better`/`mcp-better-best`/`mcp-better-better`. Floats with rustup's stable channel; no conflict with the declared MSRV (`rust-version = "1.85"` in Cargo.toml is a floor, not a ceiling).
+
 ### Unchanged
 - 9 tools · dual cargo+npm · identity `one.faf/rust-faf-mcp` · 117 tests · still **The one.faf Edition**.
 
