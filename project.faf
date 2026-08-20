@@ -3,7 +3,7 @@ project:
   name: rust-faf-mcp
   goal: Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
   main_language: Rust
-  version: 0.4.2
+  version: 0.4.3
   title: Rust FAF
   homepage: https://faf.one
   license: MIT
@@ -63,7 +63,7 @@ tags:
   - model-context-protocol
 state:
   phase: production
-  version: 0.4.2
+  version: 0.4.3
 metadata:
   last_claude_sync: 2026-08-19T00:00:00.000Z
   bi_sync: active

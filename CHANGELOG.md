@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-08-20
+
+npm Trusted Publishing (OIDC) fixed. Patch only — no new edition, no source/tool changes.
+
+### Fixed
+- `publish-npm.yml`: `actions/setup-node`'s `registry-url` input injects `always-auth` + a dummy `NODE_AUTH_TOKEN` into `.npmrc` by default. npm treated that as a granular access token and 404'd the OIDC Trusted Publishing token exchange. Unset the dummy token so the job's own OIDC `id-token` is what authenticates (`fbed9b8`, `6a249bf`).
+- npmjs.com's Trusted Publisher was also never linked for this repo (Settings → Publishing access → Trusted Publisher, pointed at `Wolfe-Jam/rust-faf-mcp` / `publish-npm.yml`) — the missing half of the same failure. Confirmed live 2026-08-20: a manual `workflow_dispatch` run got past the OIDC exchange cleanly (only failed on npm's normal "can't republish an existing version" guard against 0.4.2).
+
+### Unchanged
+- 9 tools · dual cargo+npm · identity `one.faf/rust-faf-mcp` · 117 tests · still **The one.faf Edition**.
+
 ## [0.4.2] - 2026-08-19
 
 Registry card now emits the same context block as the JS fleet.

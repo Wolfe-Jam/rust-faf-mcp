@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The one.faf Edition (v0.4.2)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
+**The one.faf Edition (v0.4.3)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
 
-**v0.4.2** — Registry card now emits the same context block as the JS fleet.
+**v0.4.3** — npm Trusted Publishing (OIDC) fixed — the dummy `NODE_AUTH_TOKEN` `setup-node` injected was 404ing the OIDC token exchange; CI now publishes npm clean.
 
 **FAF defines. MD instructs. AI codes.**
 
