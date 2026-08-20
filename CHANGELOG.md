@@ -13,6 +13,9 @@ npm Trusted Publishing (OIDC) fixed. Patch only — no new edition, no source/to
 ### Added
 - `rust-toolchain.toml` — pins local dev to `channel = "stable"` + `components = ["rustfmt", "clippy"]`, matching the same pattern already used in `mcp-better`/`mcp-better-best`/`mcp-better-better`. Floats with rustup's stable channel; no conflict with the declared MSRV (`rust-version = "1.85"` in Cargo.toml is a floor, not a ceiling).
 
+### Security
+- Bumped transitive `h2` 0.4.13 → 0.4.17 (`Cargo.lock` only, no direct dependency change) — resolves [RUSTSEC-2026-0258](https://rustsec.org/advisories/RUSTSEC-2026-0258) ("unbounded empty DATA frames", pulled in via `reqwest` → `hyper`). Caught by the repo's own Security audit CI on push, fixed before crates.io publish.
+
 ### Unchanged
 - 9 tools · dual cargo+npm · identity `one.faf/rust-faf-mcp` · 117 tests · still **The one.faf Edition**.
 
