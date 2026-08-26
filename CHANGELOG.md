@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-26
+
+Patch only — no new edition, still The Mk4 Truth Edition.
+
+### Security
+- **`openssl` `0.10.75` → `0.10.81`.** Clears 8 advisories GitHub had
+  flagged on every push since 0.5.0 (5 high, 2 moderate, 1 low), all in
+  `rust-openssl`, pulled in transitively via `reqwest` → `native-tls` for
+  the `faf_git` tool. Fixed upstream at `0.10.78`; locked one line of
+  Cargo.lock past that. No source changes.
+- **`anyhow` `1.0.102` → `1.0.104`.** RUSTSEC-2026-0190, an unsoundness in
+  `Error::downcast_mut()`. `downcast_mut` isn't called anywhere in this
+  crate, so it wasn't reachable — bumped anyway since the fix is free.
+
+### Fixed
+- README and CHANGELOG copy for 0.5.0 read as defensive/apologetic in
+  places ("no longer lies", "silently ... instead", an unprompted
+  faf-cli comparison). Reworded to plain, factual language. This is the
+  first version where the corrected copy actually reaches crates.io and
+  npm — both bake the README into the tarball at publish time, so 0.5.0's
+  original wording was live there regardless of later `main` commits.
+
 ## [0.5.0] - 2026-08-26
 
 The Mk4 truth edition. This MCP's public score is now the real Mk4 kernel
