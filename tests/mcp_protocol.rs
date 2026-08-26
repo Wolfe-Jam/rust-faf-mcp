@@ -174,7 +174,8 @@ fn test_resources_read() {
 
     let text = contents[0]["text"].as_str().unwrap();
     let weights: serde_json::Value = serde_json::from_str(text).expect("should be valid JSON");
-    assert!(weights["weights"].is_object());
+    assert_eq!(weights["model"], "Mk4");
+    assert!(weights["categories"].is_object());
     assert!(weights["max_score"].is_number());
 }
 

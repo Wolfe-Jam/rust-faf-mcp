@@ -259,20 +259,40 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "faf-fafb"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c552c2ba6a62a544f8e04cb550facfed3ce921f2644742fef5837e90e46c1af"
+dependencies = [
+ "byteorder",
+ "crc32fast",
+ "serde_yaml_ng",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "faf-kernel"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cca901a11f01f2eceed91b8f9a437e889e987864ffe2c818d9452e6d55fc6e34"
+dependencies = [
+ "serde",
+ "serde_yaml_ng",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
 name = "faf-rust-sdk"
-version = "1.3.0"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3b1afdb6f80b36b659b89f6542a5ae13440285a195e6b1e1c166cf7fda8b332"
+checksum = "f7f9019cbebc5f5391f2efe67c7eda5e8a2c0d7eaf6dad795f15c7c448e689a6"
 dependencies = [
- "byteorder",
- "crc32fast",
- "serde",
- "serde_yaml_ng",
- "thiserror 1.0.69",
+ "faf-fafb",
+ "faf-kernel",
 ]
 
 [[package]]
@@ -1140,7 +1160,7 @@ dependencies = [
 
 [[package]]
 name = "rust-faf-mcp"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "faf-rust-sdk",
@@ -1168,7 +1188,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1496,7 +1516,7 @@ dependencies = [
  "getrandom 0.4.2",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

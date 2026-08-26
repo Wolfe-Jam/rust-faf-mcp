@@ -54,18 +54,30 @@ fn find_faf(dir: &Path) -> Option<PathBuf> {
     None
 }
 
-/// Tier emoji from score
-fn tier_badge(score: u8) -> &'static str {
-    match score {
-        100 => "🏆 Trophy",
-        95..=99 => "🥇 Gold",
-        85..=94 => "🥈 Silver",
-        70..=84 => "🥉 Bronze",
-        55..=69 => "🟢 Green",
-        40..=54 => "🟡 Yellow",
-        1..=39 => "🔴 Red",
-        0 => "🤍 White",
-        _ => "🏆 Trophy",
+/// Mk4 score for a `.faf` YAML string — the same always-33-slot kernel
+/// `faf-wasm-sdk` uses (faf-cli's default `faf score` runs a different,
+/// 21-slot kernel — not this one, not yet converged). Parse/score failures
+/// score 0/WHITE, matching the prior fallback behavior for invalid YAML.
+fn mk4_score(yaml: &str) -> (u32, String) {
+    match faf_rust_sdk::score(yaml) {
+        Ok(r) => (r.score, r.tier),
+        Err(_) => (0, "WHITE".to_string()),
+    }
+}
+
+/// Tier display from a kernel tier name. Work-surface symbols (✪, not 🏆) —
+/// this MCP's tool output is a work surface, not a social one. Sub-Trophy
+/// tiers use clean Unicode geometric symbols per doctrine-trophy-social-proofseal-work.
+fn tier_badge(tier: &str) -> &'static str {
+    match tier {
+        "TROPHY" => "✪ Trophy",
+        "GOLD" => "★ Gold",
+        "SILVER" => "◆ Silver",
+        "BRONZE" => "◇ Bronze",
+        "GREEN" => "● Green",
+        "YELLOW" => "● Yellow",
+        "RED" => "○ Red",
+        _ => "♡ White",
     }
 }
 
@@ -106,7 +118,6 @@ fn faf_init_create(dir: &Path) -> Value {
     let mut key_files: Vec<String> = Vec::new();
     let mut commands: HashMap<String, String> = HashMap::new();
     let mut build_tool = None;
-    let mut testing = None;
 
     // Detect Cargo.toml (Rust)
     let cargo_path = dir.join("Cargo.toml");
@@ -138,7 +149,6 @@ fn faf_init_create(dir: &Path) -> Value {
                 key_files.push("src/lib.rs".to_string());
                 commands.insert("build".to_string(), "cargo build".to_string());
                 commands.insert("test".to_string(), "cargo test".to_string());
-                testing = Some("cargo test".to_string());
             }
         }
     }
@@ -181,7 +191,6 @@ fn faf_init_create(dir: &Path) -> Value {
                     }
                     if scripts.contains_key("test") {
                         commands.insert("test".to_string(), "npm test".to_string());
-                        testing = Some("npm test".to_string());
                     }
                 }
             }
@@ -209,7 +218,6 @@ fn faf_init_create(dir: &Path) -> Value {
                 tech_stack = Some("Python".to_string());
                 key_files.push("pyproject.toml".to_string());
                 commands.insert("install".to_string(), "pip install -e .".to_string());
-                testing = Some("pytest".to_string());
             }
         }
     }
@@ -230,7 +238,6 @@ fn faf_init_create(dir: &Path) -> Value {
             key_files.push("go.mod".to_string());
             commands.insert("build".to_string(), "go build ./...".to_string());
             commands.insert("test".to_string(), "go test ./...".to_string());
-            testing = Some("go test".to_string());
         }
     }
 
@@ -256,7 +263,6 @@ fn faf_init_create(dir: &Path) -> Value {
         key_files: &key_files,
         commands: &commands,
         build_tool: build_tool.as_deref(),
-        testing: testing.as_deref(),
     });
 
     // Write project.faf
@@ -265,14 +271,8 @@ fn faf_init_create(dir: &Path) -> Value {
         return error_response(&format!("Failed to write project.faf: {}", e));
     }
 
-    // Score what we just created
-    let score = match faf_rust_sdk::parse(&faf_yaml) {
-        Ok(faf) => {
-            let result = faf_rust_sdk::validate(&faf);
-            result.score
-        }
-        Err(_) => 0,
-    };
+    // Score what we just created — real Mk4, the always-33 kernel faf-wasm-sdk uses
+    let (score, tier) = mk4_score(&faf_yaml);
 
     let mut output = format!(
         "Created project.faf for '{}'\n\
@@ -282,7 +282,7 @@ fn faf_init_create(dir: &Path) -> Value {
         name,
         main_language.as_deref().unwrap_or("Unknown"),
         score,
-        tier_badge(score),
+        tier_badge(&tier),
         faf_path.display()
     );
 
@@ -305,7 +305,7 @@ fn faf_init_enhance(dir: &Path, faf_path: &Path) -> Value {
         Err(e) => return error_response(&format!("Failed to parse .faf: {}", e)),
     };
 
-    let before = faf_rust_sdk::validate(&faf).score;
+    let (before, before_tier) = mk4_score(&content);
     let mut changes: Vec<String> = Vec::new();
 
     // Enhance: detect project info from manifest if missing
@@ -394,12 +394,24 @@ fn faf_init_enhance(dir: &Path, faf_path: &Path) -> Value {
         }
     }
 
-    // Enhance: add stack if missing
+    // Enhance: add stack if missing.
+    // NOTE — known, bounded gap: faf-kernel's typed `Stack` struct only has
+    // 7 fields (frontend/backend/database/infrastructure/build_tool/testing/
+    // cicd), covering 4 of Mk4's 19 stack.* slots by real alias (frontend->
+    // framework, database->db; backend and cicd are direct); the other 3
+    // fields (infrastructure/build_tool/testing) have no Mk4 slot mapping
+    // at all. The remaining 15 stack.* slots plus all 5 monorepo.* slots
+    // aren't representable via this typed struct — extending it is a
+    // faf-kernel schema change, out of scope for this release (see the
+    // plan's boundary: don't touch faf-rust unless score() itself differs).
+    // Freshly-created files (faf_init_create/build_faf_yaml) are fully
+    // Mk4-correct; this enhance path improves what it can and is honest
+    // about the rest rather than faking coverage with a fragile YAML hack.
     if faf.data.stack.is_none() && faf.data.project.main_language.is_some() {
         faf.data.stack = Some(faf_rust_sdk::Stack {
-            frontend: None,
+            frontend: Some("slotignored".to_string()),
             backend: faf.data.project.main_language.clone(),
-            database: None,
+            database: Some("slotignored".to_string()),
             infrastructure: None,
             build_tool: if dir.join("Cargo.toml").exists() {
                 Some("cargo".to_string())
@@ -412,45 +424,51 @@ fn faf_init_enhance(dir: &Path, faf_path: &Path) -> Value {
             cicd: if dir.join(".github/workflows").exists() {
                 Some("GitHub Actions".to_string())
             } else {
-                None
+                Some("slotignored".to_string())
             },
         });
         changes.push("Added stack section".to_string());
     }
 
-    // Enhance: add human_context stub if missing
+    // Enhance: add human_context stub if missing. Unlike Stack, HumanContext's
+    // 6 fields map 1:1 onto Mk4's 6 human_context.* slots, so this can be
+    // fully honest: real value where derivable, slotignored otherwise —
+    // never a silent Empty.
     if faf.data.human_context.is_none() {
         faf.data.human_context = Some(faf_rust_sdk::HumanContext {
-            who: None,
-            what: faf.data.project.goal.clone(),
-            why_field: None,
-            how: None,
-            where_field: None,
-            when: None,
+            who: Some("slotignored".to_string()),
+            what: faf
+                .data
+                .project
+                .goal
+                .clone()
+                .or_else(|| Some("slotignored".to_string())),
+            why_field: Some("slotignored".to_string()),
+            how: Some("slotignored".to_string()),
+            where_field: Some("slotignored".to_string()),
+            when: Some("slotignored".to_string()),
         });
         changes.push("Added human_context section".to_string());
     }
 
     if changes.is_empty() {
-        let score = faf_rust_sdk::validate(&faf).score;
         return text_response(&format!(
             "project.faf is already complete.\nScore: {}% {}\nNo enhancements needed.",
-            score,
-            tier_badge(score)
+            before,
+            tier_badge(&before_tier)
         ));
     }
 
     // Write enhanced .faf
-    match faf_rust_sdk::stringify(&faf) {
-        Ok(yaml) => {
-            if let Err(e) = fs::write(faf_path, &yaml) {
-                return error_response(&format!("Failed to write: {}", e));
-            }
-        }
+    let yaml = match faf_rust_sdk::stringify(&faf) {
+        Ok(y) => y,
         Err(e) => return error_response(&format!("Failed to serialize: {}", e)),
+    };
+    if let Err(e) = fs::write(faf_path, &yaml) {
+        return error_response(&format!("Failed to write: {}", e));
     }
 
-    let after = faf_rust_sdk::validate(&faf).score;
+    let (after, after_tier) = mk4_score(&yaml);
 
     let mut output = format!(
         "Enhanced project.faf\n\
@@ -458,7 +476,7 @@ fn faf_init_enhance(dir: &Path, faf_path: &Path) -> Value {
          Changes:\n",
         before,
         after,
-        tier_badge(after)
+        tier_badge(&after_tier)
     );
     for c in &changes {
         output.push_str(&format!("  + {}\n", c));
@@ -482,7 +500,6 @@ struct DetectedProject<'a> {
     key_files: &'a [String],
     commands: &'a HashMap<String, String>,
     build_tool: Option<&'a str>,
-    testing: Option<&'a str>,
 }
 
 /// Build FAF YAML string from detected values
@@ -528,19 +545,66 @@ fn build_faf_yaml(info: &DetectedProject<'_>) -> String {
         }
     }
 
-    // Stack
-    if info.main_language.is_some() || info.build_tool.is_some() {
-        yaml.push_str("stack:\n");
-        if let Some(l) = info.main_language {
-            yaml.push_str(&format!("  backend: \"{}\"\n", l));
-        }
-        if let Some(b) = info.build_tool {
-            yaml.push_str(&format!("  build_tool: \"{}\"\n", b));
-        }
-        if let Some(t) = info.testing {
-            yaml.push_str(&format!("  testing: \"{}\"\n", t));
-        }
+    // Stack — Mk4-honest: every one of the 19 stack.* slots gets a line,
+    // either a real detected value or an explicit slotignored. Detection
+    // that can't tell (frontend/database/etc.) is not the same as N/A —
+    // under the fixed 33-slot model, a slot silently left out still counts
+    // against the active denominator, exactly the bug that made
+    // "perfect-project"-shaped fixtures score RED instead of TROPHY.
+    yaml.push_str("stack:\n");
+    yaml.push_str("  frontend: slotignored\n");
+    yaml.push_str("  css_framework: slotignored\n");
+    yaml.push_str("  ui_library: slotignored\n");
+    yaml.push_str("  state_management: slotignored\n");
+    if let Some(l) = info.main_language {
+        yaml.push_str(&format!("  backend: \"{}\"\n", l));
+    } else {
+        yaml.push_str("  backend: slotignored\n");
     }
+    yaml.push_str("  api_type: slotignored\n");
+    yaml.push_str("  runtime: slotignored\n");
+    yaml.push_str("  database: slotignored\n");
+    yaml.push_str("  connection: slotignored\n");
+    yaml.push_str("  hosting: slotignored\n");
+    if let Some(b) = info.build_tool {
+        // `build`, not `build_tool` — the Mk4 canonical slot name.
+        yaml.push_str(&format!("  build: \"{}\"\n", b));
+    } else {
+        yaml.push_str("  build: slotignored\n");
+    }
+    yaml.push_str("  cicd: slotignored\n");
+    yaml.push_str("  monorepo_tool: slotignored\n");
+    yaml.push_str("  package_manager: slotignored\n");
+    yaml.push_str("  workspaces: slotignored\n");
+    yaml.push_str("  admin: slotignored\n");
+    yaml.push_str("  cache: slotignored\n");
+    yaml.push_str("  search: slotignored\n");
+    yaml.push_str("  storage: slotignored\n");
+
+    // `testing` was never a real Mk4 slot (typed Stack struct field only,
+    // invisible to score()) — dropped rather than kept as dead weight.
+    // Detected test-runner info still lives in instant_context.commands.
+
+    // monorepo.* — the 5 remaining canonical slots. faf_init doesn't detect
+    // monorepo structure yet, so all slotignored until it does.
+    yaml.push_str("monorepo:\n");
+    yaml.push_str("  packages_count: slotignored\n");
+    yaml.push_str("  build_orchestrator: slotignored\n");
+    yaml.push_str("  versioning_strategy: slotignored\n");
+    yaml.push_str("  shared_configs: slotignored\n");
+    yaml.push_str("  remote_cache: slotignored\n");
+
+    // human_context.* — 6 canonical slots. faf_init has no source for these
+    // (they're the human 6 W's, not detectable from a filesystem scan);
+    // slotignored here rather than silently Empty. faf_init_enhance can
+    // still fill real values in later without a code change to this default.
+    yaml.push_str("human_context:\n");
+    yaml.push_str("  who: slotignored\n");
+    yaml.push_str("  what: slotignored\n");
+    yaml.push_str("  why: slotignored\n");
+    yaml.push_str("  where: slotignored\n");
+    yaml.push_str("  when: slotignored\n");
+    yaml.push_str("  how: slotignored\n");
 
     yaml
 }
@@ -655,11 +719,8 @@ pub async fn faf_git(arguments: &Value) -> Value {
         }
     }
 
-    // Score it
-    let score = match faf_rust_sdk::parse(&yaml) {
-        Ok(faf) => faf_rust_sdk::validate(&faf).score,
-        Err(_) => 0,
-    };
+    // Score it — real Mk4
+    let (score, tier) = mk4_score(&yaml);
 
     let output = format!(
         "Generated project.faf for {}/{}\n\
@@ -673,7 +734,7 @@ pub async fn faf_git(arguments: &Value) -> Value {
         stars,
         default_branch,
         score,
-        tier_badge(score),
+        tier_badge(&tier),
         yaml
     );
 
@@ -737,7 +798,7 @@ pub fn faf_read(arguments: &Value) -> Value {
         Err(e) => return error_response(&format!("Failed to parse: {}", e)),
     };
 
-    let score = faf_rust_sdk::validate(&faf).score;
+    let (score, tier) = mk4_score(&content);
 
     let mut output = format!(
         "Project: {}\n\
@@ -746,7 +807,7 @@ pub fn faf_read(arguments: &Value) -> Value {
         faf.project_name(),
         faf.version(),
         score,
-        tier_badge(score)
+        tier_badge(&tier)
     );
 
     if let Some(goal) = faf.goal() {
@@ -799,7 +860,25 @@ pub fn faf_score(arguments: &Value) -> Value {
         Err(e) => return error_response(&format!("Failed to parse: {}", e)),
     };
 
-    let result = faf_rust_sdk::validate(&faf);
+    // validate() stays for structural checks only (parse errors, required
+    // fields) — it no longer produces the public score. The real,
+    // kernel-truth score comes from score(), the same always-33 Mk4 model
+    // faf-wasm-sdk uses (faf-cli's default path is a different kernel).
+    let structure = faf_rust_sdk::validate(&faf);
+    let mk4 = faf_rust_sdk::score(&content);
+
+    let (score, tier, empty_slots): (u32, String, Vec<String>) = match &mk4 {
+        Ok(r) => (
+            r.score,
+            r.tier.clone(),
+            r.slots
+                .iter()
+                .filter(|(_, state)| matches!(state, faf_rust_sdk::SlotState::Empty))
+                .map(|(name, _)| name.clone())
+                .collect(),
+        ),
+        Err(_) => (0, "WHITE".to_string(), Vec::new()),
+    };
 
     let mut output = format!(
         "FAF AI-Readiness Score\n\
@@ -808,30 +887,30 @@ pub fn faf_score(arguments: &Value) -> Value {
          Score: {}% {}\n\
          Valid: {}\n",
         faf.project_name(),
-        result.score,
-        tier_badge(result.score),
-        if result.valid { "Yes" } else { "No" }
+        score,
+        tier_badge(&tier),
+        if structure.valid { "Yes" } else { "No" }
     );
 
-    if !result.errors.is_empty() {
+    if !structure.errors.is_empty() {
         output.push_str("\nErrors:\n");
-        for e in &result.errors {
+        for e in &structure.errors {
             output.push_str(&format!("  ✗ {}\n", e));
         }
     }
 
-    if !result.warnings.is_empty() {
-        output.push_str("\nMissing (add these to improve score):\n");
-        for w in &result.warnings {
-            output.push_str(&format!("  → {}\n", w));
+    if !empty_slots.is_empty() {
+        output.push_str("\nEmpty slots (fill or mark slotignored to improve score):\n");
+        for s in &empty_slots {
+            output.push_str(&format!("  → {}\n", s));
         }
     }
 
-    if result.score < 85 {
+    if score < 85 {
         output.push_str(&format!(
             "\nTo improve: run faf_init to auto-enhance.\n\
              Target: 85%+ for {} production ready.\n",
-            tier_badge(85)
+            tier_badge("BRONZE")
         ));
     }
 
@@ -865,10 +944,10 @@ pub fn faf_sync(arguments: &Value) -> Value {
         Err(e) => return error_response(&format!("Failed to parse .faf: {}", e)),
     };
 
-    let score = faf_rust_sdk::validate(&faf).score;
+    let (score, tier) = mk4_score(&faf_content);
 
     // Generate CLAUDE.md from .faf (source of truth)
-    let claude_content = generate_claude_md(&faf, score);
+    let claude_content = generate_claude_md(&faf, score, &tier);
 
     if claude_path.exists() {
         // Read existing CLAUDE.md
@@ -892,7 +971,7 @@ pub fn faf_sync(arguments: &Value) -> Value {
                      Score: {}% {}\n\
                      Updated sync section (preserved custom content).\n",
                     score,
-                    tier_badge(score)
+                    tier_badge(&tier)
                 ));
             }
         }
@@ -911,7 +990,7 @@ pub fn faf_sync(arguments: &Value) -> Value {
              Score: {}% {}\n\
              Appended sync section to existing CLAUDE.md.\n",
             score,
-            tier_badge(score)
+            tier_badge(&tier)
         ))
     } else {
         // Create new CLAUDE.md
@@ -931,7 +1010,7 @@ pub fn faf_sync(arguments: &Value) -> Value {
              Score: {}% {}\n\
              Path: {}\n",
             score,
-            tier_badge(score),
+            tier_badge(&tier),
             claude_path.display()
         ))
     }
@@ -1031,12 +1110,12 @@ pub fn faf_discover(arguments: &Value) -> Value {
             let mut output = format!("Found project.faf at: {}\n", path.display());
 
             if let Ok(faf) = faf_rust_sdk::parse(&content) {
-                let score = faf_rust_sdk::validate(&faf).score;
+                let (score, tier) = mk4_score(&content);
                 output.push_str(&format!(
                     "Project: {}\nScore: {}% {}\n",
                     faf.project_name(),
                     score,
-                    tier_badge(score)
+                    tier_badge(&tier)
                 ));
             }
 
@@ -1082,7 +1161,7 @@ pub fn faf_tokens(arguments: &Value) -> Value {
         Err(e) => return error_response(&format!("Failed to parse: {}", e)),
     };
 
-    let score = faf_rust_sdk::validate(&faf).score;
+    let (score, tier) = mk4_score(&content);
     let t_min = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Minimal);
     let t_std = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Standard);
     let t_full = faf_rust_sdk::estimate_tokens(faf_rust_sdk::CompressionLevel::Full);
@@ -1100,7 +1179,7 @@ pub fn faf_tokens(arguments: &Value) -> Value {
          Use faf_compress with level=minimal|standard|full to get compressed output.",
         faf.project_name(),
         score,
-        tier_badge(score),
+        tier_badge(&tier),
         t_min,
         t_std,
         t_full,
@@ -1121,11 +1200,10 @@ pub fn faf_auto(arguments: &Value) -> Value {
 
     let mut steps: Vec<String> = Vec::new();
 
-    // Capture before score
-    let before_score = find_faf(&dir)
+    // Capture before score — real Mk4
+    let before_score: u32 = find_faf(&dir)
         .and_then(|p| fs::read_to_string(&p).ok())
-        .and_then(|c| faf_rust_sdk::parse(&c).ok())
-        .map(|f| faf_rust_sdk::validate(&f).score)
+        .map(|c| mk4_score(&c).0)
         .unwrap_or(0);
 
     // Step 1: Init (create or enhance)
@@ -1143,11 +1221,9 @@ pub fn faf_auto(arguments: &Value) -> Value {
     // Step 2: Second pass if score still below 85
     if let Some(faf_path) = find_faf(&dir) {
         if let Ok(content) = fs::read_to_string(&faf_path) {
-            if let Ok(faf) = faf_rust_sdk::parse(&content) {
-                if faf_rust_sdk::validate(&faf).score < 85 {
-                    faf_init_enhance(&dir, &faf_path);
-                    steps.push("Second enhancement pass".to_string());
-                }
+            if mk4_score(&content).0 < 85 {
+                faf_init_enhance(&dir, &faf_path);
+                steps.push("Second enhancement pass".to_string());
             }
         }
     }
@@ -1156,8 +1232,8 @@ pub fn faf_auto(arguments: &Value) -> Value {
     if let Some(faf_path) = find_faf(&dir) {
         if let Ok(content) = fs::read_to_string(&faf_path) {
             if let Ok(faf) = faf_rust_sdk::parse(&content) {
-                let score = faf_rust_sdk::validate(&faf).score;
-                let claude_md = generate_claude_md(&faf, score);
+                let (score, tier) = mk4_score(&content);
+                let claude_md = generate_claude_md(&faf, score, &tier);
                 let claude_path = dir.join("CLAUDE.md");
 
                 if claude_path.exists() {
@@ -1188,12 +1264,11 @@ pub fn faf_auto(arguments: &Value) -> Value {
         }
     }
 
-    // Step 4: Final score + report
-    let after_score = find_faf(&dir)
+    // Step 4: Final score + report — real Mk4
+    let (after_score, after_tier): (u32, String) = find_faf(&dir)
         .and_then(|p| fs::read_to_string(&p).ok())
-        .and_then(|c| faf_rust_sdk::parse(&c).ok())
-        .map(|f| faf_rust_sdk::validate(&f).score)
-        .unwrap_or(0);
+        .map(|c| mk4_score(&c))
+        .unwrap_or((0, "WHITE".to_string()));
 
     let delta = if after_score > before_score {
         format!(" (+{})", after_score - before_score)
@@ -1211,7 +1286,7 @@ pub fn faf_auto(arguments: &Value) -> Value {
         before_score,
         after_score,
         delta,
-        tier_badge(after_score)
+        tier_badge(&after_tier)
     );
     for (i, step) in steps.iter().enumerate() {
         output.push_str(&format!("  {}. {}\n", i + 1, step));
@@ -1222,7 +1297,7 @@ pub fn faf_auto(arguments: &Value) -> Value {
 }
 
 /// Generate CLAUDE.md sync section from parsed FAF
-fn generate_claude_md(faf: &FafFile, score: u8) -> String {
+fn generate_claude_md(faf: &FafFile, score: u32, tier: &str) -> String {
     let mut md = String::new();
 
     md.push_str("<!-- FAF-SYNC-START -->\n");
@@ -1252,7 +1327,7 @@ fn generate_claude_md(faf: &FafFile, score: u8) -> String {
     md.push_str(&format!(
         "**FAF Score:** {}% {}\n\n",
         score,
-        tier_badge(score)
+        tier_badge(tier)
     ));
 
     md.push_str(&format!(

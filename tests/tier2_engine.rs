@@ -768,8 +768,8 @@ fn t2_score_missing_fields_listed() {
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
     assert!(
-        text.contains("Missing"),
-        "Should list missing fields for incomplete .faf"
+        text.contains("Empty slots"),
+        "Should list empty slots for incomplete .faf"
     );
     assert!(text.contains("faf_init"), "Should suggest running faf_init");
 }
@@ -913,16 +913,75 @@ fn t2_scoring_weights_valid_json() {
     let weights: serde_json::Value =
         serde_json::from_str(text).expect("Weights should be valid JSON");
 
-    // Verify weight values sum to 1.0
-    let w = &weights["weights"];
-    let sum = w["required_fields"].as_f64().unwrap()
-        + w["instant_context"].as_f64().unwrap()
-        + w["stack"].as_f64().unwrap()
-        + w["human_context"].as_f64().unwrap()
-        + w["extras"].as_f64().unwrap();
-    assert!(
-        (sum - 1.0).abs() < 0.001,
-        "Scoring weights should sum to 1.0, got {}",
-        sum
-    );
+    // Real Mk4 shape — a fixed 33-slot universe, no category weights.
+    assert_eq!(weights["model"], "Mk4");
+    assert_eq!(weights["total_slots"], 33);
+
+    // The 4 category counts must sum to the fixed total — this is the
+    // literal claim the old resource got wrong (it advertised weighted
+    // percentages instead of the real slot universe).
+    let c = &weights["categories"];
+    let sum = c["project"].as_u64().unwrap()
+        + c["human_context"].as_u64().unwrap()
+        + c["stack"].as_u64().unwrap()
+        + c["monorepo"].as_u64().unwrap();
+    assert_eq!(sum, 33, "Category slot counts should sum to the total 33");
+
+    // Tier thresholds match faf-kernel's own tier_name() boundaries.
+    assert_eq!(weights["tiers"]["TROPHY"], 100);
+    assert_eq!(weights["tiers"]["WHITE"], 0);
+}
+
+/// Kernel parity: the `faf_score` MCP tool's number must equal
+/// `faf_rust_sdk::score()`'s own number for the identical file — the whole
+/// point of this release. Checked at two different fill levels, not just
+/// the 0/100 boundary, since a bug that only shows up mid-scale would slip
+/// past a trivial check.
+#[test]
+fn t2_faf_score_matches_kernel_score_directly() {
+    let partial_yaml = "faf_version: \"3.3\"\n\
+project:\n  name: \"parity-check\"\n  goal: \"Prove the numbers agree\"\n\
+human_context:\n  who: \"wolfejam\"\n  what: slotignored\n  why: slotignored\n  where: slotignored\n  when: slotignored\n  how: slotignored\n\
+stack:\n  frontend: slotignored\n  css_framework: slotignored\n  ui_library: slotignored\n  state_management: slotignored\n  \
+backend: slotignored\n  api_type: slotignored\n  runtime: slotignored\n  database: slotignored\n  connection: slotignored\n  \
+hosting: slotignored\n  build: slotignored\n  cicd: slotignored\n  monorepo_tool: slotignored\n  package_manager: slotignored\n  \
+workspaces: slotignored\n  admin: slotignored\n  cache: slotignored\n  search: slotignored\n  storage: slotignored\n\
+monorepo:\n  packages_count: slotignored\n  build_orchestrator: slotignored\n  versioning_strategy: slotignored\n  shared_configs: slotignored\n  remote_cache: slotignored\n";
+
+    // Note: "empty: true" alone isn't usable here — faf_score gates on
+    // faf_rust_sdk::parse() succeeding first (which requires faf_version +
+    // project.name) before it will score at all, same as validate()'s own
+    // "Missing faf_version"/"Missing project.name" errors. That's a real,
+    // intentional structural gate, not a parity bug — score() alone doesn't
+    // need parse() to succeed, but the MCP tool's error-handling does. So
+    // "minimal" here is the smallest fixture that's still parseable.
+    let minimal_yaml = "faf_version: \"3.3\"\nproject:\n  name: \"minimal\"\n";
+
+    for (label, yaml) in [("minimal", minimal_yaml), ("partial", partial_yaml)] {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join("project.faf"), yaml).unwrap();
+
+        let req = format!(
+            r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_score","arguments":{{"path":"{}"}}}}}}"#,
+            dir.path().display()
+        );
+        let resp = mcp_request(&req);
+        let text = extract_text(&resp);
+
+        let mcp_score: u32 = text
+            .split("Score: ")
+            .nth(1)
+            .and_then(|s| s.split('%').next())
+            .and_then(|s| s.parse().ok())
+            .unwrap_or_else(|| panic!("[{label}] could not parse score from: {text}"));
+
+        let kernel_score = faf_rust_sdk::score(yaml)
+            .unwrap_or_else(|e| panic!("[{label}] kernel score() failed: {e}"))
+            .score;
+
+        assert_eq!(
+            mcp_score, kernel_score,
+            "[{label}] faf_score MCP tool ({mcp_score}) must equal faf_rust_sdk::score() ({kernel_score}) for the identical file"
+        );
+    }
 }

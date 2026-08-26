@@ -124,8 +124,8 @@ fn t3_minimal_faf_low_score() {
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
     assert!(
-        text.contains("Missing"),
-        "Minimal .faf should show missing fields"
+        text.contains("Empty slots"),
+        "Minimal .faf should show empty slots"
     );
     assert!(text.contains("faf_init"), "Should suggest running faf_init");
 }
@@ -133,6 +133,12 @@ fn t3_minimal_faf_low_score() {
 #[test]
 fn t3_full_faf_high_score() {
     let dir = tempfile::tempdir().unwrap();
+    // Mirrors faf-kernel's own CLI_TROPHY reference fixture (score.rs tests):
+    // the 12 slots a Rust CLI project actually has (project x3, human_context
+    // x6, stack.hosting/build/cicd x3) populated, the other 21 of the 33
+    // canonical Mk4 slots explicitly slotignored — not just absent. Under
+    // Mk4, absent != not-applicable; only an explicit slotignored shrinks
+    // the active denominator. This is what "full" has to mean now.
     let faf = r#"faf_version: "3.3"
 project:
   name: "perfect-project"
@@ -150,13 +156,38 @@ instant_context:
     build: "cargo build"
     test: "cargo test"
 stack:
-  backend: "Rust"
-  build_tool: "cargo"
-  testing: "cargo test"
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  backend: slotignored
+  api_type: slotignored
+  runtime: slotignored
+  database: slotignored
+  connection: slotignored
+  hosting: "GitHub"
+  build: "cargo"
+  cicd: "GitHub Actions"
+  monorepo_tool: slotignored
+  package_manager: slotignored
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
 human_context:
   who: "wolfejam"
   what: "Perfect score test"
   why: "Championship"
+  where: "crates.io"
+  when: "Now"
+  how: "Cargo"
 tags:
   - "test"
   - "perfect"
@@ -173,10 +204,16 @@ state:
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
     assert!(text.contains("Valid: Yes"));
-    // Should be high score (85+)
+    // Oracle-verified (faf-kernel 1.0.1 score(), 2026-08-25): 12/12 active
+    // slots populated, 21 slotignored -> 100% Trophy. Same always-33 kernel
+    // faf-wasm-sdk uses — this is the real number, not a felt one.
     assert!(
-        text.contains("Silver") || text.contains("Gold") || text.contains("Trophy"),
-        "Full .faf should score Silver or higher"
+        text.contains("Score: 100%"),
+        "A fully-populated, honestly slotignored .faf should score 100"
+    );
+    assert!(
+        text.contains("Trophy"),
+        "100% should render as the Trophy tier"
     );
 }
 

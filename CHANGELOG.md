@@ -2,6 +2,71 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-26
+
+The Mk4 truth edition. This MCP's public score is now the real Mk4 kernel
+score — the same always-33-slot model `faf-wasm-sdk` uses — not the
+separate, older completeness heuristic it silently called instead.
+
+**Note, precisely:** `faf-cli`'s default `faf score` currently runs a
+*different* kernel (`faf-scoring-kernel`'s `score_faf`, a 21-slot base
+model) — verified live in `cli/src/core/scorer.ts` at the time of this
+release. `faf-cli` does expose a 33-slot `scoreEnterprise()`, but it isn't
+the default path. Converging `faf-cli` itself onto the always-33 model is
+separate, tracked "FAF 6.0" work — a deliberate, comms'd migration, not
+touched by this release. Don't read "same kernel as faf-cli" into this
+edition; that convergence hasn't happened yet.
+
+### Changed
+- **Dependency: `faf-rust-sdk` `1.3` → `3` (`3.0.0`).** The 1.x line was the
+  pre-facade monolith; 3.x is the current facade over `faf-kernel` +
+  `faf-fafb`. All 9 existing tools were verified compatible with the new
+  API surface before this bump — zero call-site breakage from the
+  dependency jump itself.
+- **Every public score now comes from `faf_rust_sdk::score()` (Mk4),
+  not `validate().score`** (a separate, older completeness-percentage
+  calculation that ships alongside it in the same crate for backward
+  compat, but was never the always-33 model). `validate()` is still used
+  for genuine structural checks (missing `faf_version`/`project.name`),
+  never for the number a user sees.
+- **`faf://scoring/weights` no longer lies.** It served hardcoded
+  30/30/15/15/10 category weights and claimed alignment with the
+  validator; it now serves the real shape (33 fixed slots across 4
+  categories, the real tier thresholds, the real formula).
+- **Tier badges use work-surface symbols (✪ ★ ◆ ◇ ● ● ○ ♡), not the
+  medal-emoji ladder** (🏆🥇🥈🥉🟢🟡🔴🤍) — that ladder is retired FAF-wide;
+  this MCP's tool output is a work surface, and 🏆 is reserved for social
+  surfaces only.
+- **`faf_init`'s generator writes real Mk4-honest files.** It previously
+  wrote `stack.build_tool`, which isn't a real Mk4 slot name at all (the
+  canonical name is `stack.build`) — that data was silently invisible to
+  scoring. It also never marked unused slots `slotignored`, so a freshly
+  created `project.faf` could score far lower than its actual completeness
+  warranted under the fixed 33-slot model. Fresh `faf_init` output is now
+  fully Mk4-honest: real values where detected, explicit `slotignored`
+  everywhere else, across all 19 stack, 5 monorepo, and 6 human_context
+  slots.
+- **`faf_score`'s "what's missing" section is now derived from the real
+  Mk4 slot data** (empty slots, by name) instead of the old validator's
+  separate warnings, which weren't describing the same model as the score
+  shown next to them.
+
+### Known, honest limitation
+- `faf_init_enhance`'s "add stack section" path (upgrading an *existing*
+  `project.faf` that predates this release) uses `faf-kernel`'s typed
+  `Stack` struct, which only has 7 fields — 4 of Mk4's 19 stack slots by
+  real alias, 3 with no Mk4 mapping at all. It's improved (no more silent
+  `None` where a real alias exists) but not fully Mk4-complete; the
+  remaining 15 stack slots and all 5 monorepo slots aren't representable
+  via that struct. Extending it is a `faf-kernel` schema change, out of
+  scope here. Freshly created files are unaffected — this only touches
+  the upgrade path for older files.
+
+### Fixed
+- Removed the `testing` field from the `faf_init` generator entirely — it
+  was never a real Mk4 slot (only ever a typed-struct field), and dead
+  code besides.
+
 ## [0.4.3] - 2026-08-20
 
 npm Trusted Publishing (OIDC) fixed. Patch only — no new edition, no source/tool changes.

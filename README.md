@@ -6,17 +6,17 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The one.faf Edition (v0.4.3)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · solid cargo-native Rust MCP for Rust devs
+**The Mk4 Truth Edition (v0.5.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.0** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.4.3** — npm Trusted Publishing (OIDC) fixed — the dummy `NODE_AUTH_TOKEN` `setup-node` injected was 404ing the OIDC token exchange; CI now publishes npm clean.
+**v0.5.0** — the public score is now the real Mk4 kernel score, not a separate legacy completeness heuristic. `faf-rust-sdk` pin caught up from `1.3` to `3`. Note: `faf-cli`'s default `faf score` currently runs a different, 21-slot base kernel (`faf-scoring-kernel`'s `score_faf`) — that convergence is separate, tracked FAF 6.0 work, not part of this release. See [CHANGELOG](./CHANGELOG.md#050---2026-08-26).
 
 **FAF defines. MD instructs. AI codes.**
 
 > Stop re-explaining your project to every AI session. One `.faf` file holds your persistent project context. Every AI reads it once and knows what you're building.
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
-[![FAF Trophy 100%](https://img.shields.io/badge/FAF-%F0%9F%8F%86%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-117%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![FAF Trophy 100%](https://img.shields.io/badge/FAF-%E2%9C%AA%20100%25-000000?labelColor=FF6B35)](https://faf.one)
+[![Tests](https://img.shields.io/badge/tests-118%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -142,17 +142,17 @@ src/
 
 - **Runtime**: `tokio` single-threaded (`current_thread`)
 - **HTTP**: `reqwest` async (only used by `faf_git` for GitHub API)
-- **SDK**: `faf-rust-sdk` **1.3** (Cargo pin — parse / validate / compress / discover; foundation **3.x** lives in [faf-rust](https://github.com/Wolfe-Jam/faf-rust))
+- **SDK**: `faf-rust-sdk` **3.0** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the real Mk4 number, `validate()` for structural checks only)
 - **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, schema generation, stdio transport (Tier-1 assessed SDK cut)
 
 Tools return `serde_json::Value`. The server adapts them to `Result<String, String>` for rmcp's `IntoCallToolResult`.
 
 ## Testing
 
-117 tests (113 integration + 4 unit):
+118 tests (114 integration + 4 unit):
 
 ```bash
-cargo test    # runs all 117
+cargo test    # runs all 118
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh

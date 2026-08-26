@@ -270,7 +270,7 @@ project:
     );
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
-    assert!(text.contains("Missing"));
+    assert!(text.contains("Empty slots"));
     assert!(text.contains("faf_init"));
 }
 

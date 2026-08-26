@@ -219,15 +219,27 @@ impl ServerHandler for FafServer {
         match uri.as_str() {
             "faf://scoring/weights" => {
                 let weights = serde_json::json!({
-                    "weights": {
-                        "required_fields": 0.30,
-                        "instant_context": 0.30,
-                        "stack": 0.15,
-                        "human_context": 0.15,
-                        "extras": 0.10
+                    "model": "Mk4",
+                    "total_slots": 33,
+                    "categories": {
+                        "project": 3,
+                        "human_context": 6,
+                        "stack": 19,
+                        "monorepo": 5
+                    },
+                    "formula": "score = round(100 * populated / active); active = total_slots - slotignored",
+                    "tiers": {
+                        "TROPHY": 100,
+                        "GOLD": 99,
+                        "SILVER": 95,
+                        "BRONZE": 85,
+                        "GREEN": 70,
+                        "YELLOW": 55,
+                        "RED": 1,
+                        "WHITE": 0
                     },
                     "max_score": 100,
-                    "description": "FAF AI-Readiness scoring — aligned with faf-rust-sdk validator"
+                    "description": "FAF Mk4 scoring — the same 33-slot kernel used by faf-cli and faf-wasm-sdk (faf-kernel::score). A fixed slot universe with no category weights; explicitly marking a slot 'slotignored' excludes it from the active denominator. No lenient defaults."
                 });
 
                 Ok(ReadResourceResult::new(vec![ResourceContents::text(

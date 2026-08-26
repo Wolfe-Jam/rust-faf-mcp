@@ -1,6 +1,6 @@
 {
   "name": "rust-faf-mcp",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "mcpName": "one.faf/rust-faf-mcp",
   "description": "Persistent project context — Rust-native MCP server. IANA-registered .faf format. npm shim downloads the native binary from GitHub Releases.",
   "license": "MIT",
