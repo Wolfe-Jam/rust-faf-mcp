@@ -8,7 +8,7 @@
 
 **The Mk4 Truth Edition (v0.5.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.0** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.5.0** — the public score is now the real Mk4 kernel score, not a separate legacy completeness heuristic. `faf-rust-sdk` pin caught up from `1.3` to `3`. Note: `faf-cli`'s default `faf score` currently runs a different, 21-slot base kernel (`faf-scoring-kernel`'s `score_faf`) — that convergence is separate, tracked FAF 6.0 work, not part of this release. See [CHANGELOG](./CHANGELOG.md#050---2026-08-26).
+**v0.5.0** — the public score now comes straight from the real Mk4 kernel. `faf-rust-sdk` pin caught up from `1.3` to `3`. (`faf-cli`'s own convergence onto this kernel is separate, tracked FAF 6.0 work.) See [CHANGELOG](./CHANGELOG.md#050---2026-08-26).
 
 **FAF defines. MD instructs. AI codes.**
 
