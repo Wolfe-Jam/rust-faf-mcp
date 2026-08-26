@@ -54,9 +54,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Publish release
+        # Must use a PAT here, not the default GITHUB_TOKEN — GitHub Actions never
+        # cascades an event triggered via GITHUB_TOKEN (anti-recursion guard), so
+        # publish-crate.yml / publish-npm.yml / publish-mcp-registry.yml (all on
+        # release:published) never auto-fired. Confirmed live on 0.5.0 — all three
+        # had to be manually workflow_dispatch'd after the fact.
+        # RELEASE_PAT = fine-grained PAT scoped to this repo only, Contents: Read & write.
         run: gh release edit "$GITHUB_REF_NAME" --draft=false
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
       - name: Compute SHA256s and update Homebrew
         run: |
           VERSION="${GITHUB_REF_NAME#v}"

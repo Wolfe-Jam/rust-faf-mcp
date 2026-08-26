@@ -27,11 +27,25 @@ jobs:
             | tar -xz mcp-publisher
           chmod +x mcp-publisher
 
+      - name: Resolve version to publish
+        # github.event.release.tag_name is authoritative on a real release event.
+        # GITHUB_REF_NAME is only meaningful when the ref IS the tag (release event,
+        # or a workflow_dispatch run explicitly against refs/tags/vX.Y.Z) — a manual
+        # dispatch against a branch (e.g. "main") would otherwise compare server.json
+        # against the branch name and fail (hit on rust-faf-mcp 0.4.3 and 0.5.0).
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
       - name: Verify server.json version == release tag
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
           MV=$(python3 -c "import json; print(json.load(open('server.json'))['version'])")
-          [ "$TAG" = "$MV" ] || { echo "::error::server.json $MV != tag $TAG"; exit 1; }
+          [ "${{ steps.version.outputs.version }}" = "$MV" ] || { echo "::error::server.json $MV != resolved version ${{ steps.version.outputs.version }}"; exit 1; }
 
       - name: Wait for npm + crates.io to resolve this version
         # publish-npm.yml and publish-crate.yml fire off the same release:published
@@ -42,7 +56,7 @@ jobs:
         # gate existed — see CHANGELOG).
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ steps.version.outputs.version }}"
           NPM_PKG=$(python3 -c "import json; print(next(p['identifier'] for p in json.load(open('server.json'))['packages'] if p['registryType']=='npm'))")
           CRATE=$(python3 -c "import json; print(next(p['identifier'] for p in json.load(open('server.json'))['packages'] if p['registryType']=='cargo'))")
 
