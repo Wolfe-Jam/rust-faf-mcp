@@ -1,11 +1,13 @@
 //! rust-faf-mcp — Rust MCP server for FAF
 //!
-//! 9 tools: faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto
+//! 10 tools: faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents
 //! stdio JSON-RPC via rmcp, powered by faf-rust-sdk
 
 use rmcp::ServiceExt;
 use tracing_subscriber::EnvFilter;
 
+mod agents;
+mod inject;
 mod server;
 mod skills;
 mod tools;

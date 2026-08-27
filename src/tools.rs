@@ -1,6 +1,6 @@
 //! Tool implementations for rust-faf-mcp
 //!
-//! 9 tools powered by faf-rust-sdk
+//! 10 tools powered by faf-rust-sdk
 
 use std::collections::HashMap;
 use std::fs;
@@ -1014,6 +1014,46 @@ pub fn faf_sync(arguments: &Value) -> Value {
             claude_path.display()
         ))
     }
+}
+
+// ─── Tool: faf_agents ───────────────────────────────────────────────────
+
+/// Generate AGENTS.md from project.faf — non-destructive block injection,
+/// preserves any hand-written content outside the faf-managed markers.
+pub fn faf_agents(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+
+    let faf_path = match find_faf(&dir) {
+        Some(p) => p,
+        None => {
+            return error_response(&format!(
+                "No project.faf found in {}. Run faf_init first.",
+                dir.display()
+            ));
+        }
+    };
+
+    let faf_content = match fs::read_to_string(&faf_path) {
+        Ok(c) => c,
+        Err(e) => return error_response(&format!("Failed to read project.faf: {}", e)),
+    };
+
+    let faf = match faf_rust_sdk::parse(&faf_content) {
+        Ok(f) => f,
+        Err(e) => return error_response(&format!("Failed to parse .faf: {}", e)),
+    };
+
+    let content = crate::agents::generate_agents_md(&faf.data);
+    let agents_path = dir.join("AGENTS.md");
+
+    if let Err(e) = crate::inject::inject_faf_block(&agents_path, &content) {
+        return error_response(&format!("Failed to write AGENTS.md: {}", e));
+    }
+
+    text_response(&format!(
+        "Generated AGENTS.md from project.faf\nPath: {}\n",
+        agents_path.display()
+    ))
 }
 
 // ─── Tool: faf_compress ─────────────────────────────────────────────────

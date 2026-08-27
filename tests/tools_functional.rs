@@ -546,3 +546,73 @@ fn test_faf_tokens_no_faf_file() {
     let resp = mcp_request(&req);
     assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
 }
+
+#[test]
+fn test_faf_agents_creates_agents_md() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = r#"faf_version: "3.3"
+project:
+  name: "agents-test"
+  goal: "Testing faf_agents"
+  main_language: "Rust"
+commands:
+  build: "cargo build"
+  test: "cargo test"
+"#;
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_agents","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(text.contains("Generated AGENTS.md"));
+
+    let agents = fs::read_to_string(dir.path().join("AGENTS.md")).unwrap();
+    assert!(agents.contains("agents-test"));
+    assert!(agents.contains("## Setup & build"));
+    assert!(agents.contains("cargo build"));
+    assert!(agents.contains("## Run the tests"));
+    assert!(agents.contains("<!-- faf:start -->"));
+    assert!(agents.contains("<!-- faf:end -->"));
+}
+
+#[test]
+fn test_faf_agents_preserves_existing_content() {
+    let dir = tempfile::tempdir().unwrap();
+    let faf = r#"faf_version: "3.3"
+project:
+  name: "preserve-agents-test"
+"#;
+    fs::write(dir.path().join("project.faf"), faf).unwrap();
+    fs::write(
+        dir.path().join("AGENTS.md"),
+        "# My Custom Instructions\n\nDo not delete this.\n",
+    )
+    .unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_agents","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    mcp_request(&req);
+
+    let agents = fs::read_to_string(dir.path().join("AGENTS.md")).unwrap();
+    assert!(
+        agents.contains("My Custom Instructions"),
+        "Hand-written content must survive"
+    );
+    assert!(agents.contains("preserve-agents-test"));
+}
+
+#[test]
+fn test_faf_agents_no_faf_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_agents","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
+}

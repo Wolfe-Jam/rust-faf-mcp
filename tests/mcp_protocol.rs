@@ -101,7 +101,7 @@ fn test_tools_list() {
         .as_array()
         .expect("tools should be array");
 
-    assert_eq!(tools.len(), 9);
+    assert_eq!(tools.len(), 10);
 
     let names: Vec<&str> = tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
     assert!(names.contains(&"faf_init"));
@@ -113,6 +113,7 @@ fn test_tools_list() {
     assert!(names.contains(&"faf_discover"));
     assert!(names.contains(&"faf_tokens"));
     assert!(names.contains(&"faf_auto"));
+    assert!(names.contains(&"faf_agents"));
 }
 
 #[test]

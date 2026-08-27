@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The Mk4 Truth Edition (v0.5.1)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.0** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
+**The AGENTS.md Edition (v0.6.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.5.1** — patch: cleared 8 GitHub-flagged security advisories (`openssl` transitive dep bump, no source changes) and neutralized defensive-toned README/CHANGELOG copy. The v0.5.0 truth-fix itself: the public score now comes straight from the real Mk4 kernel, `faf-rust-sdk` pin caught up from `1.3` to `3`. (`faf-cli`'s own convergence onto this kernel is separate, tracked FAF 6.0 work.) See [CHANGELOG](./CHANGELOG.md#051---2026-08-26).
+**v0.6.0** — adds `faf_agents`, a 10th tool: generates `AGENTS.md` from `project.faf`, non-destructively (preserves any hand-written content outside the faf-managed block). Ported line-for-line from `faf-cli`'s `generateAgentsMd()` — byte-for-byte parity is deliberate, so this MCP stays backward-compatible with any `faf-cli` output as it evolves. See [CHANGELOG](./CHANGELOG.md#060---2026-08-26--the-agentsmd-edition).
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -16,7 +16,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![FAF Trophy 100%](https://img.shields.io/badge/FAF-%E2%9C%AA%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-118%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![Tests](https://img.shields.io/badge/tests-133%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -120,6 +120,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 |------|-------------|
 | `faf_score` | Score AI-readiness 0-100% with field-level breakdown |
 | `faf_sync` | Sync `project.faf` → `CLAUDE.md` (preserves existing content) |
+| `faf_agents` | Generate `AGENTS.md` from `project.faf` (non-destructive, preserves hand-written content) |
 
 ### Optimize
 
@@ -137,22 +138,22 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 src/
 ├── main.rs      # ~20 lines — tokio entry, rmcp stdio transport
 ├── server.rs    # FafServer: #[tool_router], ServerHandler, resources
-└── tools.rs     # Business logic — all 9 tools, pure functions returning Value
+└── tools.rs     # Business logic — all 10 tools, pure functions returning Value
 ```
 
 - **Runtime**: `tokio` single-threaded (`current_thread`)
 - **HTTP**: `reqwest` async (only used by `faf_git` for GitHub API)
-- **SDK**: `faf-rust-sdk` **3.0** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the real Mk4 number, `validate()` for structural checks only)
+- **SDK**: `faf-rust-sdk` **3.1** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the real Mk4 number, `validate()` for structural checks only)
 - **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, schema generation, stdio transport (Tier-1 assessed SDK cut)
 
 Tools return `serde_json::Value`. The server adapts them to `Result<String, String>` for rmcp's `IntoCallToolResult`.
 
 ## Testing
 
-118 tests (114 integration + 4 unit):
+133 tests (117 integration + 16 unit):
 
 ```bash
-cargo test    # runs all 118
+cargo test    # runs all 133
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -163,12 +164,12 @@ bash scripts/install-hooks.sh
 | File | Tests | Coverage |
 |------|-------|----------|
 | `mcp_protocol.rs` | 9 | Init handshake, tools/list, resources, schema validation, ID preservation |
-| `tools_functional.rs` | 25 | All 9 tools — happy path, error paths, language detection |
+| `tools_functional.rs` | 28 | All 10 tools — happy path, error paths, language detection |
 | `tier1_security.rs` | 12 | Path traversal, null bytes, shell injection, oversized input, malformed JSON |
-| `tier2_engine.rs` | 35 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
+| `tier2_engine.rs` | 36 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
 | `tier3_edge_cases.rs` | 10 | Unicode, CJK, score boundaries, unknown fields, GitHub URL parsing |
 | `tier4_aero.rs` | 22 | Manifest structure, version sync, server.json, context block, manifest-server cross-validation |
-| `src` unit | 4 | Skills extension digest + scoring resource |
+| `src` unit | 16 | Skills extension digest + scoring resource, `agents::` generator (7), `inject::` non-destructive write (5) |
 
 Tests spawn the compiled binary as a subprocess and communicate via stdin/stdout JSON-RPC — true integration tests against the real server.
 

@@ -1,6 +1,6 @@
 [package]
 name = "rust-faf-mcp"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["wolfejam <wolfejam@faf.one>"]
@@ -14,7 +14,7 @@ keywords = ["faf", "mcp", "ai-context", "rust", "rmcp"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
-faf-rust-sdk = "3"
+faf-rust-sdk = "3.1"
 rmcp = { version = "3.0.1", features = ["server", "transport-io", "macros", "schemars"] }
 schemars = "1"
 serde = { version = "1.0", features = ["derive"] }

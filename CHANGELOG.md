@@ -2,6 +2,49 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-26 — The AGENTS.md Edition
+
+Adds `faf_agents`, a 10th tool: generates `AGENTS.md` from `project.faf`,
+non-destructively (preserves any hand-written content outside the
+faf-managed block, via the same marker-based injection `faf_sync` already
+uses for `CLAUDE.md`).
+
+### Added
+- **`faf_agents` tool.** Reads `project.faf`, produces the 10-section
+  `AGENTS.md` body (Orientation, Setup & build, Run the tests, Where
+  things live, Conventions, Guardrails, Definition of Done, When stuck,
+  Security & secrets, Commit & PR) plus a Stack reference block, and
+  injects it between `<!-- faf:start -->`/`<!-- faf:end -->` markers.
+  Ported line-for-line from `faf-cli`'s `generateAgentsMd()`
+  (`src/interop/agents.ts`) — **byte-for-byte parity is deliberate**, not
+  incidental: this MCP is meant to stay backward-compatible with any
+  `faf-cli` output as it evolves, not fork the format.
+- `faf-rust-sdk` bumped `3.0` → `3.1` (re-exports `faf-kernel` 1.1.0's new
+  `commands`, `security`, `ai_instructions`, and `conventions` fields —
+  the data `faf_agents` reads).
+
+### Known gaps vs. `faf-cli`'s generator (honest, scoped, documented in
+`src/agents.rs`)
+- `faf-kernel`'s `Project` struct has no `type`/`title`/`framework`
+  field yet. The meta-tag still emits the empty `type` slot (matching
+  faf-cli's 4-field join); the Orientation line's `type:` bit cannot
+  appear.
+- `faf-kernel`'s `Stack` struct carries 7 typed fields, not the full
+  19-slot Mk4 model — same gap already documented for `faf_init_enhance`
+  in 0.5.0.
+- `slot_label` falls back to title-casing rather than porting the full
+  33-entry `SLOT_BY_PATH` registry from `faf-cli`'s `core/slots.ts` — only
+  affects the secondary Stack reference block, not the 10 core sections.
+None of these change the sections a project actually gets; they narrow
+what a handful of stack/label fields can say until the Rust type model
+grows to match.
+
+### Testing
+133 tests (up from 118): +7 unit tests for the `agents::` generator, +5
+for `inject::`'s non-destructive write guarantee, +3 tool-level
+integration tests for `faf_agents` (create, preserve-existing, no-`.faf`
+error path).
+
 ## [0.5.1] - 2026-08-26
 
 Patch only — no new edition, still The Mk4 Truth Edition.

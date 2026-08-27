@@ -7,9 +7,9 @@
 
 **Goal:** Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
 
-**Stack:** Rust 2024, rmcp 3.0.1, faf-rust-sdk 3.0, serde, reqwest, tokio
+**Stack:** Rust 2024, rmcp 3.0.1, faf-rust-sdk 3.1, serde, reqwest, tokio
 
-**Building:** Rust MCP server — 9 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto) powered by rmcp SDK + faf-rust-sdk
+**Building:** Rust MCP server — 10 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents) powered by rmcp SDK + faf-rust-sdk
 
 **Key Files:**
 - Cargo.toml
@@ -21,7 +21,7 @@
 
 **FAF Score:** 100% ✪ Trophy
 
-*Synced by rust-faf-mcp v0.5.1 — IANA application/vnd.faf+yaml*
+*Synced by rust-faf-mcp v0.6.0 — IANA application/vnd.faf+yaml*
 <!-- FAF-SYNC-END -->
 
 

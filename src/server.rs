@@ -156,6 +156,14 @@ impl FafServer {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_auto(&args))
     }
+
+    #[tool(
+        description = "Generate AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block."
+    )]
+    async fn faf_agents(&self, params: Parameters<PathParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_agents(&args))
+    }
 }
 
 // ─── ServerHandler ──────────────────────────────────────────────────────
