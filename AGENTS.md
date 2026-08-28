@@ -1,6 +1,6 @@
 # AGENTS.md — rust-faf-mcp
 
-Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, nine tools, no network listener by default. **v0.4.2** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
+Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, ten tools, no network listener by default. **v0.4.2** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
 
 ## Setup & build
 
@@ -31,7 +31,7 @@ Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JS
 | File | Role |
 |------|------|
 | `tests/mcp_protocol.rs` | Initialize handshake, tools/list, resources, schema, id preservation |
-| `tests/tools_functional.rs` | All 9 tools — happy path, errors, language detection |
+| `tests/tools_functional.rs` | All 10 tools — happy path, errors, language detection |
 | `tests/tier1_security.rs` | Path traversal, null bytes, injection, oversized/malformed input |
 | `tests/tier2_engine.rs` | Corrupt YAML, sync, pipelines, dual manifests, direct paths |
 | `tests/tier3_edge_cases.rs` | Unicode/CJK, score boundaries, GitHub URL parsing |
@@ -67,10 +67,11 @@ CHANGELOG.md     # Release notes; update on every version bump
 - **SDK:** `faf-rust-sdk` **1.3** (current Cargo pin) for parse / validate / compress / discover / score. Foundation **3.x** is monorepo `faf-rust` — bump is a separate product decision. Prefer composing the SDK over reimplementing scoring or YAML shape.
 - **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas are generated; keep descriptions accurate when adding tools.
 
-### The nine tools
+### The ten tools
 
 | Tool | Purpose |
 |------|---------|
+| `faf_agents` | Generate `AGENTS.md` from `project.faf` (non-destructive) |
 | `faf_auto` | Init → enhance → sync → score in one shot |
 | `faf_init` | Create or enhance `project.faf` from Cargo.toml / package.json / pyproject.toml / go.mod |
 | `faf_git` | Build `project.faf` from a GitHub URL (network) |
