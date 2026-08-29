@@ -1,6 +1,8 @@
 # AGENTS.md — rust-faf-mcp
 
-Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, ten tools, no network listener by default. **v0.4.2** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
+**Authored** 2026-08-28 from live repo facts (`Cargo.toml`, README, `src/`, `tests/`). This is the working brief for the tree.
+
+Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, ten tools, no network listener by default. **v0.6.0** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
 
 ## Setup & build
 
@@ -21,12 +23,12 @@ brew install Wolfe-Jam/faf/rust-faf-mcp   # macOS prebuilt, when formula is curr
 ## Run the tests
 
 ```bash
-cargo test                   # all 117 tests — must pass before done
+cargo test                   # all 133 tests — must pass before done
 cargo fmt --check            # matches CI
 cargo clippy -- -D warnings  # matches CI
 ```
 
-Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JSON-RPC over stdin/stdout (not unit mocks of the protocol). Suites:
+133 tests = 117 integration + 16 unit. Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JSON-RPC over stdin/stdout (not unit mocks of the protocol). Suites:
 
 | File | Role |
 |------|------|
@@ -36,13 +38,17 @@ Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JS
 | `tests/tier2_engine.rs` | Corrupt YAML, sync, pipelines, dual manifests, direct paths |
 | `tests/tier3_edge_cases.rs` | Unicode/CJK, score boundaries, GitHub URL parsing |
 | `tests/tier4_aero.rs` | Manifest / server.json / version / context-block cross-validation |
+| `src` unit (16) | Skills digest + scoring resource, `agents::` (7), `inject::` (5) |
 
 ## Where things live
 
 ```
-src/main.rs      # ~34 lines — tokio current_thread, rmcp stdio, tracing → stderr
+src/main.rs      # tokio current_thread, rmcp stdio, tracing → stderr
 src/server.rs    # FafServer: #[tool_router], ServerHandler, resource faf://scoring/weights
-src/tools.rs     # Business logic — pure-ish fns returning serde_json::Value
+src/tools.rs     # Business logic — fns returning serde_json::Value
+src/agents.rs    # AGENTS.md body from project.faf
+src/inject.rs    # Non-destructive <!-- faf:start --> / <!-- faf:end --> write
+src/skills.rs    # MCP skills extension (faf-context)
 tests/           # WJTTC-style integration suite (see table above)
 Cargo.toml       # package version, MSRV, deps, release profile
 server.json      # MCP Registry descriptor (name one.faf/rust-faf-mcp, registryType cargo)
@@ -60,18 +66,18 @@ CHANGELOG.md     # Release notes; update on every version bump
 
 ## Architecture (load-bearing)
 
-- **Split:** `tools.rs` owns behavior; `server.rs` owns MCP wiring. Tools return `serde_json::Value` (`content[0].text` + optional `isError`). Server adapts via `value_to_string_result` → `Result<String, String>` for rmcp.
+- **Split:** `tools.rs` owns behavior; `server.rs` owns MCP wiring. `agents.rs` authors the AGENTS.md body; `inject.rs` writes the managed block without touching hand text. Tools return `serde_json::Value` (`content[0].text` + optional `isError`). Server adapts via `value_to_string_result` → `Result<String, String>` for rmcp.
 - **rmcp 3.0.1:** `#[tool_handler(router = self.tool_router)]` must pin the **cached** router field. Do not drop this — default rebuilds the router per call. (Same rule since ≥1.7; wire is Tier-1 assessed cut.)
 - **Runtime:** `tokio` `current_thread` only. Logging goes to **stderr** so stdout stays pure JSON-RPC.
 - **HTTP:** `reqwest` is used only by `faf_git` (GitHub API). Everything else is local filesystem.
-- **SDK:** `faf-rust-sdk` **1.3** (current Cargo pin) for parse / validate / compress / discover / score. Foundation **3.x** is monorepo `faf-rust` — bump is a separate product decision. Prefer composing the SDK over reimplementing scoring or YAML shape.
-- **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas are generated; keep descriptions accurate when adding tools.
+- **SDK:** `faf-rust-sdk` **3.1** (Cargo pin — facade over `faf-kernel` / `faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust)). Prefer composing the SDK over reimplementing scoring or YAML shape.
+- **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas come from schemars; keep descriptions accurate when adding tools.
 
 ### The ten tools
 
 | Tool | Purpose |
 |------|---------|
-| `faf_agents` | Generate `AGENTS.md` from `project.faf` (non-destructive) |
+| `faf_agents` | Author `AGENTS.md` from `project.faf` (non-destructive; keeps hand text outside the managed block) |
 | `faf_auto` | Init → enhance → sync → score in one shot |
 | `faf_init` | Create or enhance `project.faf` from Cargo.toml / package.json / pyproject.toml / go.mod |
 | `faf_git` | Build `project.faf` from a GitHub URL (network) |
@@ -92,7 +98,7 @@ MCP resource (not a tool): `faf://scoring/weights`.
 - **stdio only** for the binary transport in normal use. Do not reintroduce a default network listener without an explicit product decision.
 - **Release profile:** `opt-level = 3`, `lto = true`, `codegen-units = 1`, `strip = true` — leave alone unless measuring a real regression.
 - Prefer small, test-backed diffs. Match surrounding style in `tools.rs` / `server.rs`.
-- New tools: implement in `tools.rs`, expose with `#[tool(...)]` in `server.rs`, list in `manifest.json` + README, add functional + security coverage.
+- New tools: implement in `tools.rs`, expose with `#[tool(...)]` in `server.rs`, list in `manifest.json` + README, add functional + security coverage. If the tool authors a file, put the body in its own module (`agents.rs` is the pattern) and keep the write non-destructive.
 
 ## Guardrails
 
@@ -108,10 +114,10 @@ Security reports go to **security@faf.one** — not public issues (`SECURITY.md`
 
 A change is done when:
 
-1. `cargo fmt --check` is clean  
-2. `cargo clippy -- -D warnings` is clean  
-3. `cargo test` — **117** tests green (or updated count if you added/removed tests intentionally)  
-4. If version or tool surface changed: multi-surface version sync + `CHANGELOG.md` entry  
+1. `cargo fmt --check` is clean
+2. `cargo clippy -- -D warnings` is clean
+3. `cargo test` — **133** tests green (or updated count if you added/removed tests intentionally)
+4. If version or tool surface changed: multi-surface version sync + `CHANGELOG.md` entry
 5. Commit message is clear (Conventional Commits preferred: `feat:`, `fix:`, `chore:`)
 
 ## Commit & PR
