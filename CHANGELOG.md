@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+Cart of FAFb (`xai-faf-rust`). This MCP consumes; the Rust CLI authors when that page turns.
+
+### Added
+- **`faf_go`** — Table-of-8. 6Ws score only after ☑. Suggestions from `#2` beats (cited) are never typed and never scored.
+- **Courtesy Context Call** — 30 days default after a 6W check (90 max). Message: `Time to check your Context.` Check resets the clock. Not a token. Mk4 unchanged.
+- **App-type `slotignored` assignment** at init — inactive stack/monorepo only. 6Ws stay empty.
+
+### Removed
+- **`faf_init` no longer rewrites DNA.** If `project.faf` already exists, the tool refuses.
+- **`faf_auto` no longer “enhances to max score.”** Missing file → create. Existing file → unchanged, then sync + score.
+- **`none` as a write.** Empty, populated, or `slotignored`. Git no longer invents `who: owner`.
+
+### Changed
+- Init no longer marks human 6Ws `slotignored` (not known ≠ not applicable). Low birth score is honest.
+- Below 100 → `faf_go` (add Human Context). At 100 + due → courtesy line only.
+- `#2` may seed why when the goal has a because-beat. No invent to fill empties.
+
 ## [0.6.0] - 2026-08-26 — The AGENTS.md Edition
 
 Adds `faf_agents`, a 10th tool: generates `AGENTS.md` from `project.faf`,

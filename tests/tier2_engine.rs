@@ -158,20 +158,24 @@ fn t2_corrupt_faf_tokens() {
 }
 
 #[test]
-fn t2_corrupt_faf_init_enhance() {
+fn t2_corrupt_faf_init_refuses_existing() {
     let dir = tempfile::tempdir().unwrap();
-    // Pre-existing corrupt .faf — enhance path should error
-    fs::write(dir.path().join("project.faf"), "{{not valid yaml}}").unwrap();
+    let original = "{{not valid yaml}}";
+    fs::write(dir.path().join("project.faf"), original).unwrap();
 
     let req = format!(
         r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_init","arguments":{{"path":"{}"}}}}}}"#,
         dir.path().display()
     );
     let resp = mcp_request(&req);
-    assert_eq!(
-        resp["result"]["isError"], true,
-        "faf_init enhance should error on corrupt existing .faf"
+    let text = extract_text(&resp);
+    assert!(
+        text.contains("already exists"),
+        "existing file is refused even if corrupt, got: {text}"
     );
+    assert_ne!(resp["result"]["isError"], true);
+    let after = fs::read_to_string(dir.path().join("project.faf")).unwrap();
+    assert_eq!(after, original, "corrupt file must not be rewritten");
 }
 
 // ─── T2.2 faf_sync Update Path ──────────────────────────────────────────
@@ -771,7 +775,10 @@ fn t2_score_missing_fields_listed() {
         text.contains("Empty slots"),
         "Should list empty slots for incomplete .faf"
     );
-    assert!(text.contains("faf_init"), "Should suggest running faf_init");
+    assert!(
+        text.contains("faf_go") || text.contains("Human Context"),
+        "Below 100 points at faf_go, not a score pass"
+    );
 }
 
 // ─── T2.10 Schema Completeness ───────────────────────────────────────────

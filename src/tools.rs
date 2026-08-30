@@ -1,6 +1,7 @@
 //! Tool implementations for rust-faf-mcp
 //!
-//! 10 tools powered by faf-rust-sdk
+//! Cart of FAFb (`xai-faf-rust`). Author is the Rust CLI; this MCP consumes.
+//! 11 tools powered by faf-rust-sdk.
 
 use std::collections::HashMap;
 use std::fs;
@@ -8,6 +9,10 @@ use std::path::{Path, PathBuf};
 
 use faf_rust_sdk::{self, FafFile};
 use serde_json::{Value, json};
+
+use crate::app_type::{self, STACK_SLOTS};
+use crate::intent::{self, ContextCheck};
+use crate::interview::{self, BoxStatus, INTERVIEW_VERSION, is_human_path, is_w_path};
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 
@@ -68,6 +73,15 @@ fn mk4_score(yaml: &str) -> (u32, String) {
 /// Tier display from a kernel tier name. Work-surface symbols (✪, not 🏆) —
 /// this MCP's tool output is a work surface, not a social one. Sub-Trophy
 /// tiers use clean Unicode geometric symbols per doctrine-trophy-social-proofseal-work.
+fn yaml_quote(s: &str) -> String {
+    format!(
+        "\"{}\"",
+        s.replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('\n', " ")
+    )
+}
+
 fn tier_badge(tier: &str) -> &'static str {
     match tier {
         "TROPHY" => "✪ Trophy",
@@ -83,9 +97,8 @@ fn tier_badge(tier: &str) -> &'static str {
 
 // ─── Tool: faf_init ────────────────────────────────────────────────────
 
-/// Create or enhance a project.faf file
-/// First run: detect project, create .faf
-/// Subsequent runs: enhance existing .faf, improve score
+/// Create a project.faf from the tree. Will not overwrite an existing file.
+/// Stack facts come from manifests; human 6Ws stay empty until stated.
 pub fn faf_init(arguments: &Value) -> Value {
     let dir = resolve_path(arguments);
 
@@ -93,12 +106,15 @@ pub fn faf_init(arguments: &Value) -> Value {
         return error_response(&format!("Directory not found: {}", dir.display()));
     }
 
-    // Check if .faf already exists — enhance mode
     if let Some(faf_path) = find_faf(&dir) {
-        return faf_init_enhance(&dir, &faf_path);
+        return text_response(&format!(
+            "project.faf already exists at {}\n\
+             I won't overwrite it.\n\
+             Use faf_auto to sync CLAUDE.md and score. Empty human slots stay empty until you state them.",
+            faf_path.display()
+        ));
     }
 
-    // First run: detect and create
     faf_init_create(&dir)
 }
 
@@ -118,6 +134,12 @@ fn faf_init_create(dir: &Path) -> Value {
     let mut key_files: Vec<String> = Vec::new();
     let mut commands: HashMap<String, String> = HashMap::new();
     let mut build_tool = None;
+    let mut project_type = String::new();
+    let mut runtime: Option<String> = None;
+    let mut cicd: Option<String> = None;
+    let mut backend: Option<String> = None;
+    let frontend: Option<String> = None;
+    let mut looks_like_mcp = dir.join("server.json").exists();
 
     // Detect Cargo.toml (Rust)
     let cargo_path = dir.join("Cargo.toml");
@@ -144,6 +166,20 @@ fn faf_init_create(dir: &Path) -> Value {
                 }
                 main_language = Some("Rust".to_string());
                 build_tool = Some("cargo".to_string());
+                runtime = Some("Rust".to_string());
+                if content.contains("rmcp") {
+                    looks_like_mcp = true;
+                }
+                let has_bin = content.contains("[[bin]]") || dir.join("src/main.rs").exists();
+                let has_lib = content.contains("[lib]") || dir.join("src/lib.rs").exists();
+                if looks_like_mcp {
+                    project_type = "mcp".to_string();
+                    backend = Some("rmcp".to_string());
+                } else if has_bin {
+                    project_type = "cli".to_string();
+                } else if has_lib {
+                    project_type = "library".to_string();
+                }
                 key_files.push("Cargo.toml".to_string());
                 key_files.push("src/main.rs".to_string());
                 key_files.push("src/lib.rs".to_string());
@@ -181,6 +217,12 @@ fn faf_init_create(dir: &Path) -> Value {
                     main_language = Some("JavaScript".to_string());
                     tech_stack = Some("JavaScript + Node.js".to_string());
                 }
+                runtime = Some("Node.js".to_string());
+                if pkg.get("mcpName").is_some() {
+                    project_type = "mcp".to_string();
+                } else if project_type.is_empty() {
+                    project_type = "app".to_string();
+                }
 
                 key_files.push("package.json".to_string());
                 commands.insert("install".to_string(), "npm install".to_string());
@@ -216,6 +258,10 @@ fn faf_init_create(dir: &Path) -> Value {
                 }
                 main_language = Some("Python".to_string());
                 tech_stack = Some("Python".to_string());
+                runtime = Some("Python".to_string());
+                if project_type.is_empty() {
+                    project_type = "library".to_string();
+                }
                 key_files.push("pyproject.toml".to_string());
                 commands.insert("install".to_string(), "pip install -e .".to_string());
             }
@@ -235,6 +281,10 @@ fn faf_init_create(dir: &Path) -> Value {
             }
             main_language = Some("Go".to_string());
             tech_stack = Some("Go".to_string());
+            runtime = Some("Go".to_string());
+            if project_type.is_empty() {
+                project_type = "cli".to_string();
+            }
             key_files.push("go.mod".to_string());
             commands.insert("build".to_string(), "go build ./...".to_string());
             commands.insert("test".to_string(), "go test ./...".to_string());
@@ -250,6 +300,12 @@ fn faf_init_create(dir: &Path) -> Value {
             key_files.push(f.to_string());
         }
     }
+    if dir.join(".github/workflows").is_dir() {
+        cicd = Some("GitHub Actions".to_string());
+    }
+    if project_type.is_empty() {
+        project_type = "library".to_string();
+    }
 
     // Build FAF YAML
     let faf_yaml = build_faf_yaml(&DetectedProject {
@@ -263,6 +319,11 @@ fn faf_init_create(dir: &Path) -> Value {
         key_files: &key_files,
         commands: &commands,
         build_tool: build_tool.as_deref(),
+        project_type: &project_type,
+        runtime: runtime.as_deref(),
+        cicd: cicd.as_deref(),
+        frontend: frontend.as_deref(),
+        backend: backend.as_deref(),
     });
 
     // Write project.faf
@@ -285,204 +346,8 @@ fn faf_init_create(dir: &Path) -> Value {
         tier_badge(&tier),
         faf_path.display()
     );
-
-    if score < 85 {
-        output.push_str("\nScore below 85%? Run faf_init again to enhance.\n");
-    }
-
-    text_response(&output)
-}
-
-/// Enhance an existing project.faf
-fn faf_init_enhance(dir: &Path, faf_path: &Path) -> Value {
-    let content = match fs::read_to_string(faf_path) {
-        Ok(c) => c,
-        Err(e) => return error_response(&format!("Failed to read {}: {}", faf_path.display(), e)),
-    };
-
-    let mut faf = match faf_rust_sdk::parse(&content) {
-        Ok(f) => f,
-        Err(e) => return error_response(&format!("Failed to parse .faf: {}", e)),
-    };
-
-    let (before, before_tier) = mk4_score(&content);
-    let mut changes: Vec<String> = Vec::new();
-
-    // Enhance: detect project info from manifest if missing
-    let cargo_path = dir.join("Cargo.toml");
-    if cargo_path.exists() {
-        if let Ok(cargo_content) = fs::read_to_string(&cargo_path) {
-            if let Ok(cargo) = cargo_content.parse::<toml::Table>() {
-                if let Some(pkg) = cargo.get("package").and_then(|p| p.as_table()) {
-                    if faf.data.project.goal.is_none() {
-                        if let Some(d) = pkg.get("description").and_then(|v| v.as_str()) {
-                            faf.data.project.goal = Some(d.to_string());
-                            changes.push("Added project.goal from Cargo.toml".to_string());
-                        }
-                    }
-                    if faf.data.project.main_language.is_none() {
-                        faf.data.project.main_language = Some("Rust".to_string());
-                        changes.push("Added main_language: Rust".to_string());
-                    }
-                    if faf.data.project.version.is_none() {
-                        if let Some(v) = pkg.get("version").and_then(|v| v.as_str()) {
-                            faf.data.project.version = Some(v.to_string());
-                            changes.push("Added project.version".to_string());
-                        }
-                    }
-                    if faf.data.project.license.is_none() {
-                        if let Some(l) = pkg.get("license").and_then(|v| v.as_str()) {
-                            faf.data.project.license = Some(l.to_string());
-                            changes.push("Added project.license".to_string());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Enhance: add instant_context if missing
-    if faf.data.instant_context.is_none() {
-        let mut ic = faf_rust_sdk::InstantContext {
-            what_building: faf.data.project.goal.clone(),
-            tech_stack: faf.data.project.main_language.clone(),
-            deployment: None,
-            key_files: Vec::new(),
-            commands: HashMap::new(),
-        };
-
-        // Detect key files
-        for f in &[
-            "Cargo.toml",
-            "package.json",
-            "src/main.rs",
-            "src/lib.rs",
-            "README.md",
-        ] {
-            if dir.join(f).exists() {
-                ic.key_files.push(f.to_string());
-            }
-        }
-
-        faf.data.instant_context = Some(ic);
-        changes.push("Added instant_context section".to_string());
-    } else if let Some(ref mut ic) = faf.data.instant_context {
-        // Fill gaps in existing instant_context
-        if ic.what_building.is_none() && faf.data.project.goal.is_some() {
-            ic.what_building = faf.data.project.goal.clone();
-            changes.push("Added instant_context.what_building".to_string());
-        }
-        if ic.tech_stack.is_none() && faf.data.project.main_language.is_some() {
-            ic.tech_stack = faf.data.project.main_language.clone();
-            changes.push("Added instant_context.tech_stack".to_string());
-        }
-        if ic.key_files.is_empty() {
-            for f in &[
-                "Cargo.toml",
-                "package.json",
-                "src/main.rs",
-                "src/lib.rs",
-                "README.md",
-            ] {
-                if dir.join(f).exists() {
-                    ic.key_files.push(f.to_string());
-                }
-            }
-            if !ic.key_files.is_empty() {
-                changes.push("Added key_files".to_string());
-            }
-        }
-    }
-
-    // Enhance: add stack if missing.
-    // NOTE — known, bounded gap: faf-kernel's typed `Stack` struct only has
-    // 7 fields (frontend/backend/database/infrastructure/build_tool/testing/
-    // cicd), covering 4 of Mk4's 19 stack.* slots by real alias (frontend->
-    // framework, database->db; backend and cicd are direct); the other 3
-    // fields (infrastructure/build_tool/testing) have no Mk4 slot mapping
-    // at all. The remaining 15 stack.* slots plus all 5 monorepo.* slots
-    // aren't representable via this typed struct — extending it is a
-    // faf-kernel schema change, out of scope for this release (see the
-    // plan's boundary: don't touch faf-rust unless score() itself differs).
-    // Freshly-created files (faf_init_create/build_faf_yaml) are fully
-    // Mk4-correct; this enhance path improves what it can and is honest
-    // about the rest rather than faking coverage with a fragile YAML hack.
-    if faf.data.stack.is_none() && faf.data.project.main_language.is_some() {
-        faf.data.stack = Some(faf_rust_sdk::Stack {
-            frontend: Some("slotignored".to_string()),
-            backend: faf.data.project.main_language.clone(),
-            database: Some("slotignored".to_string()),
-            infrastructure: None,
-            build_tool: if dir.join("Cargo.toml").exists() {
-                Some("cargo".to_string())
-            } else if dir.join("package.json").exists() {
-                Some("npm".to_string())
-            } else {
-                None
-            },
-            testing: None,
-            cicd: if dir.join(".github/workflows").exists() {
-                Some("GitHub Actions".to_string())
-            } else {
-                Some("slotignored".to_string())
-            },
-        });
-        changes.push("Added stack section".to_string());
-    }
-
-    // Enhance: add human_context stub if missing. Unlike Stack, HumanContext's
-    // 6 fields map 1:1 onto Mk4's 6 human_context.* slots, so this can be
-    // fully honest: real value where derivable, slotignored otherwise —
-    // never a silent Empty.
-    if faf.data.human_context.is_none() {
-        faf.data.human_context = Some(faf_rust_sdk::HumanContext {
-            who: Some("slotignored".to_string()),
-            what: faf
-                .data
-                .project
-                .goal
-                .clone()
-                .or_else(|| Some("slotignored".to_string())),
-            why_field: Some("slotignored".to_string()),
-            how: Some("slotignored".to_string()),
-            where_field: Some("slotignored".to_string()),
-            when: Some("slotignored".to_string()),
-        });
-        changes.push("Added human_context section".to_string());
-    }
-
-    if changes.is_empty() {
-        return text_response(&format!(
-            "project.faf is already complete.\nScore: {}% {}\nNo enhancements needed.",
-            before,
-            tier_badge(&before_tier)
-        ));
-    }
-
-    // Write enhanced .faf
-    let yaml = match faf_rust_sdk::stringify(&faf) {
-        Ok(y) => y,
-        Err(e) => return error_response(&format!("Failed to serialize: {}", e)),
-    };
-    if let Err(e) = fs::write(faf_path, &yaml) {
-        return error_response(&format!("Failed to write: {}", e));
-    }
-
-    let (after, after_tier) = mk4_score(&yaml);
-
-    let mut output = format!(
-        "Enhanced project.faf\n\
-         Score: {}% → {}% {}\n\
-         Changes:\n",
-        before,
-        after,
-        tier_badge(&after_tier)
-    );
-    for c in &changes {
-        output.push_str(&format!("  + {}\n", c));
-    }
-    if after < 85 {
-        output.push_str("\nStill below 85%? Run faf_init again.\n");
+    if score < 100 {
+        output.push_str("Add Human Context to score 100. Run faf_go.\n");
     }
 
     text_response(&output)
@@ -500,26 +365,34 @@ struct DetectedProject<'a> {
     key_files: &'a [String],
     commands: &'a HashMap<String, String>,
     build_tool: Option<&'a str>,
+    project_type: &'a str,
+    runtime: Option<&'a str>,
+    cicd: Option<&'a str>,
+    frontend: Option<&'a str>,
+    backend: Option<&'a str>,
 }
 
-/// Build FAF YAML string from detected values
+/// Build FAF YAML from detected facts. Empty by default; `slotignored` only
+/// where app-type assigns N/A. Human 6Ws are omitted (empty) until `faf_go`.
 fn build_faf_yaml(info: &DetectedProject<'_>) -> String {
     let mut yaml = String::new();
+    let kind = app_type::normalize_app_type(info.project_type);
 
     yaml.push_str("faf_version: \"3.3\"\n");
     yaml.push_str("project:\n");
-    yaml.push_str(&format!("  name: \"{}\"\n", info.name));
+    yaml.push_str(&format!("  name: {}\n", yaml_quote(info.name)));
+    yaml.push_str(&format!("  type: {}\n", yaml_quote(kind)));
     if let Some(g) = info.goal {
-        yaml.push_str(&format!("  goal: \"{}\"\n", g));
+        yaml.push_str(&format!("  goal: {}\n", yaml_quote(g)));
     }
     if let Some(l) = info.main_language {
-        yaml.push_str(&format!("  main_language: \"{}\"\n", l));
+        yaml.push_str(&format!("  main_language: {}\n", yaml_quote(l)));
     }
     if let Some(v) = info.version {
-        yaml.push_str(&format!("  version: \"{}\"\n", v));
+        yaml.push_str(&format!("  version: {}\n", yaml_quote(v)));
     }
     if let Some(l) = info.license {
-        yaml.push_str(&format!("  license: \"{}\"\n", l));
+        yaml.push_str(&format!("  license: {}\n", yaml_quote(l)));
     }
 
     // Instant context
@@ -545,66 +418,40 @@ fn build_faf_yaml(info: &DetectedProject<'_>) -> String {
         }
     }
 
-    // Stack — Mk4-honest: every one of the 19 stack.* slots gets a line,
-    // either a real detected value or an explicit slotignored. Detection
-    // that can't tell (frontend/database/etc.) is not the same as N/A —
-    // under the fixed 33-slot model, a slot silently left out still counts
-    // against the active denominator, exactly the bug that made
-    // "perfect-project"-shaped fixtures score RED instead of TROPHY.
+    // Stack / monorepo: app-type assigns `slotignored`. Active + undetected
+    // stays empty (omitted). Never write none. Never ignore the 6Ws.
+    let mut facts: HashMap<&str, &str> = HashMap::new();
+    if let Some(v) = info.frontend {
+        facts.insert("stack.frontend", v);
+    }
+    if let Some(v) = info.backend {
+        facts.insert("stack.backend", v);
+    }
+    if let Some(v) = info.runtime {
+        facts.insert("stack.runtime", v);
+    }
+    if let Some(v) = info.build_tool {
+        facts.insert("stack.build", v);
+    }
+    if let Some(v) = info.cicd {
+        facts.insert("stack.cicd", v);
+    }
+
     yaml.push_str("stack:\n");
-    yaml.push_str("  frontend: slotignored\n");
-    yaml.push_str("  css_framework: slotignored\n");
-    yaml.push_str("  ui_library: slotignored\n");
-    yaml.push_str("  state_management: slotignored\n");
-    if let Some(l) = info.main_language {
-        yaml.push_str(&format!("  backend: \"{}\"\n", l));
-    } else {
-        yaml.push_str("  backend: slotignored\n");
+    for slot in STACK_SLOTS.iter().filter(|s| s.section == "stack") {
+        if app_type::is_stack_slot_ignored(kind, slot.path) {
+            yaml.push_str(&format!("  {}: slotignored\n", slot.key));
+        } else if let Some(v) = facts.get(slot.path) {
+            yaml.push_str(&format!("  {}: {}\n", slot.key, yaml_quote(v)));
+        }
     }
-    yaml.push_str("  api_type: slotignored\n");
-    yaml.push_str("  runtime: slotignored\n");
-    yaml.push_str("  database: slotignored\n");
-    yaml.push_str("  connection: slotignored\n");
-    yaml.push_str("  hosting: slotignored\n");
-    if let Some(b) = info.build_tool {
-        // `build`, not `build_tool` — the Mk4 canonical slot name.
-        yaml.push_str(&format!("  build: \"{}\"\n", b));
-    } else {
-        yaml.push_str("  build: slotignored\n");
-    }
-    yaml.push_str("  cicd: slotignored\n");
-    yaml.push_str("  monorepo_tool: slotignored\n");
-    yaml.push_str("  package_manager: slotignored\n");
-    yaml.push_str("  workspaces: slotignored\n");
-    yaml.push_str("  admin: slotignored\n");
-    yaml.push_str("  cache: slotignored\n");
-    yaml.push_str("  search: slotignored\n");
-    yaml.push_str("  storage: slotignored\n");
 
-    // `testing` was never a real Mk4 slot (typed Stack struct field only,
-    // invisible to score()) — dropped rather than kept as dead weight.
-    // Detected test-runner info still lives in instant_context.commands.
-
-    // monorepo.* — the 5 remaining canonical slots. faf_init doesn't detect
-    // monorepo structure yet, so all slotignored until it does.
     yaml.push_str("monorepo:\n");
-    yaml.push_str("  packages_count: slotignored\n");
-    yaml.push_str("  build_orchestrator: slotignored\n");
-    yaml.push_str("  versioning_strategy: slotignored\n");
-    yaml.push_str("  shared_configs: slotignored\n");
-    yaml.push_str("  remote_cache: slotignored\n");
-
-    // human_context.* — 6 canonical slots. faf_init has no source for these
-    // (they're the human 6 W's, not detectable from a filesystem scan);
-    // slotignored here rather than silently Empty. faf_init_enhance can
-    // still fill real values in later without a code change to this default.
-    yaml.push_str("human_context:\n");
-    yaml.push_str("  who: slotignored\n");
-    yaml.push_str("  what: slotignored\n");
-    yaml.push_str("  why: slotignored\n");
-    yaml.push_str("  where: slotignored\n");
-    yaml.push_str("  when: slotignored\n");
-    yaml.push_str("  how: slotignored\n");
+    for slot in STACK_SLOTS.iter().filter(|s| s.section == "monorepo") {
+        if app_type::is_stack_slot_ignored(kind, slot.path) {
+            yaml.push_str(&format!("  {}: slotignored\n", slot.key));
+        }
+    }
 
     yaml
 }
@@ -665,7 +512,7 @@ pub async fn faf_git(arguments: &Value) -> Value {
     let language = repo_data
         .get("language")
         .and_then(|v| v.as_str())
-        .unwrap_or("Unknown");
+        .filter(|s| !s.is_empty() && !s.eq_ignore_ascii_case("unknown"));
     let license_name = repo_data
         .get("license")
         .and_then(|l| l.get("spdx_id"))
@@ -688,34 +535,38 @@ pub async fn faf_git(arguments: &Value) -> Value {
         })
         .unwrap_or_default();
 
-    // Build .faf YAML
-    let mut yaml = String::new();
-    yaml.push_str("faf_version: \"3.3\"\n");
-    yaml.push_str("project:\n");
-    yaml.push_str(&format!("  name: \"{}\"\n", name));
-    if !description.is_empty() {
-        yaml.push_str(&format!("  goal: \"{}\"\n", description));
-    }
-    yaml.push_str(&format!("  main_language: \"{}\"\n", language));
-    if let Some(l) = license_name {
-        yaml.push_str(&format!("  license: \"{}\"\n", l));
-    }
-    yaml.push_str("instant_context:\n");
-    if !description.is_empty() {
-        yaml.push_str(&format!("  what_building: \"{}\"\n", description));
-    }
-    yaml.push_str(&format!("  tech_stack: \"{}\"\n", language));
-    yaml.push_str("stack:\n");
-    yaml.push_str(&format!("  backend: \"{}\"\n", language));
-    yaml.push_str("human_context:\n");
-    yaml.push_str(&format!("  who: \"{}\"\n", owner));
-    if !description.is_empty() {
-        yaml.push_str(&format!("  what: \"{}\"\n", description));
-    }
+    // Mechanical facts only — never invent 6Ws (owner is not who).
+    let empty_cmds: HashMap<String, String> = HashMap::new();
+    let yaml = build_faf_yaml(&DetectedProject {
+        name,
+        main_language: language,
+        goal: if description.is_empty() {
+            None
+        } else {
+            Some(description)
+        },
+        version: None,
+        license: license_name,
+        what_building: if description.is_empty() {
+            None
+        } else {
+            Some(description)
+        },
+        tech_stack: language,
+        key_files: &[],
+        commands: &empty_cmds,
+        build_tool: None,
+        project_type: "library",
+        runtime: language,
+        cicd: None,
+        frontend: None,
+        backend: None,
+    });
+    let mut yaml = yaml;
     if !topics.is_empty() {
         yaml.push_str("tags:\n");
         for t in &topics {
-            yaml.push_str(&format!("  - \"{}\"\n", t));
+            yaml.push_str(&format!("  - {}\n", yaml_quote(t)));
         }
     }
 
@@ -730,7 +581,7 @@ pub async fn faf_git(arguments: &Value) -> Value {
          Save this as project.faf in your project root.",
         owner,
         repo,
-        language,
+        language.unwrap_or("(undetected)"),
         stars,
         default_branch,
         score,
@@ -900,18 +751,18 @@ pub fn faf_score(arguments: &Value) -> Value {
     }
 
     if !empty_slots.is_empty() {
-        output.push_str("\nEmpty slots (fill or mark slotignored to improve score):\n");
+        output.push_str("\nEmpty slots:\n");
         for s in &empty_slots {
             output.push_str(&format!("  → {}\n", s));
         }
     }
 
-    if score < 85 {
-        output.push_str(&format!(
-            "\nTo improve: run faf_init to auto-enhance.\n\
-             Target: 85%+ for {} production ready.\n",
-            tier_badge("BRONZE")
-        ));
+    if score < 100 {
+        output.push_str("\nAdd Human Context to score 100. Run faf_go.\n");
+    } else if let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&content) {
+        if let Some(line) = intent::courtesy_line(&doc, score) {
+            output.push_str(&format!("\n{line}\n"));
+        }
     }
 
     text_response(&output)
@@ -1230,7 +1081,7 @@ pub fn faf_tokens(arguments: &Value) -> Value {
 
 // ─── Tool: faf_auto ──────────────────────────────────────────────────
 
-/// Zero to AI context in one command: init → enhance → sync → score → report
+/// Zero to AI context: create if missing, sync CLAUDE.md, score. Does not rewrite DNA.
 pub fn faf_auto(arguments: &Value) -> Value {
     let dir = resolve_path(arguments);
 
@@ -1246,29 +1097,17 @@ pub fn faf_auto(arguments: &Value) -> Value {
         .map(|c| mk4_score(&c).0)
         .unwrap_or(0);
 
-    // Step 1: Init (create or enhance)
     match find_faf(&dir) {
         None => {
             faf_init_create(&dir);
             steps.push("Created project.faf".to_string());
         }
-        Some(faf_path) => {
-            faf_init_enhance(&dir, &faf_path);
-            steps.push("Enhanced project.faf".to_string());
+        Some(_) => {
+            steps.push("project.faf already present (unchanged)".to_string());
         }
     }
 
-    // Step 2: Second pass if score still below 85
-    if let Some(faf_path) = find_faf(&dir) {
-        if let Ok(content) = fs::read_to_string(&faf_path) {
-            if mk4_score(&content).0 < 85 {
-                faf_init_enhance(&dir, &faf_path);
-                steps.push("Second enhancement pass".to_string());
-            }
-        }
-    }
-
-    // Step 3: Sync → generate CLAUDE.md
+    // Sync → generate CLAUDE.md
     if let Some(faf_path) = find_faf(&dir) {
         if let Ok(content) = fs::read_to_string(&faf_path) {
             if let Ok(faf) = faf_rust_sdk::parse(&content) {
@@ -1304,7 +1143,7 @@ pub fn faf_auto(arguments: &Value) -> Value {
         }
     }
 
-    // Step 4: Final score + report — real Mk4
+    // Final score + report — real Mk4
     let (after_score, after_tier): (u32, String) = find_faf(&dir)
         .and_then(|p| fs::read_to_string(&p).ok())
         .map(|c| mk4_score(&c))
@@ -1332,8 +1171,270 @@ pub fn faf_auto(arguments: &Value) -> Value {
         output.push_str(&format!("  {}. {}\n", i + 1, step));
     }
     output.push_str(&format!("\nPath: {}\n", dir.display()));
+    if after_score < 100 {
+        output.push_str("Add Human Context to score 100. Run faf_go.\n");
+    } else if let Some(faf_path) = find_faf(&dir) {
+        if let Ok(raw) = fs::read_to_string(&faf_path) {
+            if let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&raw) {
+                if let Some(line) = intent::courtesy_line(&doc, after_score) {
+                    output.push_str(&format!("{line}\n"));
+                }
+            }
+        }
+    }
 
     text_response(&output)
+}
+
+// ─── Tool: faf_go ────────────────────────────────────────────────────
+
+/// Table-of-8. Suggestions from `#2` beats only — never typed until ☑.
+pub fn faf_go(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+
+    if !dir.exists() {
+        return error_response(&format!("Directory not found: {}", dir.display()));
+    }
+
+    let mut bootstrapped = false;
+    if find_faf(&dir).is_none() {
+        faf_init_create(&dir);
+        bootstrapped = true;
+        if find_faf(&dir).is_none() {
+            return error_response(
+                "No project.faf found, and bootstrap did not produce one. Run faf_init.",
+            );
+        }
+    }
+
+    let faf_path = find_faf(&dir).unwrap();
+    let raw = match fs::read_to_string(&faf_path) {
+        Ok(c) => c,
+        Err(e) => return error_response(&format!("Failed to read: {e}")),
+    };
+    let mut doc: serde_yaml_ng::Value = match serde_yaml_ng::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => return error_response(&format!("Failed to parse YAML: {e}")),
+    };
+
+    let interval_days = arguments
+        .get("interval_days")
+        .or_else(|| arguments.get("ttl_days"))
+        .and_then(|v| v.as_u64())
+        .map(|n| n as u32)
+        .unwrap_or(intent::DEFAULT_INTERVAL_DAYS);
+
+    if let Some(answers) = arguments.get("answers").and_then(|v| v.as_object()) {
+        return faf_go_apply(&dir, &faf_path, &mut doc, answers, interval_days);
+    }
+
+    let table = interview::build_table_of_8(&doc);
+    let (score, tier) = mk4_score(&raw);
+    let courtesy = intent::courtesy_line(&doc, score);
+
+    let filled = table.iter().filter(|r| r.status == BoxStatus::Filled).count();
+    let ws_approved = table
+        .iter()
+        .filter(|r| is_w_path(r.path) && r.status == BoxStatus::Filled)
+        .count();
+
+    if score >= 100 {
+        let mut msg = format!("✪ Trophy — {score}% {}. Human context confirmed.\n", tier_badge(&tier));
+        if let Some(line) = courtesy {
+            msg.push_str(line);
+            msg.push('\n');
+        }
+        return text_response(&msg);
+    }
+
+    let questions: Vec<Value> = table
+        .iter()
+        .filter(|r| r.status != BoxStatus::Filled)
+        .map(|r| {
+            json!({
+                "field": r.path,
+                "question": r.question,
+                "header": r.header,
+                "status": r.status.as_str(),
+                "suggested": if r.status == BoxStatus::Seeded { r.value.as_str() } else { "" },
+                "source": r.source,
+                "beat": r.beat,
+            })
+        })
+        .collect();
+
+    let table_json: Vec<Value> = table
+        .iter()
+        .map(|r| {
+            let mark = if is_w_path(r.path) && r.status == BoxStatus::Filled {
+                "☑"
+            } else {
+                ""
+            };
+            json!({
+                "n": r.n,
+                "header": r.header,
+                "field": r.path,
+                "value": r.value,
+                "status": r.status.as_str(),
+                "mark": mark,
+                "beat": r.beat,
+                "source": r.source,
+            })
+        })
+        .collect();
+
+    text_response(
+        &serde_json::to_string_pretty(&json!({
+            "needsInput": true,
+            "context": "faf_go — Table-of-8",
+            "version": INTERVIEW_VERSION,
+            "bootstrapped": bootstrapped,
+            "score": score,
+            "tier": tier,
+            "targetScore": 100,
+            "wsApproved": ws_approved,
+            "cta": "Add Human Context to score 100. Run faf_go.",
+            "table": table_json,
+            "filled": filled,
+            "questionsRemaining": questions.len(),
+            "questions": questions,
+            "instructions": "Present the Table-of-8. Seeded = ghost from #2 (beat cited) — not typed, not scored. Empty = ask. ☑ only after the human confirms a 6W into the slot. Name/goal score when already facts on disk. Then call faf_go with answers.",
+        }))
+        .unwrap_or_else(|_| "{}".into()),
+    )
+}
+
+fn faf_go_apply(
+    dir: &Path,
+    faf_path: &Path,
+    doc: &mut serde_yaml_ng::Value,
+    answers: &serde_json::Map<String, Value>,
+    interval_days: u32,
+) -> Value {
+    let mut applied = 0usize;
+    let mut checked_ws = false;
+    let mut rejected: Vec<String> = Vec::new();
+    let mut warnings: Vec<String> = Vec::new();
+
+    for (key, val) in answers {
+        if !is_human_path(key) {
+            rejected.push(key.clone());
+            continue;
+        }
+        let Some(s) = val.as_str() else {
+            rejected.push(key.clone());
+            continue;
+        };
+        let t = s.trim();
+        if t.is_empty() {
+            continue;
+        }
+        if t.eq_ignore_ascii_case("none")
+            || t.eq_ignore_ascii_case("n/a")
+            || t.eq_ignore_ascii_case("slotignored")
+        {
+            warnings.push(format!(
+                "{key}: not written — none/N/A/slotignored are not human answers (empty or app-type ignore)"
+            ));
+            continue;
+        }
+        if key.starts_with("human_context.") && t.split_whitespace().count() > 5 {
+            warnings.push(format!("{key}: terse is 3–4 words (cap <6); stored as stated"));
+        }
+        set_yaml_path(doc, key, t);
+        applied += 1;
+        if is_w_path(key) {
+            checked_ws = true;
+        }
+    }
+
+    if !rejected.is_empty() {
+        return error_response(&format!(
+            "faf_go: answers keys must be the Table-of-8 paths only. Rejected: {}",
+            rejected.join(", ")
+        ));
+    }
+
+    if applied > 0 {
+        if checked_ws {
+            let check = ContextCheck::stamp(interval_days);
+            intent::write(doc, &check);
+        }
+        match serde_yaml_ng::to_string(doc) {
+            Ok(out) => {
+                if let Err(e) = fs::write(faf_path, out) {
+                    return error_response(&format!("Failed to write: {e}"));
+                }
+            }
+            Err(e) => return error_response(&format!("Failed to serialize: {e}")),
+        }
+        let _ = faf_sync(&json!({ "path": dir.to_string_lossy() }));
+    }
+
+    let raw = fs::read_to_string(faf_path).unwrap_or_default();
+    let (score, tier) = mk4_score(&raw);
+    let parsed: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str(&raw).unwrap_or(serde_yaml_ng::Value::Null);
+    let table = interview::build_table_of_8(&parsed);
+    let remaining: Vec<&str> = table
+        .iter()
+        .filter(|r| is_w_path(r.path) && r.status != BoxStatus::Filled)
+        .map(|r| r.path)
+        .collect();
+
+    let mut msg = format!(
+        "faf_go applied {applied} field(s)\nScore: {score}% {}\n",
+        tier_badge(&tier)
+    );
+    if checked_ws {
+        msg.push_str("Context checked. Courtesy clock started.\n");
+    }
+    if score >= 100 {
+        msg.push_str("✪ Trophy — 100%. Human context confirmed.\n");
+        if let Some(line) = intent::courtesy_line(&parsed, score) {
+            msg.push_str(line);
+            msg.push('\n');
+        }
+    } else {
+        msg.push_str("Add Human Context to score 100. Run faf_go.\n");
+        if !remaining.is_empty() {
+            msg.push_str(&format!("Still empty: {}\n", remaining.join(", ")));
+        }
+    }
+    for w in warnings {
+        msg.push_str(&format!("Note: {w}\n"));
+    }
+    text_response(&msg)
+}
+
+fn set_yaml_path(doc: &mut serde_yaml_ng::Value, path: &str, val: &str) {
+    let parts: Vec<&str> = path.split('.').collect();
+    if !matches!(doc, serde_yaml_ng::Value::Mapping(_)) {
+        *doc = serde_yaml_ng::Value::Mapping(serde_yaml_ng::Mapping::new());
+    }
+    fn walk(cur: &mut serde_yaml_ng::Value, parts: &[&str], val: &str) {
+        if parts.is_empty() {
+            return;
+        }
+        let key = serde_yaml_ng::Value::String(parts[0].to_string());
+        if parts.len() == 1 {
+            if let serde_yaml_ng::Value::Mapping(m) = cur {
+                m.insert(key, serde_yaml_ng::Value::String(val.to_string()));
+            }
+            return;
+        }
+        if let serde_yaml_ng::Value::Mapping(m) = cur {
+            let entry = m
+                .entry(key)
+                .or_insert_with(|| serde_yaml_ng::Value::Mapping(serde_yaml_ng::Mapping::new()));
+            if !matches!(entry, serde_yaml_ng::Value::Mapping(_)) {
+                *entry = serde_yaml_ng::Value::Mapping(serde_yaml_ng::Mapping::new());
+            }
+            walk(entry, &parts[1..], val);
+        }
+    }
+    walk(doc, &parts, val);
 }
 
 /// Generate CLAUDE.md sync section from parsed FAF

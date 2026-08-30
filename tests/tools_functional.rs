@@ -101,16 +101,26 @@ license = "MIT"
     assert!(faf_content.contains("name: \"test-crate\""));
     assert!(faf_content.contains("main_language: \"Rust\""));
     assert!(faf_content.contains("A test crate"));
+    assert!(
+        !faf_content.contains("who: slotignored"),
+        "6Ws must stay empty, not ignored"
+    );
+    assert!(
+        !faf_content.contains("human_context:"),
+        "empty 6Ws are omitted, not written"
+    );
+    assert!(faf_content.contains("type: \"cli\""));
+    assert!(faf_content.contains("frontend: slotignored"));
 }
 
 #[test]
-fn test_faf_init_enhances_on_second_run() {
+fn test_faf_init_refuses_second_run() {
     let dir = tempfile::tempdir().unwrap();
     let cargo_toml = r#"[package]
-name = "enhance-test"
+name = "init-once-test"
 version = "1.0.0"
 edition = "2021"
-description = "Testing enhancement"
+description = "Testing create-once"
 license = "MIT"
 "#;
     fs::write(dir.path().join("Cargo.toml"), cargo_toml).unwrap();
@@ -120,18 +130,20 @@ license = "MIT"
         dir.path().display()
     );
 
-    // First run — creates
     let resp1 = mcp_request(&req);
     let text1 = extract_text(&resp1);
     assert!(text1.contains("Created project.faf"));
+    let before = fs::read_to_string(dir.path().join("project.faf")).unwrap();
 
-    // Second run — enhances
     let resp2 = mcp_request(&req);
     let text2 = extract_text(&resp2);
     assert!(
-        text2.contains("Enhanced") || text2.contains("already complete"),
-        "Second run should enhance or report complete"
+        text2.contains("already exists"),
+        "Second run should refuse, got: {text2}"
     );
+    assert_ne!(resp2["result"]["isError"], true, "refuse is not a protocol error");
+    let after = fs::read_to_string(dir.path().join("project.faf")).unwrap();
+    assert_eq!(before, after, "second faf_init must not rewrite DNA");
 }
 
 #[test]
@@ -271,7 +283,7 @@ project:
     let resp = mcp_request(&req);
     let text = extract_text(&resp);
     assert!(text.contains("Empty slots"));
-    assert!(text.contains("faf_init"));
+    assert!(text.contains("faf_go") || text.contains("Human Context"));
 }
 
 // ─── faf_read tests ────────────────────────────────────────────────────
@@ -615,4 +627,84 @@ fn test_faf_agents_no_faf_file() {
     );
     let resp = mcp_request(&req);
     assert_eq!(resp["result"]["isError"], true, "Should error without .faf");
+}
+
+// ─── faf_go ────────────────────────────────────────────────────────────
+
+#[test]
+fn test_faf_go_table_does_not_write() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("Cargo.toml"),
+        r#"[package]
+name = "go-table"
+version = "0.1.0"
+edition = "2021"
+description = "A crate on crates.io"
+"#,
+    )
+    .unwrap();
+    fs::create_dir_all(dir.path().join("src")).unwrap();
+    fs::write(dir.path().join("src/main.rs"), "fn main() {}").unwrap();
+
+    let init = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_init","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    mcp_request(&init);
+    let before = fs::read_to_string(dir.path().join("project.faf")).unwrap();
+
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_go","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let text = extract_text(&mcp_request(&req));
+    assert!(text.contains("needsInput") || text.contains("Table-of-8"));
+    assert!(text.contains("faf-interview/1"));
+    let after = fs::read_to_string(dir.path().join("project.faf")).unwrap();
+    assert_eq!(before, after, "phase 1 must not write");
+    assert!(
+        !before.contains("human_context:"),
+        "suggestions must not occupy scored 6W slots"
+    );
+}
+
+#[test]
+fn test_faf_go_rejects_stack_path() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("project.faf"),
+        "faf_version: \"3.3\"\nproject:\n  name: \"x\"\n  goal: \"y\"\n",
+    )
+    .unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_go","arguments":{{"path":"{}","answers":{{"stack.frontend":"React"}}}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    let err = resp["result"]["isError"].as_bool().unwrap_or(false);
+    assert!(err || text.contains("Rejected") || text.contains("stack.frontend"));
+}
+
+#[test]
+fn test_faf_go_apply_writes_human_and_context_check() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("project.faf"),
+        "faf_version: \"3.3\"\nproject:\n  name: \"x\"\n  goal: \"y\"\n",
+    )
+    .unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_go","arguments":{{"path":"{}","answers":{{"human_context.why":"Persistent context"}}}}}}}}"#,
+        dir.path().display()
+    );
+    let text = extract_text(&mcp_request(&req));
+    assert!(text.contains("applied"));
+    let faf = fs::read_to_string(dir.path().join("project.faf")).unwrap();
+    assert!(faf.contains("why:"));
+    assert!(faf.contains("Persistent context"));
+    assert!(faf.contains("context_check:"));
+    assert!(faf.contains("interval_days:"));
+    assert!(!faf.contains("intent:"));
 }

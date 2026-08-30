@@ -10,7 +10,7 @@
 //!     the Orientation line's `type:` bit can never appear.
 //!   - `Stack` is a 7-field typed struct (frontend/backend/database/
 //!     infrastructure/build_tool/testing/cicd), not the full 19-slot Mk4 model —
-//!     same limitation already documented for `faf_init_enhance` in the 0.5.0
+//!     same limitation already documented for typed `Stack` in the 0.5.0
 //!     CHANGELOG.
 //!   - `slot_label` falls back to `title_label` rather than porting faf-cli's
 //!     full 33-entry `SLOT_BY_PATH` registry (`core/slots.ts`) — only affects

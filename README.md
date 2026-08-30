@@ -61,16 +61,15 @@ brew install Wolfe-Jam/faf/rust-faf-mcp
 
 ## One command, done forever
 
-`faf_auto` detects your project, creates a `.faf`, enhances it to max score, and syncs `CLAUDE.md` — in one shot:
+`faf_auto` detects your project, creates a `.faf` if missing, and syncs `CLAUDE.md`. It does not rewrite an existing `project.faf`. Empty human slots stay empty until you state them.
 
 ```
 faf_auto complete
 ━━━━━━━━━━━━━━━━━
-Score: 0% → 85% (+85) ◇ BRONZE
+Score: 0% → 42% (+42) ● GREEN
 Steps:
   1. Created project.faf
-  2. Second enhancement pass
-  3. Created CLAUDE.md
+  2. Created CLAUDE.md
 
 Path: /home/user/my-project
 ```
@@ -109,8 +108,9 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 
 | Tool | What it does |
 |------|-------------|
-| `faf_auto` | Zero to AI context in one command — init, enhance, sync, score, done |
-| `faf_init` | Create or enhance `project.faf` from `Cargo.toml`, `package.json`, `pyproject.toml`, or `go.mod` |
+| `faf_auto` | Create `project.faf` if missing, sync `CLAUDE.md`, score — does not invent 6Ws |
+| `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. App-type assigns `slotignored`; 6Ws stay empty |
+| `faf_go` | Table-of-8. 6Ws score after ☑. Below 100: add Human Context. After 100: courtesy check every 30 days (90 max) |
 | `faf_git` | Generate `project.faf` from any GitHub repo URL — no clone needed |
 | `faf_discover` | Walk up the directory tree to find the nearest `project.faf` |
 
@@ -130,7 +130,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 | `faf_compress` | Compress `.faf` for token-limited contexts (`minimal` / `standard` / `full`) |
 | `faf_tokens` | Estimate token count at each compression level |
 
-`faf_init` is iterative — run it again and it fills in what's missing. Score goes up each time.
+`faf_init` will not overwrite an existing file. Empty human slots stay empty until `faf_go`.
 
 ## Architecture
 
@@ -138,7 +138,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 src/
 ├── main.rs      # ~20 lines — tokio entry, rmcp stdio transport
 ├── server.rs    # FafServer: #[tool_router], ServerHandler, resources
-└── tools.rs     # Business logic — all 10 tools, pure functions returning Value
+└── tools.rs     # Business logic — tools as pure functions returning Value
 ```
 
 - **Runtime**: `tokio` single-threaded (`current_thread`)
@@ -164,7 +164,7 @@ bash scripts/install-hooks.sh
 | File | Tests | Coverage |
 |------|-------|----------|
 | `mcp_protocol.rs` | 9 | Init handshake, tools/list, resources, schema validation, ID preservation |
-| `tools_functional.rs` | 28 | All 10 tools — happy path, error paths, language detection |
+| `tools_functional.rs` | 31 | Tools — happy path, error paths, language detection, faf_go |
 | `tier1_security.rs` | 12 | Path traversal, null bytes, shell injection, oversized input, malformed JSON |
 | `tier2_engine.rs` | 36 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
 | `tier3_edge_cases.rs` | 10 | Unicode, CJK, score boundaries, unknown fields, GitHub URL parsing |

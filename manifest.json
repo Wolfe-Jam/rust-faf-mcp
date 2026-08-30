@@ -3,8 +3,8 @@
   "name": "rust-faf-mcp",
   "display_name": "Rust FAF",
   "version": "0.6.0",
-  "description": "RMCP-powered FAF server. 10 tools. Rust-native MCP for IANA-registered .faf format.",
-  "long_description": "Rust-native MCP server for FAF (Foundational AI-context Format). Built with rmcp 3.0.1 (MCP Tier 1 foundation) and faf-rust-sdk. 10 tools for reading, scoring, syncing, and managing .faf project DNA files. Registry identity: one.faf/rust-faf-mcp.\n\n**Tools:** faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents\n\n**Why Rust?** Zero-dependency binary. No Node.js, no Python, no runtime. Just the binary.\n\n**IANA-registered MIME type (application/vnd.faf+yaml).**",
+  "description": "RMCP-powered FAF server. 11 tools. Rust-native MCP for IANA-registered .faf format.",
+  "long_description": "Rust-native MCP server for FAF (Foundational AI-context Format). Built with rmcp 3.0.1 (MCP Tier 1 foundation) and faf-rust-sdk. 11 tools for reading, scoring, syncing, and managing .faf project DNA files. Registry identity: one.faf/rust-faf-mcp.\n\n**Tools:** faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go\n\n**Why Rust?** Zero-dependency binary. No Node.js, no Python, no runtime. Just the binary.\n\n**IANA-registered MIME type (application/vnd.faf+yaml).**",
   "author": {
     "name": "Wolfejam",
     "email": "team@faf.one",
@@ -39,7 +39,7 @@
   "tools": [
     {
       "name": "faf_init",
-      "description": "Create or enhance a project.faf file"
+      "description": "Create a project.faf from stack detection. Will not overwrite an existing file"
     },
     {
       "name": "faf_git",
@@ -76,6 +76,10 @@
     {
       "name": "faf_agents",
       "description": "Generate AGENTS.md from project.faf, non-destructively"
+    },
+    {
+      "name": "faf_go",
+      "description": "Table-of-8 interview: human confirms name, goal, and the 6Ws. Mk4 score plus 30/90-day intent grant"
     }
   ],
   "compatibility": {

@@ -33,7 +33,7 @@ cargo clippy -- -D warnings  # matches CI
 | File | Role |
 |------|------|
 | `tests/mcp_protocol.rs` | Initialize handshake, tools/list, resources, schema, id preservation |
-| `tests/tools_functional.rs` | All 10 tools — happy path, errors, language detection |
+| `tests/tools_functional.rs` | Tools — happy path, errors, language detection, faf_go |
 | `tests/tier1_security.rs` | Path traversal, null bytes, injection, oversized/malformed input |
 | `tests/tier2_engine.rs` | Corrupt YAML, sync, pipelines, dual manifests, direct paths |
 | `tests/tier3_edge_cases.rs` | Unicode/CJK, score boundaries, GitHub URL parsing |
@@ -73,13 +73,14 @@ CHANGELOG.md     # Release notes; update on every version bump
 - **SDK:** `faf-rust-sdk` **3.1** (Cargo pin — facade over `faf-kernel` / `faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust)). Prefer composing the SDK over reimplementing scoring or YAML shape.
 - **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas come from schemars; keep descriptions accurate when adding tools.
 
-### The ten tools
+### The eleven tools
 
 | Tool | Purpose |
 |------|---------|
 | `faf_agents` | Author `AGENTS.md` from `project.faf` (non-destructive; keeps hand text outside the managed block) |
-| `faf_auto` | Init → enhance → sync → score in one shot |
-| `faf_init` | Create or enhance `project.faf` from Cargo.toml / package.json / pyproject.toml / go.mod |
+| `faf_auto` | Create if missing, sync CLAUDE.md, score — does not invent 6Ws |
+| `faf_go` | Table-of-8 interview; human confirms; Mk4 + 30/90-day intent grant |
+| `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. 6Ws stay empty |
 | `faf_git` | Build `project.faf` from a GitHub URL (network) |
 | `faf_discover` | Walk up the tree for nearest `project.faf` |
 | `faf_score` | AI-readiness score 0–100% + breakdown |

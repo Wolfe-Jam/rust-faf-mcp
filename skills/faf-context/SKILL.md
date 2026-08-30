@@ -11,9 +11,10 @@ Product playbook for **rust-faf-mcp** (`one.faf/rust-faf-mcp`) — IANA `.faf` p
 
 | Tool | When |
 |------|------|
-| `faf_auto` | Zero → context in one shot (create, enhance, sync) |
-| `faf_init` | Create or enhance `project.faf` from stack detection |
-| `faf_score` | AI-readiness score 0–100% + gaps |
+| `faf_auto` | Create if missing, sync CLAUDE.md, score — does not invent 6Ws |
+| `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. 6Ws stay empty |
+| `faf_go` | Table-of-8. 6Ws need ☑ to score. Below 100: add Human Context |
+| `faf_score` | AI-readiness score 0–100% + intent grant |
 | `faf_sync` | Bi-sync `project.faf` ↔ `CLAUDE.md` |
 | `faf_discover` | Walk up to find nearest `.faf` |
 | `faf_read` | Show structured `.faf` contents |

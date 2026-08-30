@@ -68,7 +68,7 @@
 
 ### T2.2 - Tool Functionality (17 tests)
 - faf_init creates for Rust project
-- faf_init enhances on second run
+- faf_init refuses on second run (file unchanged)
 - faf_init nonexistent directory
 - faf_init detects Node
 - faf_init detects TypeScript

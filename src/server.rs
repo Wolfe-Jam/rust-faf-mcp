@@ -30,6 +30,18 @@ pub struct GitParams {
 }
 
 #[derive(Deserialize, Serialize, JsonSchema)]
+pub struct GoParams {
+    #[schemars(description = "Project directory (default: current directory)")]
+    pub path: Option<String>,
+    #[schemars(
+        description = "Answers to apply. Keys are Table-of-8 paths (project.name, project.goal, human_context.*). If omitted, returns the table to confirm/ask."
+    )]
+    pub answers: Option<std::collections::HashMap<String, String>>,
+    #[schemars(description = "Courtesy Context Call interval in days. 30 default, 90 max. Default 30.")]
+    pub interval_days: Option<u32>,
+}
+
+#[derive(Deserialize, Serialize, JsonSchema)]
 pub struct CompressParams {
     #[schemars(description = "Project directory or .faf file path (default: current directory)")]
     pub path: Option<String>,
@@ -88,7 +100,7 @@ impl Default for FafServer {
 #[tool_router]
 impl FafServer {
     #[tool(
-        description = "Create or enhance a project.faf file. First run creates from Cargo.toml/package.json detection. Subsequent runs enhance and improve the score. Low score? Run again."
+        description = "Create a project.faf from the tree. Will not overwrite. App-type assigns slotignored. Human 6Ws stay empty. Use faf_go to state them."
     )]
     async fn faf_init(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -150,7 +162,7 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Zero to AI context in one command. Creates .faf, enhances to max score, syncs CLAUDE.md. Run once, done forever."
+        description = "Create project.faf if missing, sync CLAUDE.md, score. Does not invent 6Ws. Use faf_go for the human card."
     )]
     async fn faf_auto(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -163,6 +175,14 @@ impl FafServer {
     async fn faf_agents(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_agents(&args))
+    }
+
+    #[tool(
+        description = "Table-of-8: 6Ws need ☑ to score. Suggestions from the goal (beats only) are not typed and not scored. Below 100 run this to add Human Context. After 100, courtesy: Time to check your Context."
+    )]
+    async fn faf_go(&self, params: Parameters<GoParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_go(&args))
     }
 }
 

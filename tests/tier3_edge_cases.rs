@@ -127,7 +127,10 @@ fn t3_minimal_faf_low_score() {
         text.contains("Empty slots"),
         "Minimal .faf should show empty slots"
     );
-    assert!(text.contains("faf_init"), "Should suggest running faf_init");
+    assert!(
+        text.contains("faf_go") || text.contains("Human Context"),
+        "Below 100 points at faf_go"
+    );
 }
 
 #[test]

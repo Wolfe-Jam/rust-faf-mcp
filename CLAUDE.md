@@ -9,7 +9,7 @@
 
 **Stack:** Rust 2024, rmcp 3.0.1, faf-rust-sdk 3.1, serde, reqwest, tokio
 
-**Building:** Rust MCP server — 10 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents) powered by rmcp SDK + faf-rust-sdk
+**Building:** Rust MCP server — 11 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go). Cart of FAFb.
 
 **Key Files:**
 - Cargo.toml
