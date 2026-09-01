@@ -36,12 +36,26 @@ pub fn inject_faf_block_with_markers(
 
     let existing = fs::read_to_string(path)?;
 
-    // 2. Markers present -> replace only the managed block; keep everything around it.
-    if let (Some(s), Some(e)) = (existing.find(start), existing.find(end)) {
+    // 2. Markers present as **their own lines** (optional leading whitespace).
+    //    Mid-line mentions (docs, comments) must not count — this file is the
+    //    example of BEST and documents the markers in prose.
+    if let (Some(s), Some(e)) = (
+        find_line_marker(&existing, start),
+        find_line_marker(&existing, end),
+    ) {
         if e > s {
-            let before = &existing[..s];
-            let after = &existing[e + end.len()..];
-            return fs::write(path, format!("{before}{wrapped}{after}"));
+            let after_start = e + end.len();
+            let after = if existing[after_start..].starts_with('\n') {
+                &existing[after_start + 1..]
+            } else if existing[after_start..].starts_with("\r\n") {
+                &existing[after_start + 2..]
+            } else {
+                &existing[after_start..]
+            };
+            return fs::write(
+                path,
+                format!("{before}{wrapped}\n{after}", before = &existing[..s]),
+            );
         }
     }
 
@@ -50,6 +64,21 @@ pub fn inject_faf_block_with_markers(
     //    below it is a real, plausible shape) -> prefix the block, preserve
     //    everything. Never delete on a guess about what the rest of the file is.
     fs::write(path, format!("{wrapped}\n\n{existing}"))
+}
+
+/// Index of `marker` only when it is the full line (after optional indent).
+fn find_line_marker(hay: &str, marker: &str) -> Option<usize> {
+    let mut offset = 0usize;
+    for line in hay.split_inclusive('\n') {
+        let body = line.trim_end_matches(['\n', '\r']);
+        let stripped = body.trim_start();
+        if stripped == marker {
+            let indent = body.len() - stripped.len();
+            return Some(offset + indent);
+        }
+        offset += line.len();
+    }
+    None
 }
 
 #[cfg(test)]
@@ -131,5 +160,43 @@ mod tests {
         assert_eq!(content.matches(FAF_START).count(), 1);
         assert!(content.contains("v2"));
         assert!(!content.contains("v1"));
+    }
+
+    #[test]
+    fn mid_line_marker_mention_does_not_splice() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        let prose = "# Brief\n\nsrc/inject.rs    # Non-destructive <!-- faf:start --> / <!-- faf:end --> write\n";
+        fs::write(&path, prose).unwrap();
+        inject_faf_block(&path, "fresh").unwrap();
+        let content = fs::read_to_string(&path).unwrap();
+        assert!(
+            content.starts_with(&format!("{FAF_START}\nfresh\n{FAF_END}\n")),
+            "must prefix, not splice mid-line: {content}"
+        );
+        assert!(content.contains("src/inject.rs"));
+        assert!(content.contains("# Brief"));
+        assert_eq!(content.matches(FAF_START).count(), 2); // block + prose mention
+    }
+
+    #[test]
+    fn best_shape_refreshes_block_keeps_lead_and_brief() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        let lead = "# AGENTS.md — rust-faf-mcp\n\nRead project.faf first.\n\n";
+        let brief = "\n## Working in this tree\n\nHand brief. Do not clobber.\n";
+        fs::write(
+            &path,
+            format!("{lead}{FAF_START}\nold-block\n{FAF_END}{brief}"),
+        )
+        .unwrap();
+        inject_faf_block(&path, "new-block").unwrap();
+        let content = fs::read_to_string(&path).unwrap();
+        assert!(content.starts_with(lead), "lead must stay: {content}");
+        assert!(content.contains("## Working in this tree"), "{content}");
+        assert!(content.contains("Hand brief. Do not clobber."), "{content}");
+        assert!(content.contains("new-block"), "{content}");
+        assert!(!content.contains("old-block"), "{content}");
+        assert_eq!(content.matches(FAF_START).count(), 1);
     }
 }

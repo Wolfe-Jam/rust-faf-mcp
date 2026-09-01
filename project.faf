@@ -10,7 +10,7 @@ project:
   type: mcp
   framework: rmcp
 instant_context:
-  what_building: Rust MCP server — 10 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents) powered by rmcp SDK + faf-rust-sdk
+  what_building: Rust MCP server — 11 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go) powered by rmcp SDK + faf-rust-sdk
   tech_stack: Rust 2024, rmcp 3.0.1, faf-rust-sdk 3.1, serde, reqwest, tokio
   key_files:
     - Cargo.toml
@@ -28,7 +28,7 @@ instant_context:
 stack:
   backend: Rust
   build_tool: cargo
-  testing: cargo test (133 tests, WJTTC 4-tier)
+  testing: cargo test (151 tests, WJTTC 4-tier)
   registry: crates.io
   frontend: slotignored
   css_framework: slotignored

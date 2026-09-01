@@ -1,132 +1,182 @@
 # AGENTS.md — rust-faf-mcp
 
-**Authored** 2026-08-28 from live repo facts (`Cargo.toml`, README, `src/`, `tests/`). This is the working brief for the tree.
+This repository is the **example of BEST** on the FAF side of the ladder — not a slogan.
 
-Rust-native MCP server (stdio) for the IANA-registered `.faf` format (`application/vnd.faf+yaml`). Single binary, ten tools, no network listener by default. **v0.6.0** · edition **2024** · MSRV **1.85** · crate `rust-faf-mcp` · registry name `one.faf/rust-faf-mcp`.
+`NONE → GOOD → BETTER → BEST`
+
+- **BETTER** is protocol honesty (mcp-better `main` / `mcp-better-better`). No `project.faf` required.
+- **BEST print slice** (mcp-better `better-best/*` / `mcp-better-best`) is **the same software plus `project.faf`**. Falsifiable diff. That is the definition.
+- **This crate** is BEST **on main**: Trophy `project.faf` **and** this `AGENTS.md`. FAF defines. This file instructs. Sealed BLOCK from the DNA; working brief outside the markers. It is also a FAF MCP server, in Rust, `one.faf/rust-faf-mcp` — a crate people actually watch.
+
+Do not collapse BETTER into BEST. Do not treat this markdown as the score. The score is `project.faf` (Mk4 **100% ✪**).
+
+Read `project.faf` first. Do not edit the BLOCK. Refresh it with `faf_agents`. Everything below the BLOCK is how we work in this tree.
+
+<!-- faf:start -->
+<!-- faf: rust-faf-mcp | Rust |  | Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml -->
+<!-- faf: claim=project.faf | family=FAF -->
+
+# AGENTS.md — rust-faf-mcp
+
+Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.6.0
+
+> Authored by faf — do not edit the managed block; refresh with `faf export --agents`. Hand content outside `<!-- faf:start -->` … `<!-- faf:end -->` is preserved.
 
 ## Setup & build
 
 ```bash
-# Toolchain: stable Rust ≥ 1.85 (declared rust-version in Cargo.toml)
-cargo build                  # debug
-cargo build --release        # release: LTO + strip → target/release/rust-faf-mcp (~4.2 MB)
-cargo run                    # run the stdio server (MCP clients attach via stdin/stdout)
-```
-
-Install paths used in the wild (do not invent others):
-
-```bash
-cargo install rust-faf-mcp
-brew install Wolfe-Jam/faf/rust-faf-mcp   # macOS prebuilt, when formula is current
+cargo build    # build
+cargo fmt --check    # fmt
+cargo publish    # publish
 ```
 
 ## Run the tests
 
 ```bash
-cargo test                   # all 133 tests — must pass before done
-cargo fmt --check            # matches CI
-cargo clippy -- -D warnings  # matches CI
+cargo test
+cargo clippy -- -D warnings
 ```
-
-133 tests = 117 integration + 16 unit. Tests spawn the compiled `rust-faf-mcp` binary as a subprocess and speak real JSON-RPC over stdin/stdout (not unit mocks of the protocol). Suites:
-
-| File | Role |
-|------|------|
-| `tests/mcp_protocol.rs` | Initialize handshake, tools/list, resources, schema, id preservation |
-| `tests/tools_functional.rs` | Tools — happy path, errors, language detection, faf_go |
-| `tests/tier1_security.rs` | Path traversal, null bytes, injection, oversized/malformed input |
-| `tests/tier2_engine.rs` | Corrupt YAML, sync, pipelines, dual manifests, direct paths |
-| `tests/tier3_edge_cases.rs` | Unicode/CJK, score boundaries, GitHub URL parsing |
-| `tests/tier4_aero.rs` | Manifest / server.json / version / context-block cross-validation |
-| `src` unit (16) | Skills digest + scoring resource, `agents::` (7), `inject::` (5) |
 
 ## Where things live
 
+- `Cargo.toml`
+- `src/main.rs`
+- `src/server.rs`
+- `src/tools.rs`
+- `README.md`
+- `LICENSE`
+
+## Guardrails
+
+- **Always OK:** read the tree · run the tests (`cargo test`) · build the project · `cargo clippy -- -D warnings`.
+- **Ask first:** dependency installs, deletions, migrations, schema changes, publish/release.
+- **Never:** force-push · push straight to `main` (branch and open a PR) · commit secrets.
+
+## Definition of Done
+
+Done when: `cargo clippy -- -D warnings` exits 0 · `cargo test` passes · changes committed with a conventional message.
+
+## When stuck
+
+Ask a clarifying question, propose a short plan, or open a draft PR with notes — do not push large speculative changes to `main`.
+
+## Commit & PR
+
+- Conventional Commits preferred (`feat:`, `fix:`, `chore:`, …).
+- Branch off `main` and open a PR — never commit to `main` directly.
+- If build/test scripts or layout change, refresh this file in the **same PR** (`faf export --agents`).
+
+## Stack
+
+- **Backend:** Rust
+- **Build Tool:** cargo
+- **Testing:** cargo test (151 tests, WJTTC 4-tier)
+- **Cicd:** GitHub Actions
+<!-- faf:end -->
+
+## Working in this tree
+
+**0.6.0** is live. Unreleased cart on `main`: `faf_go`, line-only BLOCK markers, this BEST file. Edition **2024** · MSRV **1.85**. 11 tools. 151 tests.
+
+### Setup (what we actually run)
+
+```bash
+cargo build
+cargo build --release        # LTO + strip → target/release/rust-faf-mcp
+cargo test
+cargo fmt --check
+cargo clippy -- -D warnings
+```
+
+```bash
+cargo install rust-faf-mcp
+brew install Wolfe-Jam/faf/rust-faf-mcp
+```
+
+Tests spawn the compiled binary and speak JSON-RPC on stdin/stdout.
+
+| File | Role |
+|------|------|
+| `tests/mcp_protocol.rs` | Handshake, tools/list, resources, schema |
+| `tests/tools_functional.rs` | Tools including `faf_go` |
+| `tests/tier1_security.rs` | Path traversal, injection, oversized input |
+| `tests/tier2_engine.rs` | Corrupt YAML, pipelines, dual manifests |
+| `tests/tier3_edge_cases.rs` | Unicode, score boundaries |
+| `tests/tier4_aero.rs` | manifest.json ↔ server.json ↔ Cargo.toml |
+| `src` unit | `agents` · `inject` · `app_type` · `interview` · `intent` · `skills` |
+
+### Where things live
+
 ```
 src/main.rs      # tokio current_thread, rmcp stdio, tracing → stderr
-src/server.rs    # FafServer: #[tool_router], ServerHandler, resource faf://scoring/weights
-src/tools.rs     # Business logic — fns returning serde_json::Value
-src/agents.rs    # AGENTS.md body from project.faf
-src/inject.rs    # Non-destructive <!-- faf:start --> / <!-- faf:end --> write
+src/server.rs    # FafServer: #[tool_router], ServerHandler, faf://scoring/weights
+src/tools.rs     # Business logic
+src/app_type.rs  # App-type → assigned slotignored (never 6Ws)
+src/interview.rs # Table-of-8 / faf-interview/1 (cart; CLI authors)
+src/intent.rs    # Courtesy Context Call (30|90)
+src/agents.rs    # AGENTS.md BLOCK from project.faf
+src/inject.rs    # Marker write — faf:start / faf:end as their own lines
 src/skills.rs    # MCP skills extension (faf-context)
-tests/           # WJTTC-style integration suite (see table above)
-Cargo.toml       # package version, MSRV, deps, release profile
-server.json      # MCP Registry descriptor (name one.faf/rust-faf-mcp, registryType cargo)
-manifest.json    # MCPB / packaging metadata (display name "Rust FAF", tool list)
-project.faf      # Project DNA (YAML); keep version in sync with Cargo.toml
-README.md        # Humans + crates.io; must keep visible `mcp-name: one.faf/rust-faf-mcp`
-CHANGELOG.md     # Release notes; update on every version bump
-.github/workflows/
-  ci.yml                    # fmt + clippy -D warnings + test + release build
-  audit.yml                 # cargo audit (weekly + lockfile changes)
-  publish-crate.yml         # crates.io Trusted Publishing (OIDC on GitHub Release)
-  publish-mcp-registry.yml  # MCP Registry publish
-  release.yml / homebrew.yml
+project.faf      # DNA — keep version in sync with Cargo.toml
+server.json      # MCP Registry · name one.faf/rust-faf-mcp
+manifest.json    # MCPB tool list
+README.md        # Humans + crates.io — visible mcp-name: one.faf/rust-faf-mcp
 ```
 
-## Architecture (load-bearing)
+### Architecture (load-bearing)
 
-- **Split:** `tools.rs` owns behavior; `server.rs` owns MCP wiring. `agents.rs` authors the AGENTS.md body; `inject.rs` writes the managed block without touching hand text. Tools return `serde_json::Value` (`content[0].text` + optional `isError`). Server adapts via `value_to_string_result` → `Result<String, String>` for rmcp.
-- **rmcp 3.0.1:** `#[tool_handler(router = self.tool_router)]` must pin the **cached** router field. Do not drop this — default rebuilds the router per call. (Same rule since ≥1.7; wire is Tier-1 assessed cut.)
-- **Runtime:** `tokio` `current_thread` only. Logging goes to **stderr** so stdout stays pure JSON-RPC.
-- **HTTP:** `reqwest` is used only by `faf_git` (GitHub API). Everything else is local filesystem.
-- **SDK:** `faf-rust-sdk` **3.1** (Cargo pin — facade over `faf-kernel` / `faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust)). Prefer composing the SDK over reimplementing scoring or YAML shape.
-- **Params:** `PathParams` / `GitParams` / `CompressParams` + `schemars::JsonSchema` — schemas come from schemars; keep descriptions accurate when adding tools.
+- **Split:** `tools.rs` owns behavior; `server.rs` owns MCP wiring. `agents.rs` authors the BLOCK; `inject.rs` writes it without touching hand text.
+- **rmcp 3.0.1:** `#[tool_handler(router = self.tool_router)]` must pin the **cached** router field.
+- **Runtime:** `tokio` `current_thread`. Logging → **stderr**. stdout is JSON-RPC only.
+- **HTTP:** `reqwest` only for `faf_git`.
+- **SDK:** `faf-rust-sdk` **3.1**. Do not reimplement scoring.
+- **Params:** `PathParams` / `GitParams` / `CompressParams` / `GoParams`.
 
 ### The eleven tools
 
 | Tool | Purpose |
 |------|---------|
-| `faf_agents` | Author `AGENTS.md` from `project.faf` (non-destructive; keeps hand text outside the managed block) |
+| `faf_agents` | Author the AGENTS.md BLOCK from `project.faf` (hand text outside markers) |
 | `faf_auto` | Create if missing, sync CLAUDE.md, score — does not invent 6Ws |
-| `faf_go` | Table-of-8 interview; human confirms; Mk4 + 30/90-day intent grant |
+| `faf_go` | Table-of-8. 6Ws score after ☑. Below 100: add Human Context. After 100: Time to check your Context (30 days, 90 max) |
 | `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. 6Ws stay empty |
-| `faf_git` | Build `project.faf` from a GitHub URL (network) |
-| `faf_discover` | Walk up the tree for nearest `project.faf` |
-| `faf_score` | AI-readiness score 0–100% + breakdown |
-| `faf_sync` | Sync `project.faf` ↔ `CLAUDE.md` inside `<!-- FAF-SYNC-START -->` … `<!-- FAF-SYNC-END -->` |
-| `faf_read` | Parse and display `.faf` |
-| `faf_compress` | Compress levels: `minimal` / `standard` / `full` |
-| `faf_tokens` | Token estimates per compression level |
+| `faf_git` | From a GitHub URL — mechanical facts only |
+| `faf_discover` | Walk up for nearest `project.faf` |
+| `faf_score` | Mk4 0–100% |
+| `faf_sync` | `project.faf` ↔ CLAUDE.md |
+| `faf_read` | Display `.faf` |
+| `faf_compress` | `minimal` / `standard` / `full` |
+| `faf_tokens` | Token estimates |
 
-MCP resource (not a tool): `faf://scoring/weights`.
+Resource: `faf://scoring/weights`.
 
-## Conventions
+### Conventions
 
-- **Edition 2024** + explicit `rust-version = "1.85"` — keep both honest when bumping toolchain assumptions.
-- **Version is multi-surface:** bump together `Cargo.toml` · `server.json` · `manifest.json` · `project.faf` · README badges/copy · `CHANGELOG.md`. Tier-4 tests catch drift.
-- **Registry identity:** `one.faf/rust-faf-mcp` (not `io.github…`). crates.io README must contain a **visible** `mcp-name: one.faf/rust-faf-mcp` string (HTML comments are stripped on crates.io).
-- **stdio only** for the binary transport in normal use. Do not reintroduce a default network listener without an explicit product decision.
-- **Release profile:** `opt-level = 3`, `lto = true`, `codegen-units = 1`, `strip = true` — leave alone unless measuring a real regression.
-- Prefer small, test-backed diffs. Match surrounding style in `tools.rs` / `server.rs`.
-- New tools: implement in `tools.rs`, expose with `#[tool(...)]` in `server.rs`, list in `manifest.json` + README, add functional + security coverage. If the tool authors a file, put the body in its own module (`agents.rs` is the pattern) and keep the write non-destructive.
+- Version lockstep: `Cargo.toml` · `server.json` · `manifest.json` · `project.faf` · README · CHANGELOG.
+- Registry: `one.faf/rust-faf-mcp`. stdio only unless an explicit product decision says otherwise.
+- Release profile: `opt-level = 3`, `lto = true`, `codegen-units = 1`, `strip = true`.
+- New tools: `tools.rs` + `#[tool]` in `server.rs` + `manifest.json` + README + tests.
 
-## Guardrails
+### Guardrails
 
 | | |
 |--|--|
 | **Always OK** | Read the tree · `cargo test` / `fmt` / `clippy` · `cargo build` · edit `src/` + `tests/` with tests |
-| **Ask first** | Dependency bumps · deleting public tools/APIs · publish / tag / release · Homebrew formula · registry DNS / identity changes · Dockerfile base image (still `rust:1.82-slim` while MSRV is 1.85 — intentional or fix? decide explicitly) |
-| **Never** | Force-push · commit secrets or `.mcpregistry_*` tokens · put credentials in this file · hand-roll JSON-RPC instead of rmcp · reimplement scoring outside `faf-rust-sdk` · break stdio purity (no chatter on stdout) · use the word “Guaranteed” in user-facing copy |
+| **Ask first** | Dependency bumps · deleting public tools · publish / tag / Homebrew · registry identity · Dockerfile base (`rust:1.82-slim` vs MSRV 1.85) |
+| **Never** | Force-push · secrets · Guaranteed · chatter on stdout · scoring outside `faf-rust-sdk` |
 
-Security reports go to **security@faf.one** — not public issues (`SECURITY.md`).
+Security: **team@faf.one** (see `SECURITY.md`). Do not open public issues for vulns.
 
-## Definition of Done
+### Definition of Done
 
-A change is done when:
+1. `cargo fmt --check`
+2. `cargo clippy -- -D warnings`
+3. `cargo test` — 151 green (or an updated count you intended)
+4. Version surfaces + CHANGELOG if the surface changed
+5. Conventional commit
 
-1. `cargo fmt --check` is clean
-2. `cargo clippy -- -D warnings` is clean
-3. `cargo test` — **133** tests green (or updated count if you added/removed tests intentionally)
-4. If version or tool surface changed: multi-surface version sync + `CHANGELOG.md` entry
-5. Commit message is clear (Conventional Commits preferred: `feat:`, `fix:`, `chore:`)
+### Commit & PR
 
-## Commit & PR
-
-- Branch off `main`; open a PR. Do not push release tags or run `cargo publish` unless the human explicitly says so.
-- crates.io publish path is **Trusted Publishing** via `.github/workflows/publish-crate.yml` on GitHub Release (OIDC) — not a long-lived token in CI when that path is configured.
-- MCP Registry `one.faf/*` uses DNS auth (not GitHub OIDC). Coordinate registry publishes with the maintainer.
-
-## One-line product fact (for context only)
-
-This binary is the Rust MCP host for `.faf` project context — `cargo install rust-faf-mcp`, point any stdio MCP client at the binary. README is for humans; this file is how you work in the repo.
+- Branch off `main`. Do not tag, `cargo publish`, or `/pubpro` unless the human says GO.
+- crates.io: Trusted Publishing OIDC on GitHub Release.
+- MCP Registry `one.faf/*`: DNS auth — coordinate with the maintainer.
