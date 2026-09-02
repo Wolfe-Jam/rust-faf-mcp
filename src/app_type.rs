@@ -34,35 +34,155 @@ pub struct StackSlot {
 
 pub const STACK_SLOTS: &[StackSlot] = &[
     // Frontend (4)
-    StackSlot { path: "stack.frontend", section: "stack", key: "frontend", category: SlotCategory::Frontend },
-    StackSlot { path: "stack.css_framework", section: "stack", key: "css_framework", category: SlotCategory::Frontend },
-    StackSlot { path: "stack.ui_library", section: "stack", key: "ui_library", category: SlotCategory::Frontend },
-    StackSlot { path: "stack.state_management", section: "stack", key: "state_management", category: SlotCategory::Frontend },
+    StackSlot {
+        path: "stack.frontend",
+        section: "stack",
+        key: "frontend",
+        category: SlotCategory::Frontend,
+    },
+    StackSlot {
+        path: "stack.css_framework",
+        section: "stack",
+        key: "css_framework",
+        category: SlotCategory::Frontend,
+    },
+    StackSlot {
+        path: "stack.ui_library",
+        section: "stack",
+        key: "ui_library",
+        category: SlotCategory::Frontend,
+    },
+    StackSlot {
+        path: "stack.state_management",
+        section: "stack",
+        key: "state_management",
+        category: SlotCategory::Frontend,
+    },
     // Backend (5)
-    StackSlot { path: "stack.backend", section: "stack", key: "backend", category: SlotCategory::Backend },
-    StackSlot { path: "stack.api_type", section: "stack", key: "api_type", category: SlotCategory::Backend },
-    StackSlot { path: "stack.runtime", section: "stack", key: "runtime", category: SlotCategory::Backend },
-    StackSlot { path: "stack.database", section: "stack", key: "database", category: SlotCategory::Backend },
-    StackSlot { path: "stack.connection", section: "stack", key: "connection", category: SlotCategory::Backend },
+    StackSlot {
+        path: "stack.backend",
+        section: "stack",
+        key: "backend",
+        category: SlotCategory::Backend,
+    },
+    StackSlot {
+        path: "stack.api_type",
+        section: "stack",
+        key: "api_type",
+        category: SlotCategory::Backend,
+    },
+    StackSlot {
+        path: "stack.runtime",
+        section: "stack",
+        key: "runtime",
+        category: SlotCategory::Backend,
+    },
+    StackSlot {
+        path: "stack.database",
+        section: "stack",
+        key: "database",
+        category: SlotCategory::Backend,
+    },
+    StackSlot {
+        path: "stack.connection",
+        section: "stack",
+        key: "connection",
+        category: SlotCategory::Backend,
+    },
     // Universal (3)
-    StackSlot { path: "stack.hosting", section: "stack", key: "hosting", category: SlotCategory::Universal },
-    StackSlot { path: "stack.build", section: "stack", key: "build", category: SlotCategory::Universal },
-    StackSlot { path: "stack.cicd", section: "stack", key: "cicd", category: SlotCategory::Universal },
+    StackSlot {
+        path: "stack.hosting",
+        section: "stack",
+        key: "hosting",
+        category: SlotCategory::Universal,
+    },
+    StackSlot {
+        path: "stack.build",
+        section: "stack",
+        key: "build",
+        category: SlotCategory::Universal,
+    },
+    StackSlot {
+        path: "stack.cicd",
+        section: "stack",
+        key: "cicd",
+        category: SlotCategory::Universal,
+    },
     // Enterprise infra (5) — two live under stack, three under monorepo
-    StackSlot { path: "stack.monorepo_tool", section: "stack", key: "monorepo_tool", category: SlotCategory::EnterpriseInfra },
-    StackSlot { path: "stack.package_manager", section: "stack", key: "package_manager", category: SlotCategory::EnterpriseInfra },
-    StackSlot { path: "stack.workspaces", section: "stack", key: "workspaces", category: SlotCategory::EnterpriseInfra },
-    StackSlot { path: "monorepo.packages_count", section: "monorepo", key: "packages_count", category: SlotCategory::EnterpriseInfra },
-    StackSlot { path: "monorepo.build_orchestrator", section: "monorepo", key: "build_orchestrator", category: SlotCategory::EnterpriseInfra },
+    StackSlot {
+        path: "stack.monorepo_tool",
+        section: "stack",
+        key: "monorepo_tool",
+        category: SlotCategory::EnterpriseInfra,
+    },
+    StackSlot {
+        path: "stack.package_manager",
+        section: "stack",
+        key: "package_manager",
+        category: SlotCategory::EnterpriseInfra,
+    },
+    StackSlot {
+        path: "stack.workspaces",
+        section: "stack",
+        key: "workspaces",
+        category: SlotCategory::EnterpriseInfra,
+    },
+    StackSlot {
+        path: "monorepo.packages_count",
+        section: "monorepo",
+        key: "packages_count",
+        category: SlotCategory::EnterpriseInfra,
+    },
+    StackSlot {
+        path: "monorepo.build_orchestrator",
+        section: "monorepo",
+        key: "build_orchestrator",
+        category: SlotCategory::EnterpriseInfra,
+    },
     // Enterprise app (4)
-    StackSlot { path: "stack.admin", section: "stack", key: "admin", category: SlotCategory::EnterpriseApp },
-    StackSlot { path: "stack.cache", section: "stack", key: "cache", category: SlotCategory::EnterpriseApp },
-    StackSlot { path: "stack.search", section: "stack", key: "search", category: SlotCategory::EnterpriseApp },
-    StackSlot { path: "stack.storage", section: "stack", key: "storage", category: SlotCategory::EnterpriseApp },
+    StackSlot {
+        path: "stack.admin",
+        section: "stack",
+        key: "admin",
+        category: SlotCategory::EnterpriseApp,
+    },
+    StackSlot {
+        path: "stack.cache",
+        section: "stack",
+        key: "cache",
+        category: SlotCategory::EnterpriseApp,
+    },
+    StackSlot {
+        path: "stack.search",
+        section: "stack",
+        key: "search",
+        category: SlotCategory::EnterpriseApp,
+    },
+    StackSlot {
+        path: "stack.storage",
+        section: "stack",
+        key: "storage",
+        category: SlotCategory::EnterpriseApp,
+    },
     // Enterprise ops (3)
-    StackSlot { path: "monorepo.versioning_strategy", section: "monorepo", key: "versioning_strategy", category: SlotCategory::EnterpriseOps },
-    StackSlot { path: "monorepo.shared_configs", section: "monorepo", key: "shared_configs", category: SlotCategory::EnterpriseOps },
-    StackSlot { path: "monorepo.remote_cache", section: "monorepo", key: "remote_cache", category: SlotCategory::EnterpriseOps },
+    StackSlot {
+        path: "monorepo.versioning_strategy",
+        section: "monorepo",
+        key: "versioning_strategy",
+        category: SlotCategory::EnterpriseOps,
+    },
+    StackSlot {
+        path: "monorepo.shared_configs",
+        section: "monorepo",
+        key: "shared_configs",
+        category: SlotCategory::EnterpriseOps,
+    },
+    StackSlot {
+        path: "monorepo.remote_cache",
+        section: "monorepo",
+        key: "remote_cache",
+        category: SlotCategory::EnterpriseOps,
+    },
 ];
 
 /// Normalize a detected type to a ladder key. Unknown → library (CLI fallback).
@@ -106,8 +226,21 @@ pub fn categories_for(app_type: &str) -> &'static [SlotCategory] {
         }
         "mcp" | "backend" | "data-science" => &[Project, Backend, Human, Universal],
         "fullstack" | "svelte" | "framework" => &[Project, Frontend, Backend, Universal, Human],
-        "monorepo-root" => &[Project, Human, EnterpriseInfra, EnterpriseApp, EnterpriseOps],
-        "mcpaas" => &[Project, Backend, Universal, Human, EnterpriseApp, EnterpriseOps],
+        "monorepo-root" => &[
+            Project,
+            Human,
+            EnterpriseInfra,
+            EnterpriseApp,
+            EnterpriseOps,
+        ],
+        "mcpaas" => &[
+            Project,
+            Backend,
+            Universal,
+            Human,
+            EnterpriseApp,
+            EnterpriseOps,
+        ],
         "saas" => &[Project, Frontend, Backend, Universal, Human, EnterpriseApp],
         "enterprise" => &[
             Project,

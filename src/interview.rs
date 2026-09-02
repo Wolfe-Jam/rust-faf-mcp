@@ -213,7 +213,10 @@ pub fn seed_six_ws_from_goal(goal: &str) -> GoalSeed {
 
     if let Some(idx) = g_low.find(" because ") {
         let beat = g[idx + " because ".len()..].trim();
-        let beat = beat.split(|c: char| c == '.' || c == ';').next().unwrap_or(beat);
+        let beat = beat
+            .split(|c: char| c == '.' || c == ';')
+            .next()
+            .unwrap_or(beat);
         let value = tersify(beat, 5);
         if !value.is_empty() && !seed_is_generic(&value) {
             seed.why = Some(SlotSuggestion {
@@ -257,9 +260,7 @@ fn word_units(s: &str) -> usize {
 }
 
 fn seed_is_generic(s: &str) -> bool {
-    GENERIC_SEED_BAN
-        .iter()
-        .any(|b| s.eq_ignore_ascii_case(b))
+    GENERIC_SEED_BAN.iter().any(|b| s.eq_ignore_ascii_case(b))
 }
 
 fn tersify(s: &str, max: usize) -> String {
@@ -268,8 +269,21 @@ fn tersify(s: &str, max: usize) -> String {
         let t = last.trim_matches(|c: char| matches!(c, '.' | ',' | ';' | ':'));
         if matches!(
             t.to_ascii_lowercase().as_str(),
-            "with" | "and" | "or" | "using" | "for" | "to" | "that" | "the" | "a" | "an" | "in"
-                | "on" | "of" | "via" | "by"
+            "with"
+                | "and"
+                | "or"
+                | "using"
+                | "for"
+                | "to"
+                | "that"
+                | "the"
+                | "a"
+                | "an"
+                | "in"
+                | "on"
+                | "of"
+                | "via"
+                | "by"
         ) {
             words.pop();
         } else {

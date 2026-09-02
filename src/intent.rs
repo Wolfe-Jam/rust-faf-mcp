@@ -156,11 +156,7 @@ fn days_from_civil(y: i32, m: u32, d: u32) -> Option<u64> {
     let doy = (153 * mp + 2) / 5 + d as u64 - 1;
     let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
     let z = era * 146097 + doe as i64 - 719468;
-    if z < 0 {
-        None
-    } else {
-        Some(z as u64)
-    }
+    if z < 0 { None } else { Some(z as u64) }
 }
 
 #[cfg(test)]

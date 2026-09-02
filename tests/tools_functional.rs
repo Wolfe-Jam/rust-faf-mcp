@@ -141,7 +141,10 @@ license = "MIT"
         text2.contains("already exists"),
         "Second run should refuse, got: {text2}"
     );
-    assert_ne!(resp2["result"]["isError"], true, "refuse is not a protocol error");
+    assert_ne!(
+        resp2["result"]["isError"], true,
+        "refuse is not a protocol error"
+    );
     let after = fs::read_to_string(dir.path().join("project.faf")).unwrap();
     assert_eq!(before, after, "second faf_init must not rewrite DNA");
 }

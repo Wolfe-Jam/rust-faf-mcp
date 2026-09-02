@@ -1232,14 +1232,20 @@ pub fn faf_go(arguments: &Value) -> Value {
     let (score, tier) = mk4_score(&raw);
     let courtesy = intent::courtesy_line(&doc, score);
 
-    let filled = table.iter().filter(|r| r.status == BoxStatus::Filled).count();
+    let filled = table
+        .iter()
+        .filter(|r| r.status == BoxStatus::Filled)
+        .count();
     let ws_approved = table
         .iter()
         .filter(|r| is_w_path(r.path) && r.status == BoxStatus::Filled)
         .count();
 
     if score >= 100 {
-        let mut msg = format!("✪ Trophy — {score}% {}. Human context confirmed.\n", tier_badge(&tier));
+        let mut msg = format!(
+            "✪ Trophy — {score}% {}. Human context confirmed.\n",
+            tier_badge(&tier)
+        );
         if let Some(line) = courtesy {
             msg.push_str(line);
             msg.push('\n');
@@ -1340,7 +1346,9 @@ fn faf_go_apply(
             continue;
         }
         if key.starts_with("human_context.") && t.split_whitespace().count() > 5 {
-            warnings.push(format!("{key}: terse is 3–4 words (cap <6); stored as stated"));
+            warnings.push(format!(
+                "{key}: terse is 3–4 words (cap <6); stored as stated"
+            ));
         }
         set_yaml_path(doc, key, t);
         applied += 1;

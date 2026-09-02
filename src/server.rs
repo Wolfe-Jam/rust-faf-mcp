@@ -37,7 +37,9 @@ pub struct GoParams {
         description = "Answers to apply. Keys are Table-of-8 paths (project.name, project.goal, human_context.*). If omitted, returns the table to confirm/ask."
     )]
     pub answers: Option<std::collections::HashMap<String, String>>,
-    #[schemars(description = "Courtesy Context Call interval in days. 30 default, 90 max. Default 30.")]
+    #[schemars(
+        description = "Courtesy Context Call interval in days. 30 default, 90 max. Default 30."
+    )]
     pub interval_days: Option<u32>,
 }
 
