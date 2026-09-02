@@ -62,7 +62,8 @@ Live `cargo test` 2026-09-01: **171**.
 
 ### T2.1 - MCP Protocol (10 tests)
 - initialize handshake
-- tools/list returns 5 tools
+- tools/list returns 11 tools
+
 - tools have schemas
 - faf_git has required url
 - resources/list

@@ -25,19 +25,18 @@ Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) serv
 ## Quickstart
 
 ```bash
-# Rust toolchain:
-cargo install rust-faf-mcp
+# Rust toolchain (install):
+cargo install rust-faf-mcp --version 0.7.0
 
-# No Rust (downloads GH Release binary for darwin/linux x64):
-npx rust-faf-mcp
+# No Rust (try — downloads GH Release binary for darwin/linux):
+npx --yes rust-faf-mcp@0.7.0
 ```
 
-
-Then point any MCP client at it:
+Point an MCP client at the **pin**. A bare `rust-faf-mcp` on PATH may be an old Homebrew binary.
 
 ```bash
 # Claude Code
-claude mcp add faf rust-faf-mcp
+claude mcp add faf -- npx --yes rust-faf-mcp@0.7.0
 ```
 
 ```jsonc
@@ -45,18 +44,24 @@ claude mcp add faf rust-faf-mcp
 {
   "mcpServers": {
     "faf": {
-      "command": "rust-faf-mcp"
+      "command": "npx",
+      "args": ["--yes", "rust-faf-mcp@0.7.0"]
     }
   }
 }
 ```
 
+After `cargo install rust-faf-mcp --version 0.7.0`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
+
 No flags, no config files, no network listener. Pure stdio JSON-RPC.
 
-Or via Homebrew (macOS, pre-built):
+Or via Homebrew (macOS, pre-built). If you already have it, upgrade — an old keg can sit on PATH as `rust-faf-mcp`:
 
 ```bash
+brew update
 brew install Wolfe-Jam/faf/rust-faf-mcp
+# already installed:
+brew upgrade Wolfe-Jam/faf/rust-faf-mcp
 ```
 
 ## One command, done forever
@@ -103,7 +108,7 @@ instant_context:
     test: cargo test
 stack:
   backend: Rust
-  build_tool: cargo
+  build: cargo
 ```
 
 Every AI agent reads this once and knows exactly what you're building. No 20-minute onboarding. No wrong assumptions.
@@ -208,7 +213,8 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)
-- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx rust-faf-mcp` (no Rust toolchain; downloads GH Release binary)
+- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.7.0` (no Rust toolchain; downloads GH Release binary)
+
 - [Dual-package publish guide](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) — cargo + npm (this server is the product example)
 - [docs/DUAL-PACKAGE.md](./docs/DUAL-PACKAGE.md) — pointer + OIDC docs for this repo
 - [docs/SKILLS-OVER-MCP.md](./docs/SKILLS-OVER-MCP.md) — J1 Agent Skill `faf-context` (skills/list · digests)

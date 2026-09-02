@@ -76,7 +76,8 @@ Ask a clarifying question, propose a short plan, or open a draft PR with notes �
 
 ## Working in this tree
 
-**0.7.0 — The Table-of-8 Edition.** Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests. 0.6.0 remains the live pin until this ships.
+**0.7.0 — The Table-of-8 Edition.** Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests. Live pin: crates.io + npm `@0.7.0`.
+
 
 ### Setup (what we actually run)
 

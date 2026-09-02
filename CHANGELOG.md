@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- README MCP examples pin `npx --yes rust-faf-mcp@0.7.0`. A bare `rust-faf-mcp` on PATH can be an old Homebrew binary.
+- README “What it produces” example writes `stack.build` (Mk4), not `build_tool`.
+- `AGENTS.md` no longer says 0.6.0 is the live pin.
+- WJTTC T2.1 copy: `tools/list` returns 11 tools.
+
 ## [0.7.0] - 2026-09-01 — The Table-of-8 Edition
 
 Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved.
