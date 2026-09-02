@@ -189,7 +189,7 @@ pub fn seed_six_ws_from_goal(goal: &str) -> GoalSeed {
 
     let lead = g.trim_start_matches(|c: char| !c.is_ascii_alphanumeric());
     let cut = lead
-        .split(|c: char| c == ':' || c == '.' || c == ',' || c == '—' || c == '–')
+        .split([':', '.', ',', '—', '–'])
         .next()
         .unwrap_or(lead);
     let cut = cut
@@ -214,7 +214,7 @@ pub fn seed_six_ws_from_goal(goal: &str) -> GoalSeed {
     if let Some(idx) = g_low.find(" because ") {
         let beat = g[idx + " because ".len()..].trim();
         let beat = beat
-            .split(|c: char| c == '.' || c == ';')
+            .split(['.', ';'])
             .next()
             .unwrap_or(beat);
         let value = tersify(beat, 5);

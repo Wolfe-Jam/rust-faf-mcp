@@ -146,7 +146,7 @@ fn parse_rfc3339_unix(s: &str) -> Option<u64> {
 }
 
 fn days_from_civil(y: i32, m: u32, d: u32) -> Option<u64> {
-    if m < 1 || m > 12 || d < 1 || d > 31 {
+    if !(1..=12).contains(&m) || !(1..=31).contains(&d) {
         return None;
     }
     let y = if m <= 2 { y - 1 } else { y } as i64;
