@@ -1,7 +1,7 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.2.2
-**Date:** 2026-03-12
+**Project:** rust-faf-mcp v0.6.0 (unreleased cart on `main`)
+**Date:** 2026-09-01
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)
 
@@ -9,13 +9,19 @@
 
 ## Test Summary
 
-| Tier | Category | Tests | Focus |
-|------|----------|-------|-------|
-| T1 | BRAKES (Security) | 14 | Path traversal, injection, malformed JSON |
-| T2 | ENGINE (Core) | 35 | MCP protocol, 10 tools, language detection |
-| T3 | AERO (Edge Cases) | 12 | Unicode, emoji, boundaries, stress |
-| T4 | AERO (Packaging) | 22 | MCPB manifest, server.json, tool drift |
-| **Total** | | **117** (live `cargo test` 2026-08-19) | |
+Live `cargo test` 2026-09-01: **171**.
+
+| File | Tier | Tests | Focus |
+|------|------|-------|-------|
+| `tier1_security.rs` | BRAKE | 12 | Path traversal, injection, malformed JSON |
+| `tier2_engine.rs` | ENGINE | 36 | Corrupt YAML, pipelines, dual manifests |
+| `tier3_edge_cases.rs` | AERO | 10 | Unicode, emoji, score boundaries |
+| `tier4_aero.rs` | AERO (packaging) | 22 | MCPB manifest, server.json, tool drift |
+| `wjttc_setup.rs` | BRAKE · ENGINE · AERO · TYRE · PIT | 16 | Setup / Confirm setup (sweeps) |
+| `mcp_protocol.rs` | ENGINE | 9 | Handshake, tools/list, resources |
+| `tools_functional.rs` | TYRE | 31 | Live tools, language detection, `faf_go` |
+| `src` unit | mixed | 35 | setup sweep, inject, agents, intent, app-type |
+| **Total** | | **171** | |
 
 ---
 
@@ -158,6 +164,33 @@ of the actual `faf_git` and `faf_sync`. We break it, so they never know it was b
 
 ---
 
+## Setup / Confirm setup (sweeps) — `tests/wjttc_setup.rs`
+
+Occupancy law: setup occupies mechanical facts; Confirm setup (sweeps) walks them; 6Ws are not setup; existing DNA is not rewritten.
+
+| Tier | Test | Expected |
+|------|------|----------|
+| BRAKE | second init | byte-identical `project.faf` |
+| BRAKE | setup never writes `human_context` / `none` | empty 6Ws |
+| BRAKE | `faf_auto` on existing file | DNA unchanged |
+| BRAKE | `faf_go` `none` / `stack.*` | not written |
+| BRAKE | Cargo description newline `who: pwned` | YAML parses; no `who` key |
+| ENGINE | init emits Setup + Confirm setup (sweeps) | facts + assigned `slotignored` |
+| ENGINE | CLI type | frontend ignored; `stack.build` cargo |
+| ENGINE | MCP type (`server.json` + `rmcp`) | backend is a fact |
+| ENGINE | `faf_go` table | `setupSweep` with no 6W paths; no write |
+| ENGINE | birth score | below Trophy without 6Ws |
+| AERO | unicode / emoji in name+goal | survive sweep + file |
+| AERO | empty directory | still setup; no 6Ws |
+| TYRE | init → auto → go | CLAUDE.md from auto; DNA unchanged |
+| TYRE | go apply why | writes why; stack/monorepo mapping unchanged |
+| PIT | init | only adds `project.faf` |
+| PIT | second init | no extra files |
+
+BRAKE `wjttc_brake_description_cannot_inject_a_who_slot` caught unquoted `instant_context.what_building` (newline split YAML). Fixed: those strings use `yaml_quote`.
+
+---
+
 ## Run Command
 
 ```bash
@@ -168,8 +201,8 @@ cargo test
 
 | Pass Rate | Tier | Badge |
 |-----------|------|-------|
-| 95-100% | Championship | 🏆 |
-| 85-94% | Podium | 🥇 |
-| 70-84% | Points | 🥈 |
-| 55-69% | Midfield | 🥉 |
-| <55% | DNF | 🔴 |
+| 95-100% | Championship | ✪ |
+| 85-94% | Podium | ★ |
+| 70-84% | Points | ◆ |
+| 55-69% | Midfield | ◇ |
+| <55% | DNF | ○ |

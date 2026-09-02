@@ -12,6 +12,7 @@ mod inject;
 mod intent;
 mod interview;
 mod server;
+mod setup;
 mod skills;
 mod tools;
 

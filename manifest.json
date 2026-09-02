@@ -39,7 +39,7 @@
   "tools": [
     {
       "name": "faf_init",
-      "description": "Create a project.faf from stack detection. Will not overwrite an existing file"
+      "description": "Setup: first write of project.faf from the tree. Will not overwrite. Returns Confirm setup (sweeps)"
     },
     {
       "name": "faf_git",
@@ -71,7 +71,7 @@
     },
     {
       "name": "faf_auto",
-      "description": "Zero to AI context in one command"
+      "description": "Setup if missing, sync CLAUDE.md, score. Existing file unchanged. Confirm setup (sweeps)"
     },
     {
       "name": "faf_agents",
@@ -79,7 +79,7 @@
     },
     {
       "name": "faf_go",
-      "description": "Table-of-8 interview: human confirms name, goal, and the 6Ws. Mk4 score plus 30/90-day intent grant"
+      "description": "Table-of-8 plus Confirm setup (sweeps). 6Ws score after ☑. Courtesy check at 100%"
     }
   ],
   "compatibility": {

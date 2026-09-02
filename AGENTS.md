@@ -76,7 +76,7 @@ Ask a clarifying question, propose a short plan, or open a draft PR with notes �
 
 ## Working in this tree
 
-**0.6.0** is live. Unreleased cart on `main`: `faf_go`, line-only BLOCK markers, this BEST file. Edition **2024** · MSRV **1.85**. 11 tools. 151 tests.
+**0.6.0** is live. Unreleased cart on `main`: `faf_go`, setup / Confirm setup (sweeps), line-only BLOCK markers, this BEST file. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests.
 
 ### Setup (what we actually run)
 
@@ -103,7 +103,8 @@ Tests spawn the compiled binary and speak JSON-RPC on stdin/stdout.
 | `tests/tier2_engine.rs` | Corrupt YAML, pipelines, dual manifests |
 | `tests/tier3_edge_cases.rs` | Unicode, score boundaries |
 | `tests/tier4_aero.rs` | manifest.json ↔ server.json ↔ Cargo.toml |
-| `src` unit | `agents` · `inject` · `app_type` · `interview` · `intent` · `skills` |
+| `tests/wjttc_setup.rs` | Setup / Confirm setup (sweeps) — BRAKE · ENGINE · AERO · TYRE · PIT |
+| `src` unit | `setup` · `agents` · `inject` · `app_type` · `interview` · `intent` · `skills` |
 
 ### Where things live
 
@@ -137,9 +138,9 @@ README.md        # Humans + crates.io — visible mcp-name: one.faf/rust-faf-mcp
 | Tool | Purpose |
 |------|---------|
 | `faf_agents` | Author the AGENTS.md BLOCK from `project.faf` (hand text outside markers) |
-| `faf_auto` | Create if missing, sync CLAUDE.md, score — does not invent 6Ws |
-| `faf_go` | Table-of-8. 6Ws score after ☑. Below 100: add Human Context. After 100: Time to check your Context (30 days, 90 max) |
-| `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. 6Ws stay empty |
+| `faf_auto` | Setup if missing, sync CLAUDE.md, score — Confirm setup (sweeps); does not invent 6Ws |
+| `faf_go` | Table-of-8 + Confirm setup (sweeps). 6Ws score after ☑. Below 100: add Human Context. After 100: Time to check your Context (30 days, 90 max) |
+| `faf_init` | Setup: first write from the tree. Refuses if the file exists. Confirm setup (sweeps). 6Ws stay empty |
 | `faf_git` | From a GitHub URL — mechanical facts only |
 | `faf_discover` | Walk up for nearest `project.faf` |
 | `faf_score` | Mk4 0–100% |
@@ -171,7 +172,7 @@ Security: **team@faf.one** (see `SECURITY.md`). Do not open public issues for vu
 
 1. `cargo fmt --check`
 2. `cargo clippy -- -D warnings`
-3. `cargo test` — 151 green (or an updated count you intended)
+3. `cargo test` — 171 green (or an updated count you intended)
 4. Version surfaces + CHANGELOG if the surface changed
 5. Conventional commit
 

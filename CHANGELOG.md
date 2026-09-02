@@ -7,11 +7,16 @@ Cart of FAFb (`xai-faf-rust`). This MCP consumes; the Rust CLI authors when that
 ### Added
 - **`faf_go`** — Table-of-8. 6Ws score only after ☑. Suggestions from `#2` beats (cited) are never typed and never scored.
 - **Courtesy Context Call** — 30 days default after a 6W check (90 max). Message: `Time to check your Context.` Check resets the clock. Not a token. Mk4 unchanged.
-- **App-type `slotignored` assignment** at init — inactive stack/monorepo only. 6Ws stay empty.
+- **App-type `slotignored` assignment** at setup — inactive stack/monorepo only. 6Ws stay empty.
+- **Setup** — first write from the tree (detection occupies mechanical slots).
+- **Confirm setup (sweeps)** — walk what setup occupied. Display only. Not a second write-gate. Stack does not wait for ☑.
+
+### Fixed
+- Instant-context strings (`what_building`, `tech_stack`, key files, commands) go through `yaml_quote`. A newline in `Cargo.toml` description can no longer split YAML or inject a `who:` key. Caught by WJTTC BRAKE.
 
 ### Removed
-- **`faf_init` no longer rewrites DNA.** If `project.faf` already exists, the tool refuses.
-- **`faf_auto` no longer “enhances to max score.”** Missing file → create. Existing file → unchanged, then sync + score.
+- **`faf_init` no longer rewrites DNA.** If `project.faf` already exists, the tool refuses and shows Confirm setup (sweeps).
+- **`faf_auto` no longer rewrites DNA to chase a score.** Missing file → setup. Existing file → unchanged, then sync + score + Confirm setup (sweeps).
 - **`none` as a write.** Empty, populated, or `slotignored`. Git no longer invents `who: owner`.
 
 ### Changed

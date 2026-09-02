@@ -28,7 +28,7 @@ instant_context:
 stack:
   backend: Rust
   build_tool: cargo
-  testing: cargo test (151 tests, WJTTC 4-tier)
+  testing: cargo test (171 tests, WJTTC 5-tier — setup/sweeps)
   registry: crates.io
   frontend: slotignored
   css_framework: slotignored

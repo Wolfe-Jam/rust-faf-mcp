@@ -94,6 +94,14 @@ license = "MIT"
     assert!(text.contains("test-crate"), "Should contain project name");
     assert!(text.contains("Rust"), "Should detect Rust");
     assert!(text.contains("Created project.faf"), "Should create file");
+    assert!(
+        text.contains("Setup"),
+        "first write is setup, not a rewrite"
+    );
+    assert!(
+        text.contains("Confirm setup (sweeps)"),
+        "setup returns a confirm sweep"
+    );
     assert!(dir.path().join("project.faf").exists(), "File should exist");
 
     // Verify the .faf content
@@ -664,6 +672,10 @@ description = "A crate on crates.io"
     let text = extract_text(&mcp_request(&req));
     assert!(text.contains("needsInput") || text.contains("Table-of-8"));
     assert!(text.contains("faf-interview/1"));
+    assert!(
+        text.contains("setupSweep") && text.contains("Confirm setup (sweeps)"),
+        "go presents confirm setup sweeps"
+    );
     let after = fs::read_to_string(dir.path().join("project.faf")).unwrap();
     assert_eq!(before, after, "phase 1 must not write");
     assert!(

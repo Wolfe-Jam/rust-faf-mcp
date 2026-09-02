@@ -102,7 +102,7 @@ impl Default for FafServer {
 #[tool_router]
 impl FafServer {
     #[tool(
-        description = "Create a project.faf from the tree. Will not overwrite. App-type assigns slotignored. Human 6Ws stay empty. Use faf_go to state them."
+        description = "Setup: first write of project.faf from the tree. Will not overwrite. Returns Confirm setup (sweeps). App-type assigns slotignored. Human 6Ws stay empty. Use faf_go to state them."
     )]
     async fn faf_init(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -164,7 +164,7 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Create project.faf if missing, sync CLAUDE.md, score. Does not invent 6Ws. Use faf_go for the human card."
+        description = "Setup if missing, sync CLAUDE.md, score. Existing project.faf unchanged. Returns Confirm setup (sweeps). Does not invent 6Ws. Use faf_go for the human card."
     )]
     async fn faf_auto(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -180,7 +180,7 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Table-of-8: 6Ws need ☑ to score. Suggestions from the goal (beats only) are not typed and not scored. Below 100 run this to add Human Context. After 100, courtesy: Time to check your Context."
+        description = "Table-of-8 plus Confirm setup (sweeps). 6Ws need ☑ to score. Suggestions from the goal (beats only) are not typed and not scored. Below 100 run this to add Human Context. After 100, courtesy: Time to check your Context."
     )]
     async fn faf_go(&self, params: Parameters<GoParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();

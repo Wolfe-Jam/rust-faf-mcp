@@ -13,6 +13,7 @@ use serde_json::{Value, json};
 use crate::app_type::{self, STACK_SLOTS};
 use crate::intent::{self, ContextCheck};
 use crate::interview::{self, BoxStatus, INTERVIEW_VERSION, is_human_path, is_w_path};
+use crate::setup;
 
 // ─── Helpers ───────────────────────────────────────────────────────────
 
@@ -97,7 +98,7 @@ fn tier_badge(tier: &str) -> &'static str {
 
 // ─── Tool: faf_init ────────────────────────────────────────────────────
 
-/// Create a project.faf from the tree. Will not overwrite an existing file.
+/// Setup: first write from the tree. Will not overwrite an existing file.
 /// Stack facts come from manifests; human 6Ws stay empty until stated.
 pub fn faf_init(arguments: &Value) -> Value {
     let dir = resolve_path(arguments);
@@ -107,18 +108,23 @@ pub fn faf_init(arguments: &Value) -> Value {
     }
 
     if let Some(faf_path) = find_faf(&dir) {
-        return text_response(&format!(
+        let existing = fs::read_to_string(&faf_path).unwrap_or_default();
+        let mut msg = format!(
             "project.faf already exists at {}\n\
-             I won't overwrite it.\n\
-             Use faf_auto to sync CLAUDE.md and score. Empty human slots stay empty until you state them.",
+             I won't overwrite it.\n\n",
             faf_path.display()
-        ));
+        );
+        msg.push_str(&setup::format_confirm_setup(&existing));
+        msg.push_str(
+            "Use faf_auto to sync CLAUDE.md and score. Empty human slots stay empty until you state them.\n",
+        );
+        return text_response(&msg);
     }
 
     faf_init_create(&dir)
 }
 
-/// Create a new project.faf by detecting project structure
+/// Setup — first write from the tree. Detection occupies mechanical slots.
 fn faf_init_create(dir: &Path) -> Value {
     let mut name = dir
         .file_name()
@@ -336,16 +342,18 @@ fn faf_init_create(dir: &Path) -> Value {
     let (score, tier) = mk4_score(&faf_yaml);
 
     let mut output = format!(
-        "Created project.faf for '{}'\n\
+        "Setup\n\
+         Created project.faf for '{}'\n\
          Language: {}\n\
          Score: {}% {}\n\
-         Path: {}\n",
+         Path: {}\n\n",
         name,
         main_language.as_deref().unwrap_or("Unknown"),
         score,
         tier_badge(&tier),
         faf_path.display()
     );
+    output.push_str(&setup::format_confirm_setup(&faf_yaml));
     if score < 100 {
         output.push_str("Add Human Context to score 100. Run faf_go.\n");
     }
@@ -399,21 +407,21 @@ fn build_faf_yaml(info: &DetectedProject<'_>) -> String {
     if info.what_building.is_some() || info.tech_stack.is_some() || !info.key_files.is_empty() {
         yaml.push_str("instant_context:\n");
         if let Some(w) = info.what_building {
-            yaml.push_str(&format!("  what_building: \"{}\"\n", w));
+            yaml.push_str(&format!("  what_building: {}\n", yaml_quote(w)));
         }
         if let Some(t) = info.tech_stack {
-            yaml.push_str(&format!("  tech_stack: \"{}\"\n", t));
+            yaml.push_str(&format!("  tech_stack: {}\n", yaml_quote(t)));
         }
         if !info.key_files.is_empty() {
             yaml.push_str("  key_files:\n");
             for f in info.key_files {
-                yaml.push_str(&format!("    - \"{}\"\n", f));
+                yaml.push_str(&format!("    - {}\n", yaml_quote(f)));
             }
         }
         if !info.commands.is_empty() {
             yaml.push_str("  commands:\n");
             for (k, v) in info.commands {
-                yaml.push_str(&format!("    {}: \"{}\"\n", k, v));
+                yaml.push_str(&format!("    {}: {}\n", k, yaml_quote(v)));
             }
         }
     }
@@ -574,9 +582,11 @@ pub async fn faf_git(arguments: &Value) -> Value {
     let (score, tier) = mk4_score(&yaml);
 
     let output = format!(
-        "Generated project.faf for {}/{}\n\
+        "Setup\n\
+         Generated project.faf for {}/{}\n\
          Language: {} | Stars: {} | Branch: {}\n\
          Score: {}% {}\n\n\
+         {}\
          ---\n{}\n---\n\n\
          Save this as project.faf in your project root.",
         owner,
@@ -586,6 +596,7 @@ pub async fn faf_git(arguments: &Value) -> Value {
         default_branch,
         score,
         tier_badge(&tier),
+        setup::format_confirm_setup(&yaml),
         yaml
     );
 
@@ -1081,7 +1092,7 @@ pub fn faf_tokens(arguments: &Value) -> Value {
 
 // ─── Tool: faf_auto ──────────────────────────────────────────────────
 
-/// Zero to AI context: create if missing, sync CLAUDE.md, score. Does not rewrite DNA.
+/// Zero to AI context: setup if missing, sync CLAUDE.md, score. Does not rewrite DNA.
 pub fn faf_auto(arguments: &Value) -> Value {
     let dir = resolve_path(arguments);
 
@@ -1100,7 +1111,7 @@ pub fn faf_auto(arguments: &Value) -> Value {
     match find_faf(&dir) {
         None => {
             faf_init_create(&dir);
-            steps.push("Created project.faf".to_string());
+            steps.push("Setup — created project.faf".to_string());
         }
         Some(_) => {
             steps.push("project.faf already present (unchanged)".to_string());
@@ -1171,6 +1182,12 @@ pub fn faf_auto(arguments: &Value) -> Value {
         output.push_str(&format!("  {}. {}\n", i + 1, step));
     }
     output.push_str(&format!("\nPath: {}\n", dir.display()));
+    if let Some(faf_path) = find_faf(&dir) {
+        if let Ok(raw) = fs::read_to_string(&faf_path) {
+            output.push('\n');
+            output.push_str(&setup::format_confirm_setup(&raw));
+        }
+    }
     if after_score < 100 {
         output.push_str("Add Human Context to score 100. Run faf_go.\n");
     } else if let Some(faf_path) = find_faf(&dir) {
@@ -1290,6 +1307,11 @@ pub fn faf_go(arguments: &Value) -> Value {
         })
         .collect();
 
+    let setup_sweep: Vec<Value> = setup::setup_rows(&doc)
+        .into_iter()
+        .map(|r| json!({ "path": r.path, "value": r.value }))
+        .collect();
+
     text_response(
         &serde_json::to_string_pretty(&json!({
             "needsInput": true,
@@ -1301,11 +1323,13 @@ pub fn faf_go(arguments: &Value) -> Value {
             "targetScore": 100,
             "wsApproved": ws_approved,
             "cta": "Add Human Context to score 100. Run faf_go.",
+            "setupSweep": setup_sweep,
+            "setupNote": "Confirm setup (sweeps) — walk these. Detection is already a fact. Not a second write-gate.",
             "table": table_json,
             "filled": filled,
             "questionsRemaining": questions.len(),
             "questions": questions,
-            "instructions": "Present the Table-of-8. Seeded = ghost from #2 (beat cited) — not typed, not scored. Empty = ask. ☑ only after the human confirms a 6W into the slot. Name/goal score when already facts on disk. Then call faf_go with answers.",
+            "instructions": "Present Confirm setup (sweeps) first (mechanical facts already on disk). Then the Table-of-8. Seeded = ghost from #2 (beat cited) — not typed, not scored. Empty = ask. ☑ only after the human confirms a 6W into the slot. Name/goal score when already facts on disk. Then call faf_go with answers.",
         }))
         .unwrap_or_else(|_| "{}".into()),
     )

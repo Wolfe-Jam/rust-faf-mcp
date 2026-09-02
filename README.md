@@ -16,7 +16,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![FAF Trophy 100%](https://img.shields.io/badge/FAF-%E2%9C%AA%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-133%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -61,17 +61,23 @@ brew install Wolfe-Jam/faf/rust-faf-mcp
 
 ## One command, done forever
 
-`faf_auto` detects your project, creates a `.faf` if missing, and syncs `CLAUDE.md`. It does not rewrite an existing `project.faf`. Empty human slots stay empty until you state them.
+`faf_auto` runs **setup** if `project.faf` is missing (tree detection writes mechanical facts), then syncs `CLAUDE.md`. It does not rewrite an existing file. **Confirm setup (sweeps)** lists what setup occupied — walk it; not a second write-gate. Empty human slots stay empty until you state them.
 
 ```
 faf_auto complete
 ━━━━━━━━━━━━━━━━━
 Score: 0% → 42% (+42) ● GREEN
 Steps:
-  1. Created project.faf
+  1. Setup — created project.faf
   2. Created CLAUDE.md
 
 Path: /home/user/my-project
+
+Confirm setup (sweeps)
+Walk these. Detection is already a fact. Not a second write-gate.
+  project.name           my-api
+  project.main_language  Rust
+  stack.backend          Rust
 ```
 
 What it produces:
@@ -108,9 +114,9 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 
 | Tool | What it does |
 |------|-------------|
-| `faf_auto` | Create `project.faf` if missing, sync `CLAUDE.md`, score — does not invent 6Ws |
-| `faf_init` | Create `project.faf` from the tree. Refuses if the file exists. App-type assigns `slotignored`; 6Ws stay empty |
-| `faf_go` | Table-of-8. 6Ws score after ☑. Below 100: add Human Context. After 100: courtesy check every 30 days (90 max) |
+| `faf_auto` | Setup if missing, sync `CLAUDE.md`, score — Confirm setup (sweeps); does not invent 6Ws |
+| `faf_init` | Setup: first write from the tree. Refuses if the file exists. Confirm setup (sweeps). 6Ws stay empty |
+| `faf_go` | Table-of-8 + Confirm setup (sweeps). 6Ws score after ☑. Below 100: add Human Context. After 100: courtesy check every 30 days (90 max) |
 | `faf_git` | Generate `project.faf` from any GitHub repo URL — no clone needed |
 | `faf_discover` | Walk up the directory tree to find the nearest `project.faf` |
 
@@ -130,7 +136,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 | `faf_compress` | Compress `.faf` for token-limited contexts (`minimal` / `standard` / `full`) |
 | `faf_tokens` | Estimate token count at each compression level |
 
-`faf_init` will not overwrite an existing file. Empty human slots stay empty until `faf_go`.
+`faf_init` will not overwrite an existing file. Setup occupies mechanical facts; Confirm setup (sweeps) is the walk. Empty human slots stay empty until `faf_go`.
 
 ## Architecture
 
@@ -150,10 +156,10 @@ Tools return `serde_json::Value`. The server adapts them to `Result<String, Stri
 
 ## Testing
 
-133 tests (117 integration + 16 unit):
+171 tests (136 integration + 35 unit):
 
 ```bash
-cargo test    # runs all 133
+cargo test    # runs all 171
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -169,7 +175,8 @@ bash scripts/install-hooks.sh
 | `tier2_engine.rs` | 36 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
 | `tier3_edge_cases.rs` | 10 | Unicode, CJK, score boundaries, unknown fields, GitHub URL parsing |
 | `tier4_aero.rs` | 22 | Manifest structure, version sync, server.json, context block, manifest-server cross-validation |
-| `src` unit | 16 | Skills extension digest + scoring resource, `agents::` generator (7), `inject::` non-destructive write (5) |
+| `wjttc_setup.rs` | 16 | Setup / Confirm setup (sweeps) — BRAKE · ENGINE · AERO · TYRE · PIT |
+| `src` unit | 35 | setup sweep, skills digest, `agents::`, `inject::`, intent, app-type |
 
 Tests spawn the compiled binary as a subprocess and communicate via stdin/stdout JSON-RPC — true integration tests against the real server.
 
