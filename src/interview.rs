@@ -188,10 +188,7 @@ pub fn seed_six_ws_from_goal(goal: &str) -> GoalSeed {
     let g_low = g.to_ascii_lowercase();
 
     let lead = g.trim_start_matches(|c: char| !c.is_ascii_alphanumeric());
-    let cut = lead
-        .split([':', '.', ',', '—', '–'])
-        .next()
-        .unwrap_or(lead);
+    let cut = lead.split([':', '.', ',', '—', '–']).next().unwrap_or(lead);
     let cut = cut
         .split(" for ")
         .next()
@@ -213,10 +210,7 @@ pub fn seed_six_ws_from_goal(goal: &str) -> GoalSeed {
 
     if let Some(idx) = g_low.find(" because ") {
         let beat = g[idx + " because ".len()..].trim();
-        let beat = beat
-            .split(['.', ';'])
-            .next()
-            .unwrap_or(beat);
+        let beat = beat.split(['.', ';']).next().unwrap_or(beat);
         let value = tersify(beat, 5);
         if !value.is_empty() && !seed_is_generic(&value) {
             seed.why = Some(SlotSuggestion {
