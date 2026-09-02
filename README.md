@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The AGENTS.md Edition (v0.6.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
+**The Table-of-8 Edition (v0.7.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.6.0** — adds `faf_agents`, a 10th tool: generates `AGENTS.md` from `project.faf`, non-destructively (preserves any hand-written content outside the faf-managed block). Ported line-for-line from `faf-cli`'s `generateAgentsMd()` — byte-for-byte parity is deliberate, so this MCP stays backward-compatible with any `faf-cli` output as it evolves. See [CHANGELOG](./CHANGELOG.md#060---2026-08-26--the-agentsmd-edition).
+**v0.7.0** — Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved. See [CHANGELOG](./CHANGELOG.md#070---2026-09-01--the-table-of-8-edition).
 
 **FAF defines. MD instructs. AI codes.**
 

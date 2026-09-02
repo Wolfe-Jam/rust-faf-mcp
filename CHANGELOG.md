@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-01 — The Table-of-8 Edition
+
+Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved.
+
 Cart of FAFb (`xai-faf-rust`). This MCP consumes; the Rust CLI authors when that page turns.
 
 ### Added
