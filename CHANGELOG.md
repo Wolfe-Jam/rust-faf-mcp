@@ -2,10 +2,14 @@
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-09-02 — The Table-of-8 Edition
+
+Pin the install. PATH `rust-faf-mcp` is not the pin.
+
 ### Fixed
-- README MCP examples pin `npx --yes rust-faf-mcp@0.7.0`. A bare `rust-faf-mcp` on PATH can be an old Homebrew binary.
+- README MCP examples pin `npx --yes rust-faf-mcp@0.7.1`. A bare `rust-faf-mcp` on PATH can be an old Homebrew binary.
 - README “What it produces” example writes `stack.build` (Mk4), not `build_tool`.
-- `AGENTS.md` no longer says 0.6.0 is the live pin.
+- `AGENTS.md` live pin is crates.io + npm `@0.7.1`.
 - WJTTC T2.1 copy: `tools/list` returns 11 tools.
 
 ## [0.7.0] - 2026-09-01 — The Table-of-8 Edition

@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "rust-faf-mcp",
   "display_name": "Rust FAF",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "RMCP-powered FAF server. 11 tools. Rust-native MCP for IANA-registered .faf format.",
   "long_description": "Rust-native MCP server for FAF (Foundational AI-context Format). Built with rmcp 3.0.1 (MCP Tier 1 foundation) and faf-rust-sdk. 11 tools for reading, scoring, syncing, and managing .faf project DNA files. Registry identity: one.faf/rust-faf-mcp.\n\n**Tools:** faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go\n\n**Why Rust?** Zero-dependency binary. No Node.js, no Python, no runtime. Just the binary.\n\n**IANA-registered MIME type (application/vnd.faf+yaml).**",
   "author": {

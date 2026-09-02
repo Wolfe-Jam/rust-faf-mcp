@@ -18,7 +18,7 @@ Read `project.faf` first. Do not edit the BLOCK. Refresh it with `faf_agents`. E
 
 # AGENTS.md — rust-faf-mcp
 
-Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.7.0
+Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.7.1
 
 > Authored by faf — do not edit the managed block; refresh with `faf export --agents`. Hand content outside `<!-- faf:start -->` … `<!-- faf:end -->` is preserved.
 
@@ -76,7 +76,7 @@ Ask a clarifying question, propose a short plan, or open a draft PR with notes �
 
 ## Working in this tree
 
-**0.7.0 — The Table-of-8 Edition.** Setup and Sweep confirm AI's side of the bargain. The Table-of-8 is human approved. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests. Live pin: crates.io + npm `@0.7.0`.
+**0.7.1 — The Table-of-8 Edition.** Pin the install. PATH `rust-faf-mcp` is not the pin. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests. Live pin: crates.io + npm `@0.7.1`.
 
 
 ### Setup (what we actually run)

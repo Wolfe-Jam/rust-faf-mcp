@@ -1,6 +1,6 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.7.0 — The Table-of-8 Edition
+**Project:** rust-faf-mcp v0.7.1 — The Table-of-8 Edition
 **Date:** 2026-09-01
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)

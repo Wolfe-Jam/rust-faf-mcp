@@ -33,7 +33,7 @@
       ]
     }
   ],
-  "version": "0.7.0",
+  "version": "0.7.1",
   "repository": {
     "url": "https://github.com/Wolfe-Jam/rust-faf-mcp",
     "source": "github"
@@ -44,7 +44,7 @@
       "registryType": "cargo",
       "registryBaseUrl": "https://crates.io",
       "identifier": "rust-faf-mcp",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "transport": {
         "type": "stdio"
       }
@@ -53,7 +53,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "rust-faf-mcp",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "transport": {
         "type": "stdio"
       }
