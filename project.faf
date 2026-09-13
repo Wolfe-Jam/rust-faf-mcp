@@ -3,7 +3,7 @@ project:
   name: rust-faf-mcp
   goal: Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml
   main_language: Rust
-  version: 0.7.1
+  version: 0.8.0
   title: Rust FAF
   homepage: https://faf.one
   license: MIT
@@ -28,7 +28,7 @@ instant_context:
 stack:
   backend: Rust
   build_tool: cargo
-  testing: cargo test (171 tests, WJTTC 5-tier — setup/sweeps)
+  testing: cargo test (190 tests, WJTTC 5-tier — setup/sweeps)
   registry: crates.io
   frontend: slotignored
   css_framework: slotignored
@@ -63,7 +63,7 @@ tags:
   - model-context-protocol
 state:
   phase: production
-  version: 0.7.1
+  version: 0.8.0
 metadata:
   last_claude_sync: 2026-08-19T00:00:00.000Z
   bi_sync: active

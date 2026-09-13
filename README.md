@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The Table-of-8 Edition (v0.7.1)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
+**The Lineage Edition (v0.8.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.7.1** — Pin the install. PATH `rust-faf-mcp` is not the pin. See [CHANGELOG](./CHANGELOG.md#071---2026-09-02--the-table-of-8-edition).
+**v0.8.0** — `.faf-dna` lineage, the same file as faf-cli and fafb: `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. fafb scores all 33 slots for monorepos and teams. See [CHANGELOG](./CHANGELOG.md#080---2026-09-13--the-lineage-edition).
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -26,17 +26,17 @@ Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) serv
 
 ```bash
 # Rust toolchain (install):
-cargo install rust-faf-mcp --version 0.7.1
+cargo install rust-faf-mcp --version 0.8.0
 
 # No Rust (try — downloads GH Release binary for darwin/linux):
-npx --yes rust-faf-mcp@0.7.1
+npx --yes rust-faf-mcp@0.8.0
 ```
 
 Point an MCP client at the **pin**. A bare `rust-faf-mcp` on PATH may be an old Homebrew binary.
 
 ```bash
 # Claude Code
-claude mcp add faf -- npx --yes rust-faf-mcp@0.7.1
+claude mcp add faf -- npx --yes rust-faf-mcp@0.8.0
 ```
 
 ```jsonc
@@ -45,13 +45,13 @@ claude mcp add faf -- npx --yes rust-faf-mcp@0.7.1
   "mcpServers": {
     "faf": {
       "command": "npx",
-      "args": ["--yes", "rust-faf-mcp@0.7.1"]
+      "args": ["--yes", "rust-faf-mcp@0.8.0"]
     }
   }
 }
 ```
 
-After `cargo install rust-faf-mcp --version 0.7.1`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
+After `cargo install rust-faf-mcp --version 0.8.0`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
 
 No flags, no config files, no network listener. Pure stdio JSON-RPC.
 
@@ -122,7 +122,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 | `faf_auto` | Setup if missing, sync `CLAUDE.md`, score — Confirm setup (sweeps); does not invent 6Ws |
 | `faf_init` | Setup: first write from the tree. Refuses if the file exists. Confirm setup (sweeps). 6Ws stay empty |
 | `faf_go` | Table-of-8 + Confirm setup (sweeps). 6Ws score after ☑. Below 100: add Human Context. After 100: courtesy check every 30 days (90 max) |
-| `faf_git` | Generate `project.faf` from any GitHub repo URL — no clone needed |
+| `faf_git` | Author `project.faf` from any GitHub repo URL — no clone needed |
 | `faf_discover` | Walk up the directory tree to find the nearest `project.faf` |
 
 ### Score & Validate
@@ -131,7 +131,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 |------|-------------|
 | `faf_score` | Score AI-readiness 0-100% with field-level breakdown |
 | `faf_sync` | Sync `project.faf` → `CLAUDE.md` (preserves existing content) |
-| `faf_agents` | Generate `AGENTS.md` from `project.faf` (non-destructive, preserves hand-written content) |
+| `faf_agents` | Author `AGENTS.md` from `project.faf` (non-destructive, preserves hand-written content) |
 
 ### Optimize
 
@@ -161,16 +161,16 @@ src/
 - **Runtime**: `tokio` single-threaded (`current_thread`)
 - **HTTP**: `reqwest` async (only used by `faf_git` for GitHub API)
 - **SDK**: `faf-rust-sdk` **3.1** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the real Mk4 number, `validate()` for structural checks only)
-- **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, schema generation, stdio transport (Tier-1 assessed SDK cut)
+- **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, JSON Schema from the param types, stdio transport (Tier-1 assessed SDK cut)
 
 Tools return `serde_json::Value`. The server adapts them to `Result<String, String>` for rmcp's `IntoCallToolResult`.
 
 ## Testing
 
-171 tests (136 integration + 35 unit):
+190 tests (143 integration + 47 unit):
 
 ```bash
-cargo test    # runs all 171
+cargo test    # runs all 190
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -187,7 +187,8 @@ bash scripts/install-hooks.sh
 | `tier3_edge_cases.rs` | 10 | Unicode, CJK, score boundaries, unknown fields, GitHub URL parsing |
 | `tier4_aero.rs` | 22 | Manifest structure, version sync, server.json, context block, manifest-server cross-validation |
 | `wjttc_setup.rs` | 16 | Setup / Confirm setup (sweeps) — BRAKE · ENGINE · AERO · TYRE · PIT |
-| `src` unit | 35 | setup sweep, skills digest, `agents::`, `inject::`, intent, app-type |
+| `wjttc_faf_dna.rs` | 7 | `.faf-dna` lineage — `faf_init` birth, `faf_auto` growth, `faf_dna`, faf-cli's lines |
+| `src` unit | 47 | setup sweep, skills digest, `agents::`, `inject::`, intent, app-type, `dna::` lineage + faf-cli fixtures |
 
 Tests spawn the compiled binary as a subprocess and communicate via stdin/stdout JSON-RPC — true integration tests against the real server.
 
@@ -219,7 +220,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)
-- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.7.1` (no Rust toolchain; downloads GH Release binary)
+- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.8.0` (no Rust toolchain; downloads GH Release binary)
 
 - [Dual-package publish guide](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) — cargo + npm (this server is the product example)
 - [docs/DUAL-PACKAGE.md](./docs/DUAL-PACKAGE.md) — pointer + OIDC docs for this repo

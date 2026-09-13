@@ -18,7 +18,7 @@ Read `project.faf` first. Do not edit the BLOCK. Refresh it with `faf_agents`. E
 
 # AGENTS.md — rust-faf-mcp
 
-Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.7.1
+Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.8.0
 
 > Authored by faf — do not edit the managed block; refresh with `faf export --agents`. Hand content outside `<!-- faf:start -->` … `<!-- faf:end -->` is preserved.
 
@@ -70,13 +70,13 @@ Ask a clarifying question, propose a short plan, or open a draft PR with notes �
 
 - **Backend:** Rust
 - **Build Tool:** cargo
-- **Testing:** cargo test (171 tests, WJTTC 5-tier — setup/sweeps)
+- **Testing:** cargo test (190 tests, WJTTC 5-tier — setup/sweeps)
 - **Cicd:** GitHub Actions
 <!-- faf:end -->
 
 ## Working in this tree
 
-**0.7.1 — The Table-of-8 Edition.** Pin the install. PATH `rust-faf-mcp` is not the pin. Edition **2024** · MSRV **1.85**. 11 tools. 171 tests. Live pin: crates.io + npm `@0.7.1`.
+**0.8.0 — The Lineage Edition.** `.faf-dna` lineage, the same file as faf-cli and fafb: `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. Pin the install: PATH `rust-faf-mcp` is not the pin. Edition **2024** · MSRV **1.85**. 12 tools. 190 tests. Live pin: crates.io + npm `@0.8.0`.
 
 
 ### Setup (what we actually run)

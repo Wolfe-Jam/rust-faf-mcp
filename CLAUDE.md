@@ -9,7 +9,7 @@
 
 **Stack:** Rust 2024, rmcp 3.0.1, faf-rust-sdk 3.1, serde, reqwest, tokio
 
-**Building:** Rust MCP server — 12 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go, faf_dna). Cart of FAFb.
+**Building:** Rust MCP server — 12 tools (faf_init, faf_git, faf_read, faf_score, faf_sync, faf_compress, faf_discover, faf_tokens, faf_auto, faf_agents, faf_go, faf_dna) powered by rmcp SDK + faf-rust-sdk
 
 **Key Files:**
 - Cargo.toml
@@ -21,8 +21,9 @@
 
 **FAF Score:** 100% ✪ Trophy
 
-*Synced by rust-faf-mcp v0.7.1 — IANA application/vnd.faf+yaml*
+*Synced by rust-faf-mcp v0.8.0 — IANA application/vnd.faf+yaml*
 <!-- FAF-SYNC-END -->
+
 
 
 

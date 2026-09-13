@@ -110,7 +110,7 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Generate a project.faf from a GitHub repository URL. Fetches repo metadata and creates AI context instantly."
+        description = "Author a project.faf from a GitHub repository URL. Fetches repo metadata and creates AI context instantly."
     )]
     async fn faf_git(&self, params: Parameters<GitParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -180,7 +180,7 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Generate AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block."
+        description = "Author AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block."
     )]
     async fn faf_agents(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();

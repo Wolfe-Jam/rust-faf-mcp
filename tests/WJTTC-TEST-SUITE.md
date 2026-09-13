@@ -1,7 +1,7 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.7.1 — The Table-of-8 Edition
-**Date:** 2026-09-01
+**Project:** rust-faf-mcp v0.8.0 — The Lineage Edition
+**Date:** 2026-09-13
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)
 
@@ -9,7 +9,7 @@
 
 ## Test Summary
 
-Live `cargo test` 2026-09-01: **171**.
+Live `cargo test` 2026-09-13: **190**.
 
 | File | Tier | Tests | Focus |
 |------|------|-------|-------|
@@ -20,8 +20,9 @@ Live `cargo test` 2026-09-01: **171**.
 | `wjttc_setup.rs` | BRAKE · ENGINE · AERO · TYRE · PIT | 16 | Setup / Confirm setup (sweeps) |
 | `mcp_protocol.rs` | ENGINE | 9 | Handshake, tools/list, resources |
 | `tools_functional.rs` | TYRE | 31 | Live tools, language detection, `faf_go` |
-| `src` unit | mixed | 35 | setup sweep, inject, agents, intent, app-type |
-| **Total** | | **171** | |
+| `wjttc_faf_dna.rs` | BRAKE | 7 | `.faf-dna` lineage: birth, growth, `faf_dna`, faf-cli's lines |
+| `src` unit | mixed | 47 | setup sweep, inject, agents, intent, app-type, `dna::` lineage |
+| **Total** | | **190** | |
 
 ---
 

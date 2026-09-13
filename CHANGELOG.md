@@ -2,8 +2,15 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-13 — The Lineage Edition
+
+`.faf-dna` lineage, the same file as faf-cli and fafb: `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. fafb scores all 33 slots for monorepos and teams.
+
 ### Added
-- **`.faf-dna` lineage — the same file as faf-cli (`faf-dna-v1`).** `faf_init` births it with the honest first score, `faf_auto` records growth when a lineage exists (it never starts one), and the new `faf_dna` tool shows the journey, Birth DNA and history. A `.faf-dna` faf-cli wrote takes growth here, and one written here takes faf-cli's. A file in another shape is read and left as it is, with the reason. 12 tools.
+- **`.faf-dna` lineage — the same file as faf-cli (`faf-dna-v1`).** `faf_init` births it with the honest first score, `faf_auto` records growth when a lineage exists (it never starts one), and the new `faf_dna` tool shows the journey, Birth DNA and history. A `.faf-dna` faf-cli wrote takes growth here, and one written here takes faf-cli's. A file in another shape is read and left as it is, with the reason. 12 tools, 190 tests.
+
+### Changed
+- `faf_git` and `faf_agents` say "Author", not "Generate" (tool descriptions, manifest, README).
 
 ## [0.7.1] - 2026-09-02 — The Table-of-8 Edition
 
