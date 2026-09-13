@@ -141,6 +141,12 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 | `faf_compress` | Compress `.faf` for token-limited contexts (`minimal` / `standard` / `full`) |
 | `faf_tokens` | Estimate token count at each compression level |
 
+### Lineage
+
+| Tool | What it does |
+|------|-------------|
+| `faf_dna` | Your FAF DNA journey from `.faf-dna`: Birth DNA to now, with history. `faf_init` births it, `faf_auto` records growth — the same file as faf-cli |
+
 `faf_init` will not overwrite an existing file. Setup occupies mechanical facts; Confirm setup (sweeps) is the walk. Empty human slots stay empty until `faf_go`.
 
 ## Architecture

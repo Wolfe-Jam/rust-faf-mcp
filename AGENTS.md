@@ -134,7 +134,7 @@ README.md        # Humans + crates.io — visible mcp-name: one.faf/rust-faf-mcp
 - **SDK:** `faf-rust-sdk` **3.1**. Do not reimplement scoring.
 - **Params:** `PathParams` / `GitParams` / `CompressParams` / `GoParams`.
 
-### The eleven tools
+### The twelve tools
 
 | Tool | Purpose |
 |------|---------|
@@ -149,6 +149,7 @@ README.md        # Humans + crates.io — visible mcp-name: one.faf/rust-faf-mcp
 | `faf_read` | Display `.faf` |
 | `faf_compress` | `minimal` / `standard` / `full` |
 | `faf_tokens` | Token estimates |
+| `faf_dna` | `.faf-dna` journey (reads only). `faf_init` births it, `faf_auto` records growth — same file as faf-cli |
 
 Resource: `faf://scoring/weights`.
 

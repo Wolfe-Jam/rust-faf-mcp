@@ -1,6 +1,6 @@
 //! rust-faf-mcp — Rust MCP server for FAF
 //!
-//! Cart of FAFb (`xai-faf-rust`). 11 tools. Author is the Rust CLI; this MCP consumes.
+//! Cart of FAFb (`xai-faf-rust`). 12 tools. Author is the Rust CLI; this MCP consumes.
 //! stdio JSON-RPC via rmcp, powered by faf-rust-sdk
 
 use rmcp::ServiceExt;
@@ -8,6 +8,7 @@ use tracing_subscriber::EnvFilter;
 
 mod agents;
 mod app_type;
+mod dna;
 mod inject;
 mod intent;
 mod interview;

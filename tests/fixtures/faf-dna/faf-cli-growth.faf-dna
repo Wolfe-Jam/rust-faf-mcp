@@ -1,0 +1,66 @@
+{
+  "birthCertificate": {
+    "born": "2026-09-13T02:58:12.189Z",
+    "birthDNA": 67,
+    "birthDNASource": "init",
+    "projectDNA": "79cd07639d18855d",
+    "certificate": "FAF-2026-DEMOCLI-UEDU"
+  },
+  "versions": [
+    {
+      "version": "v1.0.0",
+      "timestamp": "2026-09-13T02:58:12.189Z",
+      "score": 67,
+      "changes": [
+        "Birth — initial context"
+      ],
+      "growth": 0
+    },
+    {
+      "version": "v1.0.1",
+      "timestamp": "2026-09-13T02:58:12.642Z",
+      "score": 75,
+      "changes": [
+        "faf auto"
+      ],
+      "growth": 8
+    }
+  ],
+  "current": {
+    "version": "v1.0.1",
+    "score": 75,
+    "lastSync": "2026-09-13T02:58:12.642Z"
+  },
+  "growth": {
+    "totalGrowth": 8,
+    "daysActive": 0,
+    "milestones": [
+      {
+        "type": "birth",
+        "score": 67,
+        "date": "2026-09-13T02:58:12.189Z",
+        "version": "v1.0.0",
+        "label": "Birth",
+        "emoji": "🐣"
+      },
+      {
+        "type": "peak",
+        "score": 75,
+        "date": "2026-09-13T02:58:12.642Z",
+        "version": "v1.0.1",
+        "label": "Peak",
+        "emoji": "🏔️"
+      },
+      {
+        "type": "current",
+        "score": 75,
+        "date": "2026-09-13T02:58:12.642Z",
+        "version": "v1.0.1",
+        "label": "Current",
+        "emoji": "📍"
+      }
+    ]
+  },
+  "lastModified": "2026-09-13T02:58:12.646Z",
+  "format": "faf-dna-v1"
+}

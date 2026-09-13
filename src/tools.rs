@@ -1,7 +1,7 @@
 //! Tool implementations for rust-faf-mcp
 //!
 //! Cart of FAFb (`xai-faf-rust`). Author is the Rust CLI; this MCP consumes.
-//! 11 tools powered by faf-rust-sdk.
+//! 12 tools powered by faf-rust-sdk.
 
 use std::collections::HashMap;
 use std::fs;
@@ -11,6 +11,7 @@ use faf_rust_sdk::{self, FafFile};
 use serde_json::{Value, json};
 
 use crate::app_type::{self, STACK_SLOTS};
+use crate::dna::FafDna;
 use crate::intent::{self, ContextCheck};
 use crate::interview::{self, BoxStatus, INTERVIEW_VERSION, is_human_path, is_w_path};
 use crate::setup;
@@ -121,7 +122,27 @@ pub fn faf_init(arguments: &Value) -> Value {
         return text_response(&msg);
     }
 
-    faf_init_create(&dir)
+    let created = faf_init_create(&dir);
+    if created.get("isError").and_then(Value::as_bool) == Some(true) {
+        return created;
+    }
+
+    // Birth DNA — the first heartbeat. Records the honest first score (even
+    // 0%) in a separate .faf-dna lineage file (keeps the .faf itself clean).
+    let score = find_faf(&dir)
+        .and_then(|p| fs::read_to_string(&p).ok())
+        .map(|c| mk4_score(&c).0)
+        .unwrap_or(0);
+    let mut dna = FafDna::new(&dir);
+    if !dna.exists() {
+        if let Err(e) = dna.birth(f64::from(score)) {
+            return error_response(&format!("Created project.faf, but .faf-dna: {e}"));
+        }
+    }
+    let text = created["content"][0]["text"].as_str().unwrap_or_default();
+    text_response(&format!(
+        "{text}\n🧬 Birth DNA {score}% — your journey starts here (faf_dna)\n"
+    ))
 }
 
 /// Setup — first write from the tree. Detection occupies mechanical slots.
@@ -1090,6 +1111,55 @@ pub fn faf_tokens(arguments: &Value) -> Value {
     text_response(&output)
 }
 
+// ─── Tool: faf_dna ───────────────────────────────────────────────────
+
+/// Your FAF DNA journey: Birth DNA to now, from `.faf-dna` (the same file and
+/// lines as faf-cli `faf dna`). Reads only — a lineage is born by faf_init.
+pub fn faf_dna(arguments: &Value) -> Value {
+    let dir = resolve_path(arguments);
+    let mut dna = FafDna::new(&dir);
+    if dna.load().is_none() {
+        return error_response(&dna.read_only_reason().unwrap_or_else(|| {
+            "No FAF DNA found. Run faf_init to start your journey.".to_string()
+        }));
+    }
+    let journey = dna.journey();
+    let Some(info) = dna.birth_display() else {
+        return error_response("No FAF DNA found.");
+    };
+    let born = info
+        .born
+        .split('T')
+        .next()
+        .filter(|d| !d.is_empty())
+        .unwrap_or("unknown");
+    let sign = if info.growth >= 0.0 { "+" } else { "" };
+    let num = |v: f64| {
+        if v.fract() == 0.0 {
+            format!("{}", v as i64)
+        } else {
+            format!("{v}")
+        }
+    };
+    let mut out = format!(
+        "🧬 YOUR FAF DNA\n\n   {journey}\n\n   Birth DNA {}% (born {born})  ·  current {}%  ·  growth {sign}{}%\n",
+        num(info.birth_dna),
+        num(info.current),
+        num(info.growth)
+    );
+    if let Some(why) = dna.read_only_reason() {
+        out.push_str(&format!("   {why}\n"));
+    }
+    let log = dna.log();
+    if log.len() > 1 {
+        out.push_str("\n   history:\n");
+        for line in log {
+            out.push_str(&format!("   {line}\n"));
+        }
+    }
+    text_response(&out)
+}
+
 // ─── Tool: faf_auto ──────────────────────────────────────────────────
 
 /// Zero to AI context: setup if missing, sync CLAUDE.md, score. Does not rewrite DNA.
@@ -1180,6 +1250,20 @@ pub fn faf_auto(arguments: &Value) -> Value {
     );
     for (i, step) in steps.iter().enumerate() {
         output.push_str(&format!("  {}. {}\n", i + 1, step));
+    }
+
+    // Record growth on the DNA journey, if a heartbeat exists (faf_init births
+    // it). A .faf-dna faf did not write is left as it is — say so in one line.
+    let mut dna = FafDna::new(&dir);
+    if dna.exists() {
+        match dna.record_growth(f64::from(after_score), &["faf auto"]) {
+            Ok(true) => output.push_str(&format!("  .faf-dna: {}\n", dna.journey())),
+            Ok(false) => {}
+            Err(e) => output.push_str(&format!("faf: {e}\n")),
+        }
+        if let Some(why) = dna.read_only_reason() {
+            output.push_str(&format!("faf: {why}\n"));
+        }
     }
     output.push_str(&format!("\nPath: {}\n", dir.display()));
     if let Some(faf_path) = find_faf(&dir) {

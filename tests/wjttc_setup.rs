@@ -417,20 +417,22 @@ fn wjttc_tyre_go_apply_writes_why_leaves_stack() {
 
 // ─── WJTTC PIT ─────────────────────────────────────────────────────────
 
+/// Init writes project.faf and its `.faf-dna` birth certificate — nothing else.
 #[test]
-fn wjttc_pit_init_writes_only_project_faf() {
+fn wjttc_pit_init_writes_only_project_faf_and_its_lineage() {
     let dir = rust_cli_dir();
     let before = top_names(dir.path());
     call_tool("faf_init", json!({ "path": dir.path().to_string_lossy() }));
     let after = top_names(dir.path());
     assert!(after.contains(&"project.faf".to_string()));
+    assert!(after.contains(&".faf-dna".to_string()));
     assert!(!after.contains(&"CLAUDE.md".to_string()));
     for name in &before {
         assert!(after.contains(name), "lost {name}");
     }
     let extra: Vec<_> = after
         .iter()
-        .filter(|n| !before.contains(n) && *n != "project.faf")
+        .filter(|n| !before.contains(n) && *n != "project.faf" && *n != ".faf-dna")
         .collect();
     assert!(extra.is_empty(), "unexpected files: {extra:?}");
 }

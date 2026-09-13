@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- **`.faf-dna` lineage — the same file as faf-cli (`faf-dna-v1`).** `faf_init` births it with the honest first score, `faf_auto` records growth when a lineage exists (it never starts one), and the new `faf_dna` tool shows the journey, Birth DNA and history. A `.faf-dna` faf-cli wrote takes growth here, and one written here takes faf-cli's. A file in another shape is read and left as it is, with the reason. 12 tools.
+
 ## [0.7.1] - 2026-09-02 — The Table-of-8 Edition
 
 Pin the install. PATH `rust-faf-mcp` is not the pin.

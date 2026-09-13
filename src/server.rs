@@ -172,6 +172,14 @@ impl FafServer {
     }
 
     #[tool(
+        description = "Show your FAF DNA journey from .faf-dna: Birth DNA to now (e.g. 22% → 85% → 99%), with history. Reads only; faf_init births the lineage, faf_auto records growth."
+    )]
+    async fn faf_dna(&self, params: Parameters<PathParams>) -> Result<String, String> {
+        let args = serde_json::to_value(&params.0).unwrap_or_default();
+        value_to_string_result(tools::faf_dna(&args))
+    }
+
+    #[tool(
         description = "Generate AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block."
     )]
     async fn faf_agents(&self, params: Parameters<PathParams>) -> Result<String, String> {

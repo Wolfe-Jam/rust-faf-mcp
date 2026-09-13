@@ -1,0 +1,3 @@
+# .faf-dna fixtures are byte-exact: faf adds growth only to a file whose text is
+# exactly its own serialisation, so a CRLF checkout (Windows) must not touch them.
+tests/fixtures/faf-dna/* -text
