@@ -22,3 +22,45 @@ jobs:
         run: cargo install cargo-audit --locked
       - name: Audit dependencies (RustSec)
         run: cargo audit
+
+  # RELEASE_PAT is only exercised by release.yml, which runs when you ship —
+  # so an expired one would surface mid-release, at the worst moment. This
+  # rides the audit schedule instead and fails 30 days ahead, while there is
+  # still time to rotate. Its own job, so a token warning never masks the
+  # dependency audit's result.
+  release-pat-expiry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warn before RELEASE_PAT expires
+        env:
+          GH_PAT: ${{ secrets.RELEASE_PAT }}
+        run: |
+          set -uo pipefail
+
+          if [ -z "${GH_PAT:-}" ]; then
+            echo "::warning::RELEASE_PAT is not set — nothing to check"
+            exit 0
+          fi
+
+          # GitHub returns a fine-grained token's own expiry in a response header.
+          EXP=$(curl -sS -I -H "Authorization: Bearer $GH_PAT" \
+                  https://api.github.com/rate_limit \
+                | tr -d '\r' \
+                | awk -F': ' 'tolower($1)=="github-authentication-token-expiration" {print $2}')
+
+          if [ -z "$EXP" ]; then
+            echo "::warning::RELEASE_PAT reports no expiry (classic token, or set to never expire)"
+            exit 0
+          fi
+
+          DAYS=$(( ( $(date -u -d "$EXP" +%s) - $(date -u +%s) ) / 86400 ))
+          echo "RELEASE_PAT expires $EXP — $DAYS days from now"
+
+          if [ "$DAYS" -lt 0 ]; then
+            echo "::error::RELEASE_PAT EXPIRED $(( -DAYS )) days ago — releases will fail"
+            exit 1
+          fi
+          if [ "$DAYS" -le 30 ]; then
+            echo "::error::RELEASE_PAT expires in $DAYS days ($EXP) — rotate it before the next release"
+            exit 1
+          fi
