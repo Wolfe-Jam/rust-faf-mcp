@@ -53,16 +53,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Must NOT be the default GITHUB_TOKEN — GitHub Actions never cascades an
+      # event triggered via GITHUB_TOKEN (anti-recursion guard), so
+      # publish-crate.yml / publish-npm.yml / publish-mcp-registry.yml (all on
+      # release:published) never auto-fired. Confirmed live on 0.5.0 — all three
+      # had to be manually workflow_dispatch'd after the fact.
+      #
+      # A GitHub App installation token is on the same side of that line as the
+      # PAT it replaces: it is not GITHUB_TOKEN, so the cascade still fires. It
+      # is minted per run, scoped to this repo, and expires in an hour, so there
+      # is no standing credential and nothing to rotate before 2026-11-24.
+      - name: Mint a short-lived token for this repo
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: Wolfe-Jam
+          repositories: rust-faf-mcp
+
       - name: Publish release
-        # Must use a PAT here, not the default GITHUB_TOKEN — GitHub Actions never
-        # cascades an event triggered via GITHUB_TOKEN (anti-recursion guard), so
-        # publish-crate.yml / publish-npm.yml / publish-mcp-registry.yml (all on
-        # release:published) never auto-fired. Confirmed live on 0.5.0 — all three
-        # had to be manually workflow_dispatch'd after the fact.
-        # RELEASE_PAT = fine-grained PAT scoped to this repo only, Contents: Read & write.
         run: gh release edit "$GITHUB_REF_NAME" --draft=false
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PAT }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Compute SHA256s and update Homebrew
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
