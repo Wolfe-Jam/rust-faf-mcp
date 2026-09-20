@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-09-20
+
+Security patch: rustls 0.23.45 closes RUSTSEC-2026-0285.
+
+### Fixed
+- **rustls 0.23.37 → 0.23.45 (RUSTSEC-2026-0285, medium).** TLS 1.3 handshake messages were incorrectly accepted across encryption level boundaries. Reached through `reqwest → hyper-rustls → rustls`, not a direct dependency — lockfile only, no source changes. `rustls-webpki 0.103.13 → 0.103.15` comes along in the same resolve.
+
+### Changed
+- CI mints its release token from the `faf-release-cascade` GitHub App instead of a long-lived PAT. No user-visible change.
+
 ## [0.8.0] - 2026-09-13 — The Lineage Edition
 
 `.faf-dna` lineage, the same file as faf-cli and fafb: `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. fafb scores all 33 slots for monorepos and teams.

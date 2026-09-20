@@ -1,6 +1,6 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.8.0 — The Lineage Edition
+**Project:** rust-faf-mcp v0.8.1 — The Lineage Edition
 **Date:** 2026-09-13
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)

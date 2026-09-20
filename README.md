@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The Lineage Edition (v0.8.0)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
+**The Lineage Edition (v0.8.1)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.8.0** — `.faf-dna` lineage, the same file as faf-cli and fafb: `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. fafb scores all 33 slots for monorepos and teams. See [CHANGELOG](./CHANGELOG.md#080---2026-09-13--the-lineage-edition).
+**v0.8.1** — Security patch: rustls 0.23.45 closes RUSTSEC-2026-0285. See [CHANGELOG](./CHANGELOG.md#081---2026-09-20).
 
 **FAF defines. MD instructs. AI codes.**
 
@@ -26,17 +26,17 @@ Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) serv
 
 ```bash
 # Rust toolchain (install):
-cargo install rust-faf-mcp --version 0.8.0
+cargo install rust-faf-mcp --version 0.8.1
 
 # No Rust (try — downloads GH Release binary for darwin/linux):
-npx --yes rust-faf-mcp@0.8.0
+npx --yes rust-faf-mcp@0.8.1
 ```
 
 Point an MCP client at the **pin**. A bare `rust-faf-mcp` on PATH may be an old Homebrew binary.
 
 ```bash
 # Claude Code
-claude mcp add faf -- npx --yes rust-faf-mcp@0.8.0
+claude mcp add faf -- npx --yes rust-faf-mcp@0.8.1
 ```
 
 ```jsonc
@@ -45,13 +45,13 @@ claude mcp add faf -- npx --yes rust-faf-mcp@0.8.0
   "mcpServers": {
     "faf": {
       "command": "npx",
-      "args": ["--yes", "rust-faf-mcp@0.8.0"]
+      "args": ["--yes", "rust-faf-mcp@0.8.1"]
     }
   }
 }
 ```
 
-After `cargo install rust-faf-mcp --version 0.8.0`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
+After `cargo install rust-faf-mcp --version 0.8.1`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
 
 No flags, no config files, no network listener. Pure stdio JSON-RPC.
 
@@ -220,7 +220,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)
-- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.8.0` (no Rust toolchain; downloads GH Release binary)
+- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.8.1` (no Rust toolchain; downloads GH Release binary)
 
 - [Dual-package publish guide](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) — cargo + npm (this server is the product example)
 - [docs/DUAL-PACKAGE.md](./docs/DUAL-PACKAGE.md) — pointer + OIDC docs for this repo
