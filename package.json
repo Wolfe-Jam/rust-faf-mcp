@@ -29,8 +29,11 @@
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "check:engines": "node scripts/check-engines.mjs"
+  },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "os": [
     "darwin",
