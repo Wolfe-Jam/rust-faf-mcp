@@ -10,7 +10,7 @@
 
 **v0.8.1** — Security patch: rustls 0.23.45 closes RUSTSEC-2026-0285. See [CHANGELOG](./CHANGELOG.md#081---2026-09-20).
 
-**FAF defines. MD instructs. AI codes.**
+**FAF defines. AGENTS.md instructs. AI codes.**
 
 > Stop re-explaining your project to every AI session. One `.faf` file holds your persistent project context. Every AI reads it once and knows what you're building.
 
