@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Added
+- **Tool annotations on all 12 tools** (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so hosts can tell readers from writers. Read-only: `faf_read`, `faf_score`, `faf_compress`, `faf_discover`, `faf_tokens`, `faf_dna`, `faf_git`. Writers (not destructive): `faf_init`, `faf_sync`, `faf_auto`, `faf_agents`, `faf_go`. Only `faf_git` is open-world (public GitHub API). New test: `test_tools_have_annotations`.
+
+### Fixed
+- `faf_sync` described itself as "bi-directional"; it writes CLAUDE.md from project.faf (faf's section updated, the rest kept). Description and manifest now say so.
+- `faf_git` now says it calls the public GitHub API (no auth) and returns the project.faf text without writing anything.
+
 ## [0.8.1] - 2026-09-20
 
 Security patch: rustls 0.23.45 closes RUSTSEC-2026-0285.

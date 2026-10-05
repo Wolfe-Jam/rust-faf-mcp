@@ -102,7 +102,13 @@ impl Default for FafServer {
 #[tool_router]
 impl FafServer {
     #[tool(
-        description = "Setup: first write of project.faf from the tree. Will not overwrite. Returns Confirm setup (sweeps). App-type assigns slotignored. Human 6Ws stay empty. Use faf_go to state them."
+        description = "Setup: first write of project.faf from the tree. Will not overwrite. Returns Confirm setup (sweeps). App-type assigns slotignored. Human 6Ws stay empty. Use faf_go to state them.",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     async fn faf_init(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -110,21 +116,26 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Author a project.faf from a GitHub repository URL. Fetches repo metadata and creates AI context instantly."
+        description = "Author a project.faf from a GitHub repository URL. Fetches repo metadata and creates AI context instantly. Calls the public GitHub API (no auth). Returns the project.faf text; writes nothing.",
+        annotations(read_only_hint = true, open_world_hint = true)
     )]
     async fn faf_git(&self, params: Parameters<GitParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_git(&args).await)
     }
 
-    #[tool(description = "Read and display the project.faf file contents with parsed structure.")]
+    #[tool(
+        description = "Read and display the project.faf file contents with parsed structure.",
+        annotations(read_only_hint = true, open_world_hint = false)
+    )]
     async fn faf_read(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
         value_to_string_result(tools::faf_read(&args))
     }
 
     #[tool(
-        description = "Score the AI-readiness of a project.faf file (0-100%). Shows breakdown and suggestions."
+        description = "Score the AI-readiness of a project.faf file (0-100%). Shows breakdown and suggestions.",
+        annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn faf_score(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -132,7 +143,13 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Bi-directional sync between project.faf and CLAUDE.md. Keeps both files aligned."
+        description = "Write CLAUDE.md from project.faf. Updates faf's own section and keeps everything else in the file.",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     async fn faf_sync(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -140,7 +157,8 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Compress project.faf for token-limited contexts. Levels: minimal (names only), standard (names + goals), full (everything minus extras)."
+        description = "Compress project.faf for token-limited contexts. Levels: minimal (names only), standard (names + goals), full (everything minus extras).",
+        annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn faf_compress(&self, params: Parameters<CompressParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -148,7 +166,8 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Find the nearest project.faf by walking up the directory tree from the given path."
+        description = "Find the nearest project.faf by walking up the directory tree from the given path.",
+        annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn faf_discover(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -156,7 +175,8 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Estimate token count for project.faf at each compression level. Shows minimal/standard/full token counts."
+        description = "Estimate token count for project.faf at each compression level. Shows minimal/standard/full token counts.",
+        annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn faf_tokens(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -164,7 +184,12 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Setup if missing, sync CLAUDE.md, score. Existing project.faf unchanged. Returns Confirm setup (sweeps). Does not invent 6Ws. Use faf_go for the human card."
+        description = "Setup if missing, sync CLAUDE.md, score. Existing project.faf unchanged. Returns Confirm setup (sweeps). Does not invent 6Ws. Use faf_go for the human card.",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            open_world_hint = false
+        )
     )]
     async fn faf_auto(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -172,7 +197,8 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Show your FAF DNA journey from .faf-dna: Birth DNA to now (e.g. 22% → 85% → 99%), with history. Reads only; faf_init births the lineage, faf_auto records growth."
+        description = "Show your FAF DNA journey from .faf-dna: Birth DNA to now (e.g. 22% → 85% → 99%), with history. Reads only; faf_init births the lineage, faf_auto records growth.",
+        annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn faf_dna(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -180,7 +206,13 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Author AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block."
+        description = "Author AGENTS.md from project.faf. Non-destructive: preserves any hand-written content outside the faf-managed block.",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = false
+        )
     )]
     async fn faf_agents(&self, params: Parameters<PathParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();
@@ -188,7 +220,12 @@ impl FafServer {
     }
 
     #[tool(
-        description = "Table-of-8 plus Confirm setup (sweeps). 6Ws need ☑ to score. Suggestions from the goal (beats only) are not typed and not scored. Below 100 run this to add Human Context. After 100, courtesy: Time to check your Context."
+        description = "Table-of-8 plus Confirm setup (sweeps). 6Ws need ☑ to score. Suggestions from the goal (beats only) are not typed and not scored. Below 100 run this to add Human Context. After 100, courtesy: Time to check your Context.",
+        annotations(
+            read_only_hint = false,
+            destructive_hint = false,
+            open_world_hint = false
+        )
     )]
     async fn faf_go(&self, params: Parameters<GoParams>) -> Result<String, String> {
         let args = serde_json::to_value(&params.0).unwrap_or_default();

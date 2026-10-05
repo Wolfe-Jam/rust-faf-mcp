@@ -210,3 +210,46 @@ fn test_string_id_preserved() {
     );
     assert_eq!(resp["id"], "abc-123");
 }
+
+#[test]
+fn test_tools_have_annotations() {
+    // Hosts use these hints to decide what needs a confirmation. Every tool
+    // declares them, and the hints must match what the tool really does.
+    let resp = mcp_request(r#"{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}"#);
+    let tools = resp["result"]["tools"].as_array().expect("tools array");
+    let read_only = [
+        "faf_read",
+        "faf_score",
+        "faf_compress",
+        "faf_discover",
+        "faf_tokens",
+        "faf_dna",
+        "faf_git",
+    ];
+    for tool in tools {
+        let name = tool["name"].as_str().unwrap();
+        let ann = &tool["annotations"];
+        assert!(ann.is_object(), "{name} has no annotations");
+        let ro = ann["readOnlyHint"].as_bool();
+        if read_only.contains(&name) {
+            assert_eq!(ro, Some(true), "{name} should be read-only");
+        } else {
+            assert_eq!(
+                ro,
+                Some(false),
+                "{name} writes files: readOnlyHint must be false"
+            );
+            assert_eq!(
+                ann["destructiveHint"].as_bool(),
+                Some(false),
+                "{name} must not be destructive"
+            );
+        }
+        // Only faf_git reaches the network (public GitHub API).
+        assert_eq!(
+            ann["openWorldHint"].as_bool(),
+            Some(name == "faf_git"),
+            "{name} openWorldHint"
+        );
+    }
+}
