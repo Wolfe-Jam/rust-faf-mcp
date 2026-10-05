@@ -16,7 +16,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![FAF Trophy 100%](https://img.shields.io/badge/FAF-%E2%9C%AA%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-171%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![Tests](https://img.shields.io/badge/tests-191%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -122,7 +122,7 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 | `faf_auto` | Setup if missing, sync `CLAUDE.md`, score — Confirm setup (sweeps); does not invent 6Ws |
 | `faf_init` | Setup: first write from the tree. Refuses if the file exists. Confirm setup (sweeps). 6Ws stay empty |
 | `faf_go` | Table-of-8 + Confirm setup (sweeps). 6Ws score after ☑. Below 100: add Human Context. After 100: courtesy check every 30 days (90 max) |
-| `faf_git` | Author `project.faf` from any GitHub repo URL — no clone needed |
+| `faf_git` | Author `project.faf` from any GitHub repo URL — no clone needed. Uses the public GitHub API; returns the text, writes nothing |
 | `faf_discover` | Walk up the directory tree to find the nearest `project.faf` |
 
 ### Score & Validate
@@ -147,6 +147,8 @@ Every AI agent reads this once and knows exactly what you're building. No 20-min
 |------|-------------|
 | `faf_dna` | Your FAF DNA journey from `.faf-dna`: Birth DNA to now, with history. `faf_init` births it, `faf_auto` records growth — the same file as faf-cli |
 
+Every tool declares MCP annotations: `faf_read`, `faf_score`, `faf_compress`, `faf_discover`, `faf_tokens`, `faf_dna` and `faf_git` are read-only; the writers are non-destructive; only `faf_git` reaches the network.
+
 `faf_init` will not overwrite an existing file. Setup occupies mechanical facts; Confirm setup (sweeps) is the walk. Empty human slots stay empty until `faf_go`.
 
 ## Architecture
@@ -160,17 +162,17 @@ src/
 
 - **Runtime**: `tokio` single-threaded (`current_thread`)
 - **HTTP**: `reqwest` async (only used by `faf_git` for GitHub API)
-- **SDK**: `faf-rust-sdk` **3.1** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the real Mk4 number, `validate()` for structural checks only)
+- **SDK**: `faf-rust-sdk` **3.1** (Cargo pin — the facade over `faf-kernel`/`faf-fafb` in [faf-rust](https://github.com/Wolfe-Jam/faf-rust); `score()` for the always-33 number, `validate()` for structural checks only)
 - **Server**: **`rmcp` 3.0.1** with `#[tool_router]` / `#[tool_handler]` — JSON-RPC, JSON Schema from the param types, stdio transport (Tier-1 assessed SDK cut)
 
 Tools return `serde_json::Value`. The server adapts them to `Result<String, String>` for rmcp's `IntoCallToolResult`.
 
 ## Testing
 
-190 tests (143 integration + 47 unit):
+191 tests (144 integration + 47 unit):
 
 ```bash
-cargo test    # runs all 190
+cargo test    # runs all 191
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -180,7 +182,7 @@ bash scripts/install-hooks.sh
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `mcp_protocol.rs` | 9 | Init handshake, tools/list, resources, schema validation, ID preservation |
+| `mcp_protocol.rs` | 10 | Init handshake, tools/list, tool annotations, resources, schema validation, ID preservation |
 | `tools_functional.rs` | 31 | Tools — happy path, error paths, language detection, faf_go |
 | `tier1_security.rs` | 12 | Path traversal, null bytes, shell injection, oversized input, malformed JSON |
 | `tier2_engine.rs` | 36 | Corrupt YAML, sync replacement, pipelines, dual manifests, legacy filenames, direct paths |
