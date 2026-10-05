@@ -55,7 +55,7 @@
     },
     {
       "name": "faf_sync",
-      "description": "Bi-directional sync .faf with CLAUDE.md"
+      "description": "Write CLAUDE.md from project.faf (keeps the rest of the file)"
     },
     {
       "name": "faf_compress",
