@@ -175,11 +175,11 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
       <p class="note">macOS, pre-built.</p>
     </div>
 
-    <p>Add it to any stdio MCP client: Claude Code, Cursor, Zed, Warp or Claude Desktop.</p>
+    <p>Add it to any stdio MCP client.</p>
 <pre><span class="cm"># Claude Code</span>
 <span class="kw">claude</span> mcp add faf -- npx --yes rust-faf-mcp@0.8.1
 
-<span class="cm">// any other client</span>
+<span class="cm">// Cursor, Claude Desktop and other mcpServers clients</span>
 { <span class="st">"mcpServers"</span>: { <span class="st">"faf"</span>: {
   <span class="st">"command"</span>: <span class="st">"npx"</span>,
   <span class="st">"args"</span>: [<span class="st">"--yes"</span>, <span class="st">"rust-faf-mcp@0.8.1"</span>]
@@ -188,19 +188,19 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 
     <h2 id="why">Why Rust</h2>
     <div class="why">
-      <div><b>One binary</b><span>Under 5 MB. No runtime to install.</span></div>
+      <div><b>One binary</b><span>About 5 MB. No runtime to install.</span></div>
       <div><b>Stdio only</b><span>No flags, no config files, no network listener.</span></div>
       <div><b>rmcp 3</b><span>Built on the official Rust MCP SDK.</span></div>
       <div><b>The same score</b><span>faf-rust-sdk's always-33 kernel gives the number faf-cli gives.</span></div>
     </div>
 
     <h2 id="lineage">Lineage</h2>
-    <p><code>.faf-dna</code> is your project's birth certificate, the same file faf-cli writes. <code>faf_init</code> records the honest first score, <code>faf_auto</code> records each step up, and <code>faf_dna</code> shows the journey from Birth DNA to now.</p>
+    <p><code>.faf-dna</code> is your project's birth certificate, the same file faf-cli writes. <code>faf_init</code> records the honest first score, <code>faf_auto</code> records growth, and <code>faf_dna</code> shows the journey from Birth DNA to now.</p>
 <pre><span class="fn">faf_dna</span>
 <span class="cm">Birth DNA</span>  22%  <span class="cm">→</span>  85%  <span class="cm">→</span>  99%  <span class="cm">now</span></pre>
 
     <h2 id="tools">Tools</h2>
-    <p>Twelve tools. Ask your AI to "use FAF" and it picks the right one.</p>
+    <p>Twelve tools. Ask your AI to "use FAF" and it calls them for you.</p>
     <table class="items">
       <tr><td><code>faf_auto</code></td><td>Set up if <code>project.faf</code> is missing, sync CLAUDE.md, score. An existing file is left unchanged.</td></tr>
       <tr><td><code>faf_init</code></td><td>First write of <code>project.faf</code> from your tree. Never overwrites.</td></tr>
@@ -209,7 +209,7 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
       <tr><td><code>faf_read</code></td><td>Read <code>project.faf</code> with its parsed structure.</td></tr>
       <tr><td><code>faf_sync</code></td><td>Update CLAUDE.md from <code>project.faf</code>.</td></tr>
       <tr><td><code>faf_agents</code></td><td>Author AGENTS.md from <code>project.faf</code>. Your own content outside the managed block is kept.</td></tr>
-      <tr><td><code>faf_git</code></td><td>Author a <code>project.faf</code> from a GitHub repo URL.</td></tr>
+      <tr><td><code>faf_git</code></td><td>Author a <code>project.faf</code> from a GitHub repo URL. Returns the text; writes nothing.</td></tr>
       <tr><td><code>faf_dna</code></td><td>Your journey from <code>.faf-dna</code>, Birth DNA to now.</td></tr>
       <tr><td><code>faf_discover</code></td><td>Find the nearest <code>project.faf</code> up the tree.</td></tr>
       <tr><td><code>faf_compress</code></td><td>Compress <code>project.faf</code> for tight context windows.</td></tr>
