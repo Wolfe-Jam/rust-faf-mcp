@@ -1,6 +1,6 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.8.1 — The Lineage Edition
+**Project:** rust-faf-mcp v0.8.2 — The Lineage Edition
 **Date:** 2026-09-13
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)
@@ -14,15 +14,15 @@ Live `cargo test` 2026-09-13: **190**.
 | File | Tier | Tests | Focus |
 |------|------|-------|-------|
 | `tier1_security.rs` | BRAKE | 12 | Path traversal, injection, malformed JSON |
-| `tier2_engine.rs` | ENGINE | 36 | Corrupt YAML, pipelines, dual manifests |
+| `tier2_engine.rs` | ENGINE | 37 | Corrupt YAML, pipelines, dual manifests, kernel + faf-cli parity |
 | `tier3_edge_cases.rs` | AERO | 10 | Unicode, emoji, score boundaries |
 | `tier4_aero.rs` | AERO (packaging) | 22 | MCPB manifest, server.json, tool drift |
 | `wjttc_setup.rs` | BRAKE · ENGINE · AERO · TYRE · PIT | 16 | Setup / Confirm setup (sweeps) |
-| `mcp_protocol.rs` | ENGINE | 9 | Handshake, tools/list, resources |
+| `mcp_protocol.rs` | ENGINE | 10 | Handshake, tools/list, resources, tool annotations |
 | `tools_functional.rs` | TYRE | 31 | Live tools, language detection, `faf_go` |
 | `wjttc_faf_dna.rs` | BRAKE | 7 | `.faf-dna` lineage: birth, growth, `faf_dna`, faf-cli's lines |
 | `src` unit | mixed | 47 | setup sweep, inject, agents, intent, app-type, `dna::` lineage |
-| **Total** | | **190** | |
+| **Total** | | **192** | |
 
 ---
 

@@ -2,12 +2,24 @@
 
 ## [Unreleased]
 
-### Added
-- **Tool annotations on all 12 tools** (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so hosts can tell readers from writers. Read-only: `faf_read`, `faf_score`, `faf_compress`, `faf_discover`, `faf_tokens`, `faf_dna`, `faf_git`. Writers (not destructive): `faf_init`, `faf_sync`, `faf_auto`, `faf_agents`, `faf_go`. Only `faf_git` is open-world (public GitHub API). New test: `test_tools_have_annotations`.
+## [0.8.2] - 2026-10-06
+
+Builds on the Rust it declares, Docker builds again, and scores match faf-cli.
 
 ### Fixed
+- **MSRV is 1.88, and CI proves it.** `Cargo.toml` declared `rust-version = "1.85"`, but rmcp 3 requires 1.88, so Rust 1.85 to 1.87 failed inside a dependency instead of with a clear message. A new `msrv` CI job reads `rust-version` from `Cargo.toml` and builds on exactly that toolchain.
+- **The Dockerfile builds.** It was on `rust:1.82-slim`, below both edition 2024 (1.85) and rmcp (1.88), and it lacked OpenSSL (reqwest's default TLS links it). Now `rust:1.88-slim` with `pkg-config` + `libssl-dev`, and `libssl3` + `ca-certificates` at runtime so `faf_git` can reach GitHub. A new `docker` CI job builds the image and checks it answers `initialize`.
+- **Scores match faf-cli on placeholders.** faf-kernel 1.1.1 counts `tbd` and `todo` (any case) as empty, as faf-cli and fafb do. On a hand-edited file with `goal: tbd`, `who: TBD`, `what: todo`, 0.8.1 scored 21% and faf-cli 8.2.0 scores 12%; 0.8.2 scores 12%. FAF never writes placeholders; this only affects files edited by hand. Lockfile: faf-kernel 1.1.0 → 1.1.1, faf-rust-sdk 3.1.0 → 3.1.1 (now the declared floor), faf-fafb 1.0.2 → 1.0.6. New test: `t2_placeholders_score_empty_like_faf_cli`.
+- README: binary size is about 5 MB (4.7 MB aarch64 macOS, 5.1 MB x86_64 macOS, 5.5 MB x86_64 Linux), not 4.3 MB; the `mcpServers` example no longer lists Zed, which uses `context_servers`.
+- CLAUDE.md: dropped a stale footer from the bi-sync era.
 - `faf_sync` still carried "bi-directional" wording from the bi-sync era. FAF sync has been one-way for months, from the repo's facts into CLAUDE.md (faf's section updated, the rest kept); nothing is read back from CLAUDE.md, because it isn't validated. Description and manifest now say so.
 - `faf_git` now says it calls the public GitHub API (no auth) and returns the project.faf text without writing anything.
+
+### Changed
+- Nested `if let` blocks are let-chains (17 sites in `tools.rs` and `inject.rs`). Stable since Rust 1.88, the new MSRV, and what clippy asks for at that MSRV. No behaviour change.
+
+### Added
+- **Tool annotations on all 12 tools** (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`), so hosts can tell readers from writers. Read-only: `faf_read`, `faf_score`, `faf_compress`, `faf_discover`, `faf_tokens`, `faf_dna`, `faf_git`. Writers (not destructive): `faf_init`, `faf_sync`, `faf_auto`, `faf_agents`, `faf_go`. Only `faf_git` is open-world (public GitHub API). New test: `test_tools_have_annotations`.
 
 ## [0.8.1] - 2026-09-20
 

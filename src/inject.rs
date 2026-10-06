@@ -42,21 +42,20 @@ pub fn inject_faf_block_with_markers(
     if let (Some(s), Some(e)) = (
         find_line_marker(&existing, start),
         find_line_marker(&existing, end),
-    ) {
-        if e > s {
-            let after_start = e + end.len();
-            let after = if existing[after_start..].starts_with('\n') {
-                &existing[after_start + 1..]
-            } else if existing[after_start..].starts_with("\r\n") {
-                &existing[after_start + 2..]
-            } else {
-                &existing[after_start..]
-            };
-            return fs::write(
-                path,
-                format!("{before}{wrapped}\n{after}", before = &existing[..s]),
-            );
-        }
+    ) && e > s
+    {
+        let after_start = e + end.len();
+        let after = if existing[after_start..].starts_with('\n') {
+            &existing[after_start + 1..]
+        } else if existing[after_start..].starts_with("\r\n") {
+            &existing[after_start + 2..]
+        } else {
+            &existing[after_start..]
+        };
+        return fs::write(
+            path,
+            format!("{before}{wrapped}\n{after}", before = &existing[..s]),
+        );
     }
 
     // 3. No markers (whether legacy pre-marker faf output, genuine user content,

@@ -19,6 +19,37 @@ jobs:
       - run: cargo test
       - run: cargo build --release
 
+  # MSRV — builds on the rust-version Cargo.toml declares, read from Cargo.toml
+  # so the claim and the gate can't drift. rust-toolchain.toml pins stable, so
+  # the build names the toolchain explicitly.
+  msrv:
+    name: MSRV (rust-version from Cargo.toml)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read rust-version
+        id: msrv
+        run: echo "v=$(grep -m1 '^rust-version' Cargo.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.v }}
+      - run: cargo +${{ steps.msrv.outputs.v }} build --locked
+
+  # Docker — the Dockerfile in the repo must build and the binary must answer
+  # an MCP initialize.
+  docker:
+    name: Docker image builds and answers initialize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t rust-faf-mcp:ci .
+      - name: initialize over stdio
+        run: |
+          set -euo pipefail
+          OUT=$( (printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}'; sleep 2) | docker run -i --rm rust-faf-mcp:ci )
+          echo "$OUT" | grep -q '"serverInfo"' || { echo "::error::no initialize response: $OUT"; exit 1; }
+          echo "✓ $(echo "$OUT" | grep -o '"serverInfo":{[^}]*}')"
+
   # npm shim — the Node launcher users get from `npx rust-faf-mcp`. engines.node
   # is the floor of this matrix (scripts/check-engines.mjs keeps them equal).
   npm-shim:

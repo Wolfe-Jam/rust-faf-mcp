@@ -992,3 +992,34 @@ monorepo:\n  packages_count: slotignored\n  build_orchestrator: slotignored\n  v
         );
     }
 }
+
+/// faf-cli parity on placeholders: `tbd` and `todo` (any case) count as empty,
+/// as in faf-kernel 1.1.1 and fafb's always-33 reference. FAF never writes
+/// them, but a hand-edited file can. faf-cli 8.2.0 scores this exact file
+/// 12% (4/33 slots); rust-faf-mcp 0.8.1 on faf-kernel 1.1.0 scored it 21%.
+#[test]
+fn t2_placeholders_score_empty_like_faf_cli() {
+    let yaml = "faf_version: \"3.3\"\n\
+project:\n  name: tbd-probe\n  goal: tbd\n  main_language: Rust\n\
+human_context:\n  who: TBD\n  what: todo\n  why: Prove placeholders score as empty\n\
+stack:\n  backend: Rust\n";
+
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("project.faf"), yaml).unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_score","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let text = extract_text(&mcp_request(&req));
+    let score: u32 = text
+        .split("Score: ")
+        .nth(1)
+        .and_then(|s| s.split('%').next())
+        .and_then(|s| s.parse().ok())
+        .unwrap_or_else(|| panic!("could not parse score from: {text}"));
+
+    assert_eq!(
+        score, 12,
+        "faf-cli 8.2.0 scores this file 12%; got {score}%"
+    );
+}
