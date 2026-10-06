@@ -9,6 +9,8 @@ WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
+# src/skills.rs embeds skills/faf-context/SKILL.md at compile time.
+COPY skills ./skills
 
 RUN cargo build --release --locked
 
