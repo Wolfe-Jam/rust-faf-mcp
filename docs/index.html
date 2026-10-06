@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>rust-faf-mcp — FAF for Rust</title>
+  <meta name="description" content="rust-faf-mcp is a Rust-native MCP server for FAF. One binary, stdio only. It reads your IANA-registered project.faf and scores it with the same always-33 kernel as faf-cli.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://faf.one/orange-smiley.svg" type="image/svg+xml">
+  <meta property="og:title" content="rust-faf-mcp — FAF for Rust">
+  <meta property="og:description" content="Persistent project context for MCP clients. Native. One binary. cargo install rust-faf-mcp.">
+  <meta property="og:image" content="https://faf.one/orange-smiley.svg">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="rust-faf-mcp — FAF for Rust">
+  <meta name="twitter:description" content="Persistent project context for MCP clients. Native. One binary. cargo install rust-faf-mcp.">
+  <meta name="twitter:image" content="https://faf.one/orange-smiley.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --side:#f5f5f5; --line:#dddddd; --text:#000000; --text-2:#3e3e3e;
+  --code-bg:#f5f5f5; --code-text:#000000; --link:#2a6496; --fn:#ad7c37; --kw:#8959a8; --str:#718c00; --cm:#6b6b6b;
+  --rust:#a95a2b; --btn-bg:#000000; --btn-fg:#ffffff; --head-bg:#353535; --head-fg:#ffffff;
+  --serif:'Source Serif 4',Georgia,serif; --sans:'Fira Sans',-apple-system,'Segoe UI',sans-serif; --mono:'Source Code Pro',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#353535; --side:#2a2a2a; --line:#4e4e4e; --text:#dddddd; --text-2:#c8c8c8;
+    --code-bg:#2a2a2a; --code-text:#e6e6e6; --link:#d2991d; --fn:#2bab63; --kw:#ab8ac1; --str:#83a300; --cm:#a6a6a6;
+    --rust:#e0a17a; --btn-bg:#dddddd; --btn-fg:#1f1f1f; --head-bg:#1f1f1f; --head-fg:#dddddd;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#353535; --side:#2a2a2a; --line:#4e4e4e; --text:#dddddd; --text-2:#c8c8c8;
+  --code-bg:#2a2a2a; --code-text:#e6e6e6; --link:#d2991d; --fn:#2bab63; --kw:#ab8ac1; --str:#83a300; --cm:#a6a6a6;
+  --rust:#e0a17a; --btn-bg:#dddddd; --btn-fg:#1f1f1f; --head-bg:#1f1f1f; --head-fg:#dddddd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:17px;line-height:1.6}
+a{color:var(--link)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);color:var(--code-text);padding:.1em .35em;border-radius:4px}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+/* crate header bar, docs.rs style */
+.bar{background:var(--head-bg);color:var(--head-fg);font-family:var(--sans);font-size:15px}
+.bar .wrap{display:flex;align-items:center;gap:18px;height:48px}
+.bar .crate{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--head-fg);text-decoration:none}
+.bar .crate img{width:20px;height:20px}
+.bar .ver{font-family:var(--mono);font-size:13px;opacity:.85}
+.bar nav{margin-left:auto;display:flex;gap:18px}
+.bar nav a{color:var(--head-fg);text-decoration:none;opacity:.9}
+.bar nav a:hover{opacity:1;text-decoration:underline}
+
+.layout{display:grid;grid-template-columns:200px 1fr;gap:40px;padding:36px 0 64px}
+main{min-width:0}
+aside{font-family:var(--sans);font-size:14.5px}
+aside .box{background:var(--side);border:1px solid var(--line);border-radius:6px;padding:16px;position:sticky;top:16px}
+aside h4{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin:0 0 8px}
+aside ul{list-style:none;margin-bottom:16px}
+aside li{padding:3px 0}
+aside a{text-decoration:none}
+aside a:hover{text-decoration:underline}
+aside .meta{font-size:13.5px;color:var(--text);line-height:1.7}
+
+.kicker{font-family:var(--sans);font-size:14px;color:var(--text-2);margin-bottom:6px}
+.kicker b{color:var(--rust);font-weight:600}
+h1{font-family:var(--sans);font-size:clamp(30px,5vw,40px);font-weight:600;line-height:1.15;margin-bottom:10px}
+h1 .kind{color:var(--rust)}
+.lede{font-size:19px;color:var(--text);max-width:62ch;margin-bottom:22px}
+.edition{display:inline-flex;gap:8px;align-items:center;font-family:var(--sans);font-size:14px;border:1px solid var(--line);border-radius:4px;padding:4px 10px;margin-bottom:18px}
+.edition code{background:none;padding:0}
+
+h2{font-family:var(--sans);font-size:23px;font-weight:600;border-bottom:1px solid var(--line);padding-bottom:6px;margin:44px 0 14px}
+p{margin-bottom:14px;max-width:66ch}
+pre{font-family:var(--mono);font-size:14.5px;background:var(--code-bg);color:var(--code-text);border-radius:6px;padding:14px 16px;overflow-x:auto;line-height:1.55;margin:0 0 14px}
+.cm{color:var(--cm)} .kw{color:var(--kw)} .fn{color:var(--fn)} .st{color:var(--str)}
+.tagline{font-family:var(--sans);font-size:22px;font-weight:600;margin:36px 0 6px}
+.tagline span{color:var(--rust)}
+
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:6px}
+.why div{border:1px solid var(--line);border-radius:6px;padding:14px 16px;font-family:var(--sans);font-size:15px}
+.why b{display:block;font-size:16px;margin-bottom:4px}
+.why span{color:var(--text-2)}
+
+table.items{width:100%;border-collapse:collapse;font-size:16px}
+table.items td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.items td:first-child{width:150px;padding-right:14px}
+table.items td:first-child code{background:none;padding:0;color:var(--fn);font-weight:600}
+
+.tabs{display:flex;gap:0;font-family:var(--sans);font-size:14px;border-bottom:1px solid var(--line);margin-bottom:12px;flex-wrap:wrap}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--text-2);padding:8px 14px;font:inherit;cursor:pointer}
+.tabs button.on{color:var(--text);border-bottom-color:var(--rust);font-weight:600}
+.pane{display:none} .pane.on{display:block}
+.note{font-family:var(--sans);font-size:14.5px;color:var(--text-2)}
+
+footer{border-top:1px solid var(--line);padding:28px 0 48px;font-family:var(--sans);font-size:14px;color:var(--text-2)}
+footer .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer nav{display:flex;gap:16px;flex-wrap:wrap}
+
+@media (max-width:760px){
+  .wrap{padding:0 16px}
+  .bar nav{display:none}
+  .layout{grid-template-columns:1fr;gap:0;padding-top:24px}
+  aside{display:none}
+  table.items td:first-child{width:118px}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="crate" href="./"><img src="https://faf.one/orange-smiley.svg" alt="">rust-faf-mcp <span class="ver">0.8.1</span></a>
+    <nav>
+      <a href="https://crates.io/crates/rust-faf-mcp">crates.io</a>
+      <a href="https://www.npmjs.com/package/rust-faf-mcp">npm</a>
+      <a href="https://github.com/Wolfe-Jam/rust-faf-mcp">Repository</a>
+      <a href="https://github.com/Wolfe-Jam/rust-faf-mcp/blob/main/CHANGELOG.md">Changelog</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+  <aside>
+    <div class="box">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#why">Why Rust</a></li>
+        <li><a href="#lineage">Lineage</a></li>
+        <li><a href="#tools">Tools</a></li>
+      </ul>
+      <h4>Crate</h4>
+      <div class="meta">
+        Version 0.8.1<br>
+        License MIT<br>
+        rmcp 3.0.1<br>
+        faf-rust-sdk 3.1<br>
+        MCP Registry<br><code>one.faf/rust-faf-mcp</code>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <p class="kicker">Crate <b>rust-faf-mcp</b></p>
+    <h1>Project context for your AI, <span class="kind">native in Rust</span>.</h1>
+    <div class="edition">The Lineage Edition · <code>v0.8.1</code></div>
+    <p class="lede">A Rust-native MCP server for FAF. It reads your IANA-registered <code>project.faf</code> and gives your AI the stack, the goal and who it's for, scored by the same always-33 kernel as faf-cli. One binary, stdio only.</p>
+
+    <pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.1</pre>
+
+    <p class="tagline">FAF <span>defines</span>. AGENTS.md instructs. AI codes.</p>
+
+    <h2 id="install">Install</h2>
+    <div class="tabs" role="tablist">
+      <button class="on" data-t="cargo" role="tab">cargo</button>
+      <button data-t="npx" role="tab">No Rust? npx</button>
+      <button data-t="brew" role="tab">Homebrew</button>
+    </div>
+    <div class="pane on" data-t="cargo">
+<pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.1</pre>
+      <p class="note">Then point your MCP client at <code>"command": "rust-faf-mcp"</code>.</p>
+    </div>
+    <div class="pane" data-t="npx">
+<pre><span class="kw">npx</span> --yes rust-faf-mcp@0.8.1</pre>
+      <p class="note">Downloads the release binary for macOS or Linux. Nothing to compile.</p>
+    </div>
+    <div class="pane" data-t="brew">
+<pre><span class="kw">brew</span> install Wolfe-Jam/faf/rust-faf-mcp
+<span class="cm"># already installed:</span>
+<span class="kw">brew</span> upgrade Wolfe-Jam/faf/rust-faf-mcp</pre>
+      <p class="note">macOS, pre-built.</p>
+    </div>
+
+    <p>Add it to any stdio MCP client.</p>
+<pre><span class="cm"># Claude Code</span>
+<span class="kw">claude</span> mcp add faf -- npx --yes rust-faf-mcp@0.8.1
+
+<span class="cm">// Cursor, Claude Desktop and other mcpServers clients</span>
+{ <span class="st">"mcpServers"</span>: { <span class="st">"faf"</span>: {
+  <span class="st">"command"</span>: <span class="st">"npx"</span>,
+  <span class="st">"args"</span>: [<span class="st">"--yes"</span>, <span class="st">"rust-faf-mcp@0.8.1"</span>]
+} } }</pre>
+    <p class="note">Pin the version. An older <code>rust-faf-mcp</code> on your PATH may be an old Homebrew build.</p>
+
+    <h2 id="why">Why Rust</h2>
+    <div class="why">
+      <div><b>One binary</b><span>About 5 MB. No runtime to install.</span></div>
+      <div><b>Stdio only</b><span>No flags, no config files, no network listener.</span></div>
+      <div><b>rmcp 3</b><span>Built on the official Rust MCP SDK.</span></div>
+      <div><b>The same score</b><span>faf-rust-sdk's always-33 kernel gives the number faf-cli gives.</span></div>
+    </div>
+
+    <h2 id="lineage">Lineage</h2>
+    <p><code>.faf-dna</code> is your project's birth certificate, the same file faf-cli writes. <code>faf_init</code> records the honest first score, <code>faf_auto</code> records growth, and <code>faf_dna</code> shows the journey from Birth DNA to now.</p>
+<pre><span class="fn">faf_dna</span>
+<span class="cm">Birth DNA</span>  22%  <span class="cm">→</span>  85%  <span class="cm">→</span>  99%  <span class="cm">now</span></pre>
+
+    <h2 id="tools">Tools</h2>
+    <p>Twelve tools. Ask your AI to "use FAF" and it calls them for you.</p>
+    <table class="items">
+      <tr><td><code>faf_auto</code></td><td>Set up if <code>project.faf</code> is missing, sync CLAUDE.md, score. An existing file is left unchanged.</td></tr>
+      <tr><td><code>faf_init</code></td><td>First write of <code>project.faf</code> from your tree. Never overwrites.</td></tr>
+      <tr><td><code>faf_score</code></td><td>The always-33 score, with what to fill next.</td></tr>
+      <tr><td><code>faf_go</code></td><td>Guided steps to 100%.</td></tr>
+      <tr><td><code>faf_read</code></td><td>Read <code>project.faf</code> with its parsed structure.</td></tr>
+      <tr><td><code>faf_sync</code></td><td>Update CLAUDE.md from <code>project.faf</code>.</td></tr>
+      <tr><td><code>faf_agents</code></td><td>Author AGENTS.md from <code>project.faf</code>. Your own content outside the managed block is kept.</td></tr>
+      <tr><td><code>faf_git</code></td><td>Author a <code>project.faf</code> from a GitHub repo URL. Returns the text; writes nothing.</td></tr>
+      <tr><td><code>faf_dna</code></td><td>Your journey from <code>.faf-dna</code>, Birth DNA to now.</td></tr>
+      <tr><td><code>faf_discover</code></td><td>Find the nearest <code>project.faf</code> up the tree.</td></tr>
+      <tr><td><code>faf_compress</code></td><td>Compress <code>project.faf</code> for tight context windows.</td></tr>
+      <tr><td><code>faf_tokens</code></td><td>Token count at each compression level.</td></tr>
+    </table>
+  </main>
+</div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <span>rust-faf-mcp 0.8.1 · MIT · <code>application/vnd.faf+yaml</code></span>
+      <nav>
+        <a href="https://crates.io/crates/rust-faf-mcp">crates.io</a>
+        <a href="https://github.com/Wolfe-Jam/rust-faf-mcp">GitHub</a>
+        <a href="https://faf.one">faf.one</a>
+      </nav>
+    </div>
+    <p style="margin-top:14px">Bookmark this page for later.</p>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click',function(){
+    var t=b.getAttribute('data-t');
+    document.querySelectorAll('.tabs button').forEach(function(x){x.classList.toggle('on',x===b)});
+    document.querySelectorAll('.pane').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-t')===t)});
+  });
+});
+</script>
+</body>
+</html>
