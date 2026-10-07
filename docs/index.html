@@ -112,7 +112,7 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 
 <header class="bar">
   <div class="wrap">
-    <a class="crate" href="./"><img src="https://faf.one/orange-smiley.svg" alt="">rust-faf-mcp <span class="ver">0.8.1</span></a>
+    <a class="crate" href="./"><img src="https://faf.one/orange-smiley.svg" alt="">rust-faf-mcp <span class="ver">0.8.2</span></a>
     <nav>
       <a href="https://crates.io/crates/rust-faf-mcp">crates.io</a>
       <a href="https://www.npmjs.com/package/rust-faf-mcp">npm</a>
@@ -132,13 +132,15 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
         <li><a href="#why">Why Rust</a></li>
         <li><a href="#lineage">Lineage</a></li>
         <li><a href="#tools">Tools</a></li>
+        <li><a href="#annotations">Annotations</a></li>
       </ul>
       <h4>Crate</h4>
       <div class="meta">
-        Version 0.8.1<br>
+        Version 0.8.2<br>
+        Rust 1.88+<br>
         License MIT<br>
         rmcp 3.0.1<br>
-        faf-rust-sdk 3.1<br>
+        faf-rust-sdk 3.1.1<br>
         MCP Registry<br><code>one.faf/rust-faf-mcp</code>
       </div>
     </div>
@@ -147,10 +149,10 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
   <main>
     <p class="kicker">Crate <b>rust-faf-mcp</b></p>
     <h1>Project context for your AI, <span class="kind">native in Rust</span>.</h1>
-    <div class="edition">The Lineage Edition · <code>v0.8.1</code></div>
+    <div class="edition">The Lineage Edition · <code>v0.8.2</code></div>
     <p class="lede">A Rust-native MCP server for FAF. It reads your IANA-registered <code>project.faf</code> and gives your AI the stack, the goal and who it's for, scored by the same always-33 kernel as faf-cli. One binary, stdio only.</p>
 
-    <pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.1</pre>
+    <pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.2</pre>
 
     <p class="tagline">FAF <span>defines</span>. AGENTS.md instructs. AI codes.</p>
 
@@ -161,11 +163,11 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
       <button data-t="brew" role="tab">Homebrew</button>
     </div>
     <div class="pane on" data-t="cargo">
-<pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.1</pre>
+<pre><span class="kw">cargo</span> install rust-faf-mcp --version 0.8.2</pre>
       <p class="note">Then point your MCP client at <code>"command": "rust-faf-mcp"</code>.</p>
     </div>
     <div class="pane" data-t="npx">
-<pre><span class="kw">npx</span> --yes rust-faf-mcp@0.8.1</pre>
+<pre><span class="kw">npx</span> --yes rust-faf-mcp@0.8.2</pre>
       <p class="note">Downloads the release binary for macOS or Linux. Nothing to compile.</p>
     </div>
     <div class="pane" data-t="brew">
@@ -177,12 +179,12 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 
     <p>Add it to any stdio MCP client.</p>
 <pre><span class="cm"># Claude Code</span>
-<span class="kw">claude</span> mcp add faf -- npx --yes rust-faf-mcp@0.8.1
+<span class="kw">claude</span> mcp add faf -- npx --yes rust-faf-mcp@0.8.2
 
 <span class="cm">// Cursor, Claude Desktop and other mcpServers clients</span>
 { <span class="st">"mcpServers"</span>: { <span class="st">"faf"</span>: {
   <span class="st">"command"</span>: <span class="st">"npx"</span>,
-  <span class="st">"args"</span>: [<span class="st">"--yes"</span>, <span class="st">"rust-faf-mcp@0.8.1"</span>]
+  <span class="st">"args"</span>: [<span class="st">"--yes"</span>, <span class="st">"rust-faf-mcp@0.8.2"</span>]
 } } }</pre>
     <p class="note">Pin the version. An older <code>rust-faf-mcp</code> on your PATH may be an old Homebrew build.</p>
 
@@ -215,6 +217,14 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
       <tr><td><code>faf_compress</code></td><td>Compress <code>project.faf</code> for tight context windows.</td></tr>
       <tr><td><code>faf_tokens</code></td><td>Token count at each compression level.</td></tr>
     </table>
+
+    <h2 id="annotations">Every tool says what it does</h2>
+    <p>All twelve tools carry MCP annotations, so your client can tell which ones only read and which ones write.</p>
+    <div class="why">
+      <div><b>7 read-only</b><span><code>faf_read</code> <code>faf_score</code> <code>faf_compress</code> <code>faf_discover</code> <code>faf_tokens</code> <code>faf_dna</code> <code>faf_git</code></span></div>
+      <div><b>5 write</b><span><code>faf_init</code> <code>faf_sync</code> <code>faf_auto</code> <code>faf_agents</code> <code>faf_go</code>. None destructive.</span></div>
+      <div><b>1 reaches the network</b><span><code>faf_git</code> reads the public GitHub API. Everything else stays on your machine.</span></div>
+    </div>
   </main>
 </div>
 </div>
@@ -222,7 +232,7 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 <footer>
   <div class="wrap">
     <div class="row">
-      <span>rust-faf-mcp 0.8.1 · MIT · <code>application/vnd.faf+yaml</code></span>
+      <span>rust-faf-mcp 0.8.2 · MIT · <code>application/vnd.faf+yaml</code></span>
       <nav>
         <a href="https://crates.io/crates/rust-faf-mcp">crates.io</a>
         <a href="https://github.com/Wolfe-Jam/rust-faf-mcp">GitHub</a>
