@@ -1,6 +1,6 @@
 [package]
 name = "rust-faf-mcp"
-version = "0.8.2"
+version = "0.8.3"
 edition = "2024"
 rust-version = "1.88"
 authors = ["wolfejam <wolfejam@faf.one>"]

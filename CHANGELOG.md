@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.8.3] - 2026-10-06
+
+`--version` and `--help` answer instead of starting the server.
+
+### Fixed
+- **`rust-faf-mcp --version` / `-V` prints `rust-faf-mcp 0.8.3` and exits 0; `--help` / `-h` prints usage and a client config.** Before, every invocation served stdio, so a stranger's first command (`--version`) printed `ERROR … ConnectionClosed("initialize request")` and exited 1. Found by /dev-notes on the published 0.8.2. Any other argument still starts the server, so client configs are unchanged. New test: `test_version_and_help_flags_answer_and_exit_zero`.
+
 ## [0.8.2] - 2026-10-06
 
 Builds on the Rust it declares, Docker builds again, and scores match faf-cli.
