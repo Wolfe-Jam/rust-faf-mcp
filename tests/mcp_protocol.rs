@@ -253,3 +253,50 @@ fn test_tools_have_annotations() {
         );
     }
 }
+
+/// A stranger's first command is often `--version`. Before 0.8.3 every
+/// invocation served stdio, so `--version` printed an rmcp ConnectionClosed
+/// error and exited 1 (found by /dev-notes on the published 0.8.2).
+#[test]
+fn test_version_and_help_flags_answer_and_exit_zero() {
+    let want = format!("rust-faf-mcp {}", env!("CARGO_PKG_VERSION"));
+    for flag in ["--version", "-V"] {
+        let out = Command::new(binary_path())
+            .arg(flag)
+            .stdin(Stdio::null())
+            .output()
+            .expect("run binary");
+        assert!(
+            out.status.success(),
+            "{flag} should exit 0, got {:?}",
+            out.status
+        );
+        assert_eq!(
+            String::from_utf8_lossy(&out.stdout).trim(),
+            want,
+            "{flag} stdout"
+        );
+        assert!(
+            !String::from_utf8_lossy(&out.stderr).contains("ERROR"),
+            "{flag} must not start the server"
+        );
+    }
+    for flag in ["--help", "-h"] {
+        let out = Command::new(binary_path())
+            .arg(flag)
+            .stdin(Stdio::null())
+            .output()
+            .expect("run binary");
+        assert!(
+            out.status.success(),
+            "{flag} should exit 0, got {:?}",
+            out.status
+        );
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert!(stdout.contains("Usage:"), "{flag} prints usage");
+        assert!(
+            stdout.contains("mcpServers"),
+            "{flag} shows a client config"
+        );
+    }
+}

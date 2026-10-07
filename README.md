@@ -6,9 +6,9 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
-**The Lineage Edition (v0.8.2)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
+**The Lineage Edition (v0.8.3)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
-**v0.8.2** — Builds on the Rust it declares, Docker builds again, and scores match faf-cli. See [CHANGELOG](./CHANGELOG.md#082---2026-10-06).
+**v0.8.3** — `--version` and `--help` answer instead of starting the server. See [CHANGELOG](./CHANGELOG.md#083---2026-10-06).
 
 **FAF defines. AGENTS.md instructs. AI codes.**
 
@@ -16,7 +16,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/rust-faf-mcp?style=flat-square)](https://crates.io/crates/rust-faf-mcp)
 [![FAF Trophy 100%](https://img.shields.io/badge/FAF-%E2%9C%AA%20100%25-000000?labelColor=FF6B35)](https://faf.one)
-[![Tests](https://img.shields.io/badge/tests-192%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
+[![Tests](https://img.shields.io/badge/tests-193%20passing-brightgreen?style=flat-square)](https://github.com/Wolfe-Jam/rust-faf-mcp)
 [![IANA](https://img.shields.io/badge/IANA-registered-informational?style=flat-square)](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml)
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 
@@ -26,17 +26,17 @@ Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) serv
 
 ```bash
 # Rust toolchain (install):
-cargo install rust-faf-mcp --version 0.8.2
+cargo install rust-faf-mcp --version 0.8.3
 
 # No Rust (try — downloads GH Release binary for darwin/linux):
-npx --yes rust-faf-mcp@0.8.2
+npx --yes rust-faf-mcp@0.8.3
 ```
 
 Point an MCP client at the **pin**. A bare `rust-faf-mcp` on PATH may be an old Homebrew binary.
 
 ```bash
 # Claude Code
-claude mcp add faf -- npx --yes rust-faf-mcp@0.8.2
+claude mcp add faf -- npx --yes rust-faf-mcp@0.8.3
 ```
 
 ```jsonc
@@ -45,13 +45,13 @@ claude mcp add faf -- npx --yes rust-faf-mcp@0.8.2
   "mcpServers": {
     "faf": {
       "command": "npx",
-      "args": ["--yes", "rust-faf-mcp@0.8.2"]
+      "args": ["--yes", "rust-faf-mcp@0.8.3"]
     }
   }
 }
 ```
 
-After `cargo install rust-faf-mcp --version 0.8.2`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
+After `cargo install rust-faf-mcp --version 0.8.3`, `"command": "rust-faf-mcp"` is the install. Until you have proven that binary, use the npx pin.
 
 No flags, no config files, no network listener. Pure stdio JSON-RPC.
 
@@ -169,10 +169,10 @@ Tools return `serde_json::Value`. The server adapts them to `Result<String, Stri
 
 ## Testing
 
-192 tests (145 integration + 47 unit):
+193 tests (146 integration + 47 unit):
 
 ```bash
-cargo test    # runs all 192
+cargo test    # runs all 193
 
 # Full ship bar (same gates as GitHub CI — run before push)
 bash scripts/ci.sh
@@ -222,7 +222,7 @@ If `rust-faf-mcp` has been useful, consider starring the repo — it helps other
 ## Links
 
 - [crates.io/crates/rust-faf-mcp](https://crates.io/crates/rust-faf-mcp)
-- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.8.2` (no Rust toolchain; downloads GH Release binary)
+- [npmjs.com/package/rust-faf-mcp](https://www.npmjs.com/package/rust-faf-mcp) — `npx --yes rust-faf-mcp@0.8.3` (no Rust toolchain; downloads GH Release binary)
 
 - [Dual-package publish guide](https://github.com/Wolfe-Jam/mcp-better/blob/main/docs/DUAL-PACKAGE-RUST-MCP.md) — cargo + npm (this server is the product example)
 - [docs/DUAL-PACKAGE.md](./docs/DUAL-PACKAGE.md) — pointer + OIDC docs for this repo
