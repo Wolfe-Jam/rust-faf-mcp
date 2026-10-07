@@ -134,10 +134,10 @@ pub fn faf_init(arguments: &Value) -> Value {
         .map(|c| mk4_score(&c).0)
         .unwrap_or(0);
     let mut dna = FafDna::new(&dir);
-    if !dna.exists() {
-        if let Err(e) = dna.birth(f64::from(score)) {
-            return error_response(&format!("Created project.faf, but .faf-dna: {e}"));
-        }
+    if !dna.exists()
+        && let Err(e) = dna.birth(f64::from(score))
+    {
+        return error_response(&format!("Created project.faf, but .faf-dna: {e}"));
     }
     let text = created["content"][0]["text"].as_str().unwrap_or_default();
     text_response(&format!(
@@ -170,152 +170,152 @@ fn faf_init_create(dir: &Path) -> Value {
 
     // Detect Cargo.toml (Rust)
     let cargo_path = dir.join("Cargo.toml");
-    if cargo_path.exists() {
-        if let Ok(content) = fs::read_to_string(&cargo_path) {
-            if let Ok(cargo) = content.parse::<toml::Table>() {
-                if let Some(pkg) = cargo.get("package").and_then(|p| p.as_table()) {
-                    if let Some(n) = pkg.get("name").and_then(|v| v.as_str()) {
-                        name = n.to_string();
-                    }
-                    if let Some(d) = pkg.get("description").and_then(|v| v.as_str()) {
-                        goal = Some(d.to_string());
-                        what_building = Some(d.to_string());
-                    }
-                    if let Some(v) = pkg.get("version").and_then(|v| v.as_str()) {
-                        version = Some(v.to_string());
-                    }
-                    if let Some(l) = pkg.get("license").and_then(|v| v.as_str()) {
-                        license = Some(l.to_string());
-                    }
-                    if let Some(e) = pkg.get("edition").and_then(|v| v.as_str()) {
-                        tech_stack = Some(format!("Rust {}", e));
-                    }
-                }
-                main_language = Some("Rust".to_string());
-                build_tool = Some("cargo".to_string());
-                runtime = Some("Rust".to_string());
-                if content.contains("rmcp") {
-                    looks_like_mcp = true;
-                }
-                let has_bin = content.contains("[[bin]]") || dir.join("src/main.rs").exists();
-                let has_lib = content.contains("[lib]") || dir.join("src/lib.rs").exists();
-                if looks_like_mcp {
-                    project_type = "mcp".to_string();
-                    backend = Some("rmcp".to_string());
-                } else if has_bin {
-                    project_type = "cli".to_string();
-                } else if has_lib {
-                    project_type = "library".to_string();
-                }
-                key_files.push("Cargo.toml".to_string());
-                key_files.push("src/main.rs".to_string());
-                key_files.push("src/lib.rs".to_string());
-                commands.insert("build".to_string(), "cargo build".to_string());
-                commands.insert("test".to_string(), "cargo test".to_string());
+    if cargo_path.exists()
+        && let Ok(content) = fs::read_to_string(&cargo_path)
+        && let Ok(cargo) = content.parse::<toml::Table>()
+    {
+        if let Some(pkg) = cargo.get("package").and_then(|p| p.as_table()) {
+            if let Some(n) = pkg.get("name").and_then(|v| v.as_str()) {
+                name = n.to_string();
+            }
+            if let Some(d) = pkg.get("description").and_then(|v| v.as_str()) {
+                goal = Some(d.to_string());
+                what_building = Some(d.to_string());
+            }
+            if let Some(v) = pkg.get("version").and_then(|v| v.as_str()) {
+                version = Some(v.to_string());
+            }
+            if let Some(l) = pkg.get("license").and_then(|v| v.as_str()) {
+                license = Some(l.to_string());
+            }
+            if let Some(e) = pkg.get("edition").and_then(|v| v.as_str()) {
+                tech_stack = Some(format!("Rust {}", e));
             }
         }
+        main_language = Some("Rust".to_string());
+        build_tool = Some("cargo".to_string());
+        runtime = Some("Rust".to_string());
+        if content.contains("rmcp") {
+            looks_like_mcp = true;
+        }
+        let has_bin = content.contains("[[bin]]") || dir.join("src/main.rs").exists();
+        let has_lib = content.contains("[lib]") || dir.join("src/lib.rs").exists();
+        if looks_like_mcp {
+            project_type = "mcp".to_string();
+            backend = Some("rmcp".to_string());
+        } else if has_bin {
+            project_type = "cli".to_string();
+        } else if has_lib {
+            project_type = "library".to_string();
+        }
+        key_files.push("Cargo.toml".to_string());
+        key_files.push("src/main.rs".to_string());
+        key_files.push("src/lib.rs".to_string());
+        commands.insert("build".to_string(), "cargo build".to_string());
+        commands.insert("test".to_string(), "cargo test".to_string());
     }
 
     // Detect package.json (Node/TypeScript)
     let pkg_path = dir.join("package.json");
-    if pkg_path.exists() && main_language.is_none() {
-        if let Ok(content) = fs::read_to_string(&pkg_path) {
-            if let Ok(pkg) = serde_json::from_str::<Value>(&content) {
-                if let Some(n) = pkg.get("name").and_then(|v| v.as_str()) {
-                    name = n.to_string();
-                }
-                if let Some(d) = pkg.get("description").and_then(|v| v.as_str()) {
-                    goal = Some(d.to_string());
-                    what_building = Some(d.to_string());
-                }
-                if let Some(v) = pkg.get("version").and_then(|v| v.as_str()) {
-                    version = Some(v.to_string());
-                }
-                if let Some(l) = pkg.get("license").and_then(|v| v.as_str()) {
-                    license = Some(l.to_string());
-                }
+    if pkg_path.exists()
+        && main_language.is_none()
+        && let Ok(content) = fs::read_to_string(&pkg_path)
+        && let Ok(pkg) = serde_json::from_str::<Value>(&content)
+    {
+        if let Some(n) = pkg.get("name").and_then(|v| v.as_str()) {
+            name = n.to_string();
+        }
+        if let Some(d) = pkg.get("description").and_then(|v| v.as_str()) {
+            goal = Some(d.to_string());
+            what_building = Some(d.to_string());
+        }
+        if let Some(v) = pkg.get("version").and_then(|v| v.as_str()) {
+            version = Some(v.to_string());
+        }
+        if let Some(l) = pkg.get("license").and_then(|v| v.as_str()) {
+            license = Some(l.to_string());
+        }
 
-                // Detect TypeScript
-                let tsconfig = dir.join("tsconfig.json");
-                if tsconfig.exists() {
-                    main_language = Some("TypeScript".to_string());
-                    tech_stack = Some("TypeScript + Node.js".to_string());
-                } else {
-                    main_language = Some("JavaScript".to_string());
-                    tech_stack = Some("JavaScript + Node.js".to_string());
-                }
-                runtime = Some("Node.js".to_string());
-                if pkg.get("mcpName").is_some() {
-                    project_type = "mcp".to_string();
-                } else if project_type.is_empty() {
-                    project_type = "app".to_string();
-                }
+        // Detect TypeScript
+        let tsconfig = dir.join("tsconfig.json");
+        if tsconfig.exists() {
+            main_language = Some("TypeScript".to_string());
+            tech_stack = Some("TypeScript + Node.js".to_string());
+        } else {
+            main_language = Some("JavaScript".to_string());
+            tech_stack = Some("JavaScript + Node.js".to_string());
+        }
+        runtime = Some("Node.js".to_string());
+        if pkg.get("mcpName").is_some() {
+            project_type = "mcp".to_string();
+        } else if project_type.is_empty() {
+            project_type = "app".to_string();
+        }
 
-                key_files.push("package.json".to_string());
-                commands.insert("install".to_string(), "npm install".to_string());
+        key_files.push("package.json".to_string());
+        commands.insert("install".to_string(), "npm install".to_string());
 
-                if let Some(scripts) = pkg.get("scripts").and_then(|s| s.as_object()) {
-                    if scripts.contains_key("build") {
-                        commands.insert("build".to_string(), "npm run build".to_string());
-                    }
-                    if scripts.contains_key("test") {
-                        commands.insert("test".to_string(), "npm test".to_string());
-                    }
-                }
+        if let Some(scripts) = pkg.get("scripts").and_then(|s| s.as_object()) {
+            if scripts.contains_key("build") {
+                commands.insert("build".to_string(), "npm run build".to_string());
+            }
+            if scripts.contains_key("test") {
+                commands.insert("test".to_string(), "npm test".to_string());
             }
         }
     }
 
     // Detect pyproject.toml (Python)
     let pyproject_path = dir.join("pyproject.toml");
-    if pyproject_path.exists() && main_language.is_none() {
-        if let Ok(content) = fs::read_to_string(&pyproject_path) {
-            if let Ok(pyproject) = content.parse::<toml::Table>() {
-                if let Some(project) = pyproject.get("project").and_then(|p| p.as_table()) {
-                    if let Some(n) = project.get("name").and_then(|v| v.as_str()) {
-                        name = n.to_string();
-                    }
-                    if let Some(d) = project.get("description").and_then(|v| v.as_str()) {
-                        goal = Some(d.to_string());
-                        what_building = Some(d.to_string());
-                    }
-                    if let Some(v) = project.get("version").and_then(|v| v.as_str()) {
-                        version = Some(v.to_string());
-                    }
-                }
-                main_language = Some("Python".to_string());
-                tech_stack = Some("Python".to_string());
-                runtime = Some("Python".to_string());
-                if project_type.is_empty() {
-                    project_type = "library".to_string();
-                }
-                key_files.push("pyproject.toml".to_string());
-                commands.insert("install".to_string(), "pip install -e .".to_string());
+    if pyproject_path.exists()
+        && main_language.is_none()
+        && let Ok(content) = fs::read_to_string(&pyproject_path)
+        && let Ok(pyproject) = content.parse::<toml::Table>()
+    {
+        if let Some(project) = pyproject.get("project").and_then(|p| p.as_table()) {
+            if let Some(n) = project.get("name").and_then(|v| v.as_str()) {
+                name = n.to_string();
+            }
+            if let Some(d) = project.get("description").and_then(|v| v.as_str()) {
+                goal = Some(d.to_string());
+                what_building = Some(d.to_string());
+            }
+            if let Some(v) = project.get("version").and_then(|v| v.as_str()) {
+                version = Some(v.to_string());
             }
         }
+        main_language = Some("Python".to_string());
+        tech_stack = Some("Python".to_string());
+        runtime = Some("Python".to_string());
+        if project_type.is_empty() {
+            project_type = "library".to_string();
+        }
+        key_files.push("pyproject.toml".to_string());
+        commands.insert("install".to_string(), "pip install -e .".to_string());
     }
 
     // Detect go.mod (Go)
     let gomod_path = dir.join("go.mod");
-    if gomod_path.exists() && main_language.is_none() {
-        if let Ok(content) = fs::read_to_string(&gomod_path) {
-            for line in content.lines() {
-                if line.starts_with("module ") {
-                    let module = line.trim_start_matches("module ").trim();
-                    name = module.rsplit('/').next().unwrap_or(module).to_string();
-                    break;
-                }
+    if gomod_path.exists()
+        && main_language.is_none()
+        && let Ok(content) = fs::read_to_string(&gomod_path)
+    {
+        for line in content.lines() {
+            if line.starts_with("module ") {
+                let module = line.trim_start_matches("module ").trim();
+                name = module.rsplit('/').next().unwrap_or(module).to_string();
+                break;
             }
-            main_language = Some("Go".to_string());
-            tech_stack = Some("Go".to_string());
-            runtime = Some("Go".to_string());
-            if project_type.is_empty() {
-                project_type = "cli".to_string();
-            }
-            key_files.push("go.mod".to_string());
-            commands.insert("build".to_string(), "go build ./...".to_string());
-            commands.insert("test".to_string(), "go test ./...".to_string());
         }
+        main_language = Some("Go".to_string());
+        tech_stack = Some("Go".to_string());
+        runtime = Some("Go".to_string());
+        if project_type.is_empty() {
+            project_type = "cli".to_string();
+        }
+        key_files.push("go.mod".to_string());
+        commands.insert("build".to_string(), "go build ./...".to_string());
+        commands.insert("test".to_string(), "go test ./...".to_string());
     }
 
     // Filter key_files to those that actually exist
@@ -791,10 +791,10 @@ pub fn faf_score(arguments: &Value) -> Value {
 
     if score < 100 {
         output.push_str("\nAdd Human Context to score 100. Run faf_go.\n");
-    } else if let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&content) {
-        if let Some(line) = intent::courtesy_line(&doc, score) {
-            output.push_str(&format!("\n{line}\n"));
-        }
+    } else if let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&content)
+        && let Some(line) = intent::courtesy_line(&doc, score)
+    {
+        output.push_str(&format!("\n{line}\n"));
     }
 
     text_response(&output)
@@ -837,26 +837,26 @@ pub fn faf_sync(arguments: &Value) -> Value {
         let existing = fs::read_to_string(&claude_path).unwrap_or_default();
 
         // Check if sync section already exists — update it
-        if let Some(start) = existing.find("<!-- FAF-SYNC-START -->") {
-            if let Some(end) = existing.find("<!-- FAF-SYNC-END -->") {
-                // Replace sync section, preserve everything else
-                let mut updated = String::new();
-                updated.push_str(&existing[..start]);
-                updated.push_str(&claude_content);
-                updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
+        if let Some(start) = existing.find("<!-- FAF-SYNC-START -->")
+            && let Some(end) = existing.find("<!-- FAF-SYNC-END -->")
+        {
+            // Replace sync section, preserve everything else
+            let mut updated = String::new();
+            updated.push_str(&existing[..start]);
+            updated.push_str(&claude_content);
+            updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
 
-                if let Err(e) = fs::write(&claude_path, &updated) {
-                    return error_response(&format!("Failed to write CLAUDE.md: {}", e));
-                }
+            if let Err(e) = fs::write(&claude_path, &updated) {
+                return error_response(&format!("Failed to write CLAUDE.md: {}", e));
+            }
 
-                return text_response(&format!(
-                    "Synced project.faf → CLAUDE.md\n\
+            return text_response(&format!(
+                "Synced project.faf → CLAUDE.md\n\
                      Score: {}% {}\n\
                      Updated sync section (preserved custom content).\n",
-                    score,
-                    tier_badge(&tier)
-                ));
-            }
+                score,
+                tier_badge(&tier)
+            ));
         }
 
         // No sync section — append it
@@ -1189,38 +1189,37 @@ pub fn faf_auto(arguments: &Value) -> Value {
     }
 
     // Sync → generate CLAUDE.md
-    if let Some(faf_path) = find_faf(&dir) {
-        if let Ok(content) = fs::read_to_string(&faf_path) {
-            if let Ok(faf) = faf_rust_sdk::parse(&content) {
-                let (score, tier) = mk4_score(&content);
-                let claude_md = generate_claude_md(&faf, score, &tier);
-                let claude_path = dir.join("CLAUDE.md");
+    if let Some(faf_path) = find_faf(&dir)
+        && let Ok(content) = fs::read_to_string(&faf_path)
+        && let Ok(faf) = faf_rust_sdk::parse(&content)
+    {
+        let (score, tier) = mk4_score(&content);
+        let claude_md = generate_claude_md(&faf, score, &tier);
+        let claude_path = dir.join("CLAUDE.md");
 
-                if claude_path.exists() {
-                    let existing = fs::read_to_string(&claude_path).unwrap_or_default();
-                    if let (Some(start), Some(end)) = (
-                        existing.find("<!-- FAF-SYNC-START -->"),
-                        existing.find("<!-- FAF-SYNC-END -->"),
-                    ) {
-                        let mut updated = String::new();
-                        updated.push_str(&existing[..start]);
-                        updated.push_str(&claude_md);
-                        updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
-                        let _ = fs::write(&claude_path, &updated);
-                        steps.push("Updated CLAUDE.md sync section".to_string());
-                    } else {
-                        let mut updated = existing;
-                        updated.push_str("\n\n");
-                        updated.push_str(&claude_md);
-                        let _ = fs::write(&claude_path, &updated);
-                        steps.push("Appended sync to CLAUDE.md".to_string());
-                    }
-                } else {
-                    let header = format!("# CLAUDE.md - {}\n\n{}\n", faf.project_name(), claude_md);
-                    let _ = fs::write(&claude_path, &header);
-                    steps.push("Created CLAUDE.md".to_string());
-                }
+        if claude_path.exists() {
+            let existing = fs::read_to_string(&claude_path).unwrap_or_default();
+            if let (Some(start), Some(end)) = (
+                existing.find("<!-- FAF-SYNC-START -->"),
+                existing.find("<!-- FAF-SYNC-END -->"),
+            ) {
+                let mut updated = String::new();
+                updated.push_str(&existing[..start]);
+                updated.push_str(&claude_md);
+                updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
+                let _ = fs::write(&claude_path, &updated);
+                steps.push("Updated CLAUDE.md sync section".to_string());
+            } else {
+                let mut updated = existing;
+                updated.push_str("\n\n");
+                updated.push_str(&claude_md);
+                let _ = fs::write(&claude_path, &updated);
+                steps.push("Appended sync to CLAUDE.md".to_string());
             }
+        } else {
+            let header = format!("# CLAUDE.md - {}\n\n{}\n", faf.project_name(), claude_md);
+            let _ = fs::write(&claude_path, &header);
+            steps.push("Created CLAUDE.md".to_string());
         }
     }
 
@@ -1266,22 +1265,20 @@ pub fn faf_auto(arguments: &Value) -> Value {
         }
     }
     output.push_str(&format!("\nPath: {}\n", dir.display()));
-    if let Some(faf_path) = find_faf(&dir) {
-        if let Ok(raw) = fs::read_to_string(&faf_path) {
-            output.push('\n');
-            output.push_str(&setup::format_confirm_setup(&raw));
-        }
+    if let Some(faf_path) = find_faf(&dir)
+        && let Ok(raw) = fs::read_to_string(&faf_path)
+    {
+        output.push('\n');
+        output.push_str(&setup::format_confirm_setup(&raw));
     }
     if after_score < 100 {
         output.push_str("Add Human Context to score 100. Run faf_go.\n");
-    } else if let Some(faf_path) = find_faf(&dir) {
-        if let Ok(raw) = fs::read_to_string(&faf_path) {
-            if let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&raw) {
-                if let Some(line) = intent::courtesy_line(&doc, after_score) {
-                    output.push_str(&format!("{line}\n"));
-                }
-            }
-        }
+    } else if let Some(faf_path) = find_faf(&dir)
+        && let Ok(raw) = fs::read_to_string(&faf_path)
+        && let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&raw)
+        && let Some(line) = intent::courtesy_line(&doc, after_score)
+    {
+        output.push_str(&format!("{line}\n"));
     }
 
     text_response(&output)

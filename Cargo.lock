@@ -266,21 +266,22 @@ dependencies = [
 
 [[package]]
 name = "faf-fafb"
-version = "1.0.2"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c552c2ba6a62a544f8e04cb550facfed3ce921f2644742fef5837e90e46c1af"
+checksum = "2189a80f27c74d4ee502e3f863f705fd775698bbd1c99155393f5d6a9db1f0e8"
 dependencies = [
  "byteorder",
  "crc32fast",
  "serde_yaml_ng",
+ "sha2",
  "thiserror 1.0.69",
 ]
 
 [[package]]
 name = "faf-kernel"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e995e52e6388b4c18b4be9b5783316ca1be9a095b88d4f39a45d724102ea8e5d"
+checksum = "e016d7d2736336aef7e0dbf88d2feb923c03a328d9591e83a77023317b3aef8a"
 dependencies = [
  "serde",
  "serde_yaml_ng",
@@ -289,9 +290,9 @@ dependencies = [
 
 [[package]]
 name = "faf-rust-sdk"
-version = "3.1.0"
+version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e67ceecfdc92bd4caa7b68f6b547f2f05e40272803a2563cd353a994a940f5c1"
+checksum = "0ca449e49ccd3955fa1547d513580d39ec8df4af6a99482045f727d24b5acb6c"
 dependencies = [
  "faf-fafb",
  "faf-kernel",
@@ -1161,7 +1162,7 @@ dependencies = [
 
 [[package]]
 name = "rust-faf-mcp"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "anyhow",
  "chrono",

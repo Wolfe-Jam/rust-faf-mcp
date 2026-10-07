@@ -1,8 +1,8 @@
 [package]
 name = "rust-faf-mcp"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 authors = ["wolfejam <wolfejam@faf.one>"]
 description = "Persistent Project Context for Rust MCP clients. IANA-registered .faf format, Rust-native MCP server, single binary."
 license = "MIT"
@@ -14,7 +14,7 @@ keywords = ["faf", "mcp", "ai-context", "rust", "rmcp"]
 categories = ["development-tools", "command-line-utilities"]
 
 [dependencies]
-faf-rust-sdk = "3.1"
+faf-rust-sdk = "3.1.1"
 rmcp = { version = "3.0.1", features = ["server", "transport-io", "macros", "schemars"] }
 schemars = "1"
 serde = { version = "1.0", features = ["derive"] }
