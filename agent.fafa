@@ -1,0 +1,61 @@
+version: "1.0"
+agent:
+  name: rust-faf-mcp
+  displayName: rust-faf-mcp
+  id: urn:air:faf.one:agent:rust-faf-mcp
+  version: 0.8.3
+  description: "A Rust MCP server for .faf project context: it writes, reads, scores and syncs project.faf over stdio, as a single binary from cargo install."
+  homepage: https://faf.one
+capabilities:
+  - name: faf_init
+    type: tool
+    description: Write a first project.faf from the project tree, without overwriting an existing one
+    tags:
+      - faf_init
+  - name: faf_auto
+    type: tool
+    description: Set up project.faf if missing, sync CLAUDE.md and score it
+    tags:
+      - faf_auto
+  - name: faf_score
+    type: tool
+    description: Score a project.faf from 0 to 100% with a breakdown and suggestions
+    tags:
+      - faf_score
+  - name: faf_go
+    type: tool
+    description: Walk through the human context (the 6 Ws) still needed to reach 100%
+    tags:
+      - faf_go
+  - name: faf_sync
+    type: tool
+    description: Write CLAUDE.md from project.faf, keeping everything outside faf's section
+    tags:
+      - faf_sync
+  - name: faf_agents
+    type: tool
+    description: Write AGENTS.md from project.faf, keeping hand-written content
+    tags:
+      - faf_agents
+  - name: faf_git
+    type: tool
+    description: Draft a project.faf from a public GitHub repository URL
+    tags:
+      - faf_git
+  - name: faf_dna
+    type: tool
+    description: Show the .faf-dna history, from the first score to now
+    tags:
+      - faf_dna
+endpoints:
+  - protocol: mcp
+    transport: stdio
+    location: rust-faf-mcp
+metadata:
+  cards:
+    domain: faf.one
+    examples:
+      - How do I give my Rust MCP client persistent project context?
+      - How do I score my project.faf?
+      - Can it write CLAUDE.md and AGENTS.md from project.faf?
+      - How do I install a .faf MCP server with cargo?
