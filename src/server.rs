@@ -253,13 +253,7 @@ impl ServerHandler for FafServer {
                 .build(),
         );
         info.server_info = Implementation::new("rust-faf-mcp", env!("CARGO_PKG_VERSION"));
-        info.instructions = Some(
-            "Rust MCP server for FAF (Foundational AI-context Format) \
-             — IANA-registered application/vnd.faf+yaml · identity one.faf/rust-faf-mcp. \
-             Skills: extension io.modelcontextprotocol/skills — skills/list · skills/get · \
-             resources/read skill://faf-context/SKILL.md (digests)."
-                .into(),
-        );
+        info.instructions = Some(server_instructions());
         info
     }
 
@@ -342,9 +336,54 @@ impl ServerHandler for FafServer {
     }
 }
 
+/// InitializeResult.instructions: how the tools fit together, for the model.
+/// Relationships and rules only; each tool's own description covers what it does.
+/// The last line keeps the skills pointer (J1, 2026-08-10) to the bundled skill.
+/// Keep it under 1,000 characters: the tests check the length and that every
+/// tool named here is on the tool list.
+fn server_instructions() -> String {
+    [
+        "Find the project.faf with faf_discover; faf_read shows it, faf_score scores it.",
+        "No project.faf yet: faf_init writes one from the file tree and never overwrites; faf_auto also writes CLAUDE.md and scores; faf_git drafts one from a GitHub repo.",
+        "The human slots come from the user through faf_go: ask, don't invent answers.",
+        "project.faf is the source: faf_sync writes CLAUDE.md and faf_agents AGENTS.md, both keeping hand-written content outside faf's block.",
+        "For tight context: faf_tokens shows the size at each level; faf_compress returns the smaller form.",
+        &format!(
+            "Skill guide: {}, through skills/get or resources/read.",
+            crate::skills::FAF_CONTEXT_SKILL_URI
+        ),
+    ]
+    .join("\n")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn instructions_sent_and_short() {
+        let info = FafServer::new().get_info();
+        let text = info.instructions.expect("instructions");
+        assert_eq!(text, server_instructions());
+        assert!(text.len() < 1000, "{} chars", text.len());
+    }
+
+    #[test]
+    fn instructions_name_only_listed_tools() {
+        let listed: std::collections::HashSet<String> = FafServer::tool_router()
+            .list_all()
+            .into_iter()
+            .map(|t| t.name.to_string())
+            .collect();
+        let text = server_instructions();
+        let named: std::collections::BTreeSet<&str> = text
+            .split(|c: char| !(c.is_ascii_lowercase() || c == '_'))
+            .filter(|w| w.starts_with("faf_") && w.len() > 4)
+            .collect();
+        assert!(!named.is_empty());
+        let missing: Vec<&&str> = named.iter().filter(|n| !listed.contains(**n)).collect();
+        assert!(missing.is_empty(), "not on the tool list: {missing:?}");
+    }
+
     use crate::skills::{FAF_CONTEXT_SKILL_URI, handle_skills_method};
 
     #[test]
