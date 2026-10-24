@@ -191,12 +191,14 @@ pub fn normalize_app_type(raw: &str) -> &'static str {
         "documentation" => "documentation",
         "intent" => "intent",
         "encyclopedia" => "encyclopedia",
+        "skills" => "skills",
         "cli" => "cli",
         "library" => "library",
         "sdk" => "sdk",
         "wasm" => "wasm",
         "html" => "html",
         "server-card" | "server_card" => "server-card",
+        "skills-plugin" | "skills_plugin" => "skills-plugin",
         "frontend" => "frontend",
         "website" => "website",
         "mobile" => "mobile",
@@ -219,8 +221,10 @@ pub fn normalize_app_type(raw: &str) -> &'static str {
 pub fn categories_for(app_type: &str) -> &'static [SlotCategory] {
     use SlotCategory::*;
     match normalize_app_type(app_type) {
-        "documentation" | "intent" | "encyclopedia" => &[Project, Human],
-        "cli" | "library" | "sdk" | "wasm" | "html" | "server-card" => &[Project, Human, Universal],
+        "documentation" | "intent" | "encyclopedia" | "skills" => &[Project, Human],
+        "cli" | "library" | "sdk" | "wasm" | "html" | "server-card" | "skills-plugin" => {
+            &[Project, Human, Universal]
+        }
         "frontend" | "website" | "mobile" | "app" | "extension" => {
             &[Project, Frontend, Human, Universal]
         }
@@ -298,6 +302,18 @@ mod tests {
         assert!(!is_stack_slot_ignored("mcp", "stack.backend"));
         assert!(!is_stack_slot_ignored("mcp", "stack.build"));
         assert!(is_stack_slot_ignored("mcp", "stack.package_manager"));
+    }
+
+    #[test]
+    fn skills_is_nine_slots_skills_plugin_twelve() {
+        // faf-cli #181: skills = project + human; skills-plugin = + universal.
+        assert_eq!(normalize_app_type("Skills"), "skills");
+        assert_eq!(normalize_app_type("skills-plugin"), "skills-plugin");
+        assert!(is_stack_slot_ignored("skills", "stack.build"));
+        assert!(is_stack_slot_ignored("skills", "stack.frontend"));
+        assert!(!is_stack_slot_ignored("skills-plugin", "stack.build"));
+        assert!(!is_stack_slot_ignored("skills-plugin", "stack.cicd"));
+        assert!(is_stack_slot_ignored("skills-plugin", "stack.database"));
     }
 
     #[test]
