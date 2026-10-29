@@ -802,7 +802,7 @@ pub fn faf_score(arguments: &Value) -> Value {
 
 // ─── Tool: faf_sync ────────────────────────────────────────────────────
 
-/// Bi-directional sync between project.faf and CLAUDE.md
+/// One-way sync: writes CLAUDE.md from project.faf (never the reverse)
 pub fn faf_sync(arguments: &Value) -> Value {
     let dir = resolve_path(arguments);
 

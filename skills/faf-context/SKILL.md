@@ -15,7 +15,7 @@ Product playbook for **rust-faf-mcp** (`one.faf/rust-faf-mcp`) — IANA `.faf` p
 | `faf_init` | Setup: first write from the tree. Refuses if the file exists. Confirm setup (sweeps). 6Ws stay empty |
 | `faf_go` | Table-of-8 + Confirm setup (sweeps). 6Ws need ☑ to score. Below 100: add Human Context |
 | `faf_score` | AI-readiness score 0–100% + intent grant |
-| `faf_sync` | Bi-sync `project.faf` ↔ `CLAUDE.md` |
+| `faf_sync` | Write `CLAUDE.md` from `project.faf` (one way) |
 | `faf_discover` | Walk up to find nearest `.faf` |
 | `faf_read` | Show structured `.faf` contents |
 | `faf_git` | Bootstrap `.faf` from a GitHub URL |
