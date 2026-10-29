@@ -6,6 +6,8 @@
 
 **Persistent Project Context for Rust MCP clients. Native. Fast. cargo install**
 
+⭐ [Star it on GitHub](https://github.com/Wolfe-Jam/rust-faf-mcp): bookmarks it for you, helps other devs find it too.
+
 **The Lineage Edition (v0.8.3)** — `one.faf/rust-faf-mcp` · **rmcp 3.0.1** (MCP Tier 1 foundation) · **faf-rust-sdk 3.1.1** (the same always-33 kernel `faf-wasm-sdk` uses) · solid cargo-native Rust MCP for Rust devs
 
 **v0.8.3** — `--version` and `--help` answer instead of starting the server. See [CHANGELOG](./CHANGELOG.md#083---2026-10-06).
