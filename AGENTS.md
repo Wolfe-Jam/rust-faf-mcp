@@ -145,7 +145,7 @@ README.md        # Humans + crates.io — visible mcp-name: one.faf/rust-faf-mcp
 | `faf_git` | From a GitHub URL — mechanical facts only |
 | `faf_discover` | Walk up for nearest `project.faf` |
 | `faf_score` | Mk4 0–100% |
-| `faf_sync` | `project.faf` ↔ CLAUDE.md |
+| `faf_sync` | `project.faf` → CLAUDE.md (one way) |
 | `faf_read` | Display `.faf` |
 | `faf_compress` | `minimal` / `standard` / `full` |
 | `faf_tokens` | Token estimates |
