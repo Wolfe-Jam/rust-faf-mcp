@@ -1,12 +1,27 @@
-//! Non-destructive faf-managed block injection — Rust port of
-//! faf-cli's src/interop/inject.ts. Keeps generated content (AGENTS.md, etc.)
-//! and hand-written content in the same file without ever clobbering the user's own text.
+//! Non-destructive faf-managed block injection — Rust port of faf-cli's
+//! injector (src/interop/inject.ts), the one faf-cli, faf-mcp, claude-faf-mcp
+//! and grok-faf-mcp use. Keeps generated content and hand-written content in
+//! the same file without ever clobbering the user's own text.
+//!
+//! The rules (the injector Master, grok-faf-mcp #186):
+//!   - faf replaces only text it can prove it wrote: what sits between a
+//!     whole-line marker pair (outside code fences). Never a substring match.
+//!   - no pair -> the block goes in (prefixed, or appended for the CLAUDE.md
+//!     sync section) and everything already there stays. Never reclaimed.
+//!   - a file that is not UTF-8, a dangling link, a link out of the project and
+//!     anything inside `.git` are refused, and nothing is written.
+//!   - writes are atomic and keep the file's permissions.
 
 use std::fs;
-use std::path::Path;
+use std::io;
+use std::path::{Component, Path, PathBuf};
 
 pub const FAF_START: &str = "<!-- faf:start -->";
 pub const FAF_END: &str = "<!-- faf:end -->";
+
+/// Markers of the CLAUDE.md sync section (`faf_sync`, `faf_auto`).
+pub const SYNC_START: &str = "<!-- FAF-SYNC-START -->";
+pub const SYNC_END: &str = "<!-- FAF-SYNC-END -->";
 
 /// Non-destructively write a faf-managed block into a file.
 ///
@@ -17,7 +32,7 @@ pub const FAF_END: &str = "<!-- faf:end -->";
 /// Idempotent: re-running updates the managed block in place and never duplicates
 /// it or touches a byte the user owns. faf owns what's between the markers; the
 /// user owns everything else. Enhance, never replace.
-pub fn inject_faf_block(path: &Path, block: &str) -> std::io::Result<()> {
+pub fn inject_faf_block(path: &Path, block: &str) -> io::Result<()> {
     inject_faf_block_with_markers(path, block, FAF_START, FAF_END)
 }
 
@@ -26,54 +41,190 @@ pub fn inject_faf_block_with_markers(
     block: &str,
     start: &str,
     end: &str,
-) -> std::io::Result<()> {
+) -> io::Result<()> {
     let wrapped = format!("{start}\n{}\n{end}", block.trim());
+    let real = safe_target(path)?;
 
     // 1. No file -> create it with just the block.
-    if !path.exists() {
-        return fs::write(path, format!("{wrapped}\n"));
+    let Some(existing) = read_utf8(&real, path)? else {
+        return atomic_write(&real, &format!("{wrapped}\n"));
+    };
+
+    // 2. A whole-line marker pair outside code fences -> replace only between them.
+    if let Some((s, e)) = find_block(&existing, start, end) {
+        let after = &existing[e..];
+        let after = after
+            .strip_prefix("\r\n")
+            .or_else(|| after.strip_prefix('\n'))
+            .unwrap_or(after);
+        return atomic_write(&real, &format!("{}{wrapped}\n{after}", &existing[..s]));
     }
 
-    let existing = fs::read_to_string(path)?;
-
-    // 2. Markers present as **their own lines** (optional leading whitespace).
-    //    Mid-line mentions (docs, comments) must not count — this file is the
-    //    example of BEST and documents the markers in prose.
-    if let (Some(s), Some(e)) = (
-        find_line_marker(&existing, start),
-        find_line_marker(&existing, end),
-    ) && e > s
-    {
-        let after_start = e + end.len();
-        let after = if existing[after_start..].starts_with('\n') {
-            &existing[after_start + 1..]
-        } else if existing[after_start..].starts_with("\r\n") {
-            &existing[after_start + 2..]
-        } else {
-            &existing[after_start..]
-        };
-        return fs::write(
-            path,
-            format!("{before}{wrapped}\n{after}", before = &existing[..s]),
-        );
-    }
-
-    // 3. No markers (whether legacy pre-marker faf output, genuine user content,
-    //    or both — an old faf-generated file with the user's own notes appended
-    //    below it is a real, plausible shape) -> prefix the block, preserve
-    //    everything. Never delete on a guess about what the rest of the file is.
-    fs::write(path, format!("{wrapped}\n\n{existing}"))
+    // 3. No pair (legacy pre-marker faf output, genuine user content, or both)
+    //    -> prefix the block, preserve everything. Never delete on a guess.
+    atomic_write(&real, &format!("{wrapped}\n\n{existing}"))
 }
 
-/// Index of `marker` only when it is the full line (after optional indent).
-fn find_line_marker(hay: &str, marker: &str) -> Option<usize> {
+/// What `sync_section` did.
+#[derive(Debug, PartialEq, Eq)]
+pub enum SectionOutcome {
+    /// A whole-line marker pair was found and only that section was replaced.
+    Updated,
+    /// No pair: the section was appended and everything already there kept.
+    Appended,
+}
+
+/// Write the CLAUDE.md sync section (`section` already carries its own
+/// SYNC_START / SYNC_END lines) into an existing file, with the injector rules:
+/// replace only a whole-line marker pair outside code fences, else append.
+/// A file that isn't UTF-8 or isn't safe to write is refused (io::Error) and
+/// left exactly as it was.
+pub fn sync_section(path: &Path, section: &str) -> io::Result<SectionOutcome> {
+    let real = safe_target(path)?;
+    let existing = read_utf8(&real, path)?.unwrap_or_default();
+    let section = section.trim_end_matches(['\n', '\r']);
+    if let Some((s, e)) = find_block(&existing, SYNC_START, SYNC_END) {
+        let updated = format!("{}{section}{}", &existing[..s], &existing[e..]);
+        atomic_write(&real, &updated)?;
+        return Ok(SectionOutcome::Updated);
+    }
+    let sep = if existing.is_empty() { "" } else { "\n\n" };
+    atomic_write(&real, &format!("{existing}{sep}{section}\n"))?;
+    Ok(SectionOutcome::Appended)
+}
+
+fn refused(msg: String) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, msg)
+}
+
+/// The real file to write, inside the project (the file's own folder), or a
+/// refusal: a dangling link, a link out of the project, anything in `.git`.
+pub fn safe_target(path: &Path) -> io::Result<PathBuf> {
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_default();
+    let parent = path
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    let root = fs::canonicalize(parent)?;
+    let is_link = fs::symlink_metadata(path)
+        .map(|m| m.file_type().is_symlink())
+        .unwrap_or(false);
+    let real = if is_link {
+        fs::canonicalize(path)
+            .map_err(|_| refused(format!("{name} is a link to nothing — refused.")))?
+    } else {
+        root.join(path.file_name().unwrap_or_default())
+    };
+    let Ok(rel) = real.strip_prefix(&root) else {
+        return Err(refused(format!(
+            "{name} leads outside the project — refused."
+        )));
+    };
+    let in_git = root
+        .components()
+        .chain(rel.components())
+        .any(|c| c == Component::Normal(".git".as_ref()));
+    if in_git {
+        return Err(refused(format!("{name} is inside .git/ — refused.")));
+    }
+    if real.exists() && !real.is_file() {
+        return Err(refused(format!("{name} is not a file — refused.")));
+    }
+    Ok(real)
+}
+
+/// The file's text, None when it doesn't exist; a file that isn't UTF-8 is
+/// refused, never read as empty.
+fn read_utf8(real: &Path, shown: &Path) -> io::Result<Option<String>> {
+    let bytes = match fs::read(real) {
+        Ok(b) => b,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
+        Err(e) => return Err(e),
+    };
+    let name = shown
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_default();
+    String::from_utf8(bytes)
+        .map(Some)
+        .map_err(|_| refused(format!("{name} is not UTF-8 — faf left it unchanged.")))
+}
+
+/// Write via a temp file in the same folder, then rename; keep the file's mode.
+fn atomic_write(real: &Path, text: &str) -> io::Result<()> {
+    let perms = fs::metadata(real).ok().map(|m| m.permissions());
+    if let Some(p) = &perms
+        && p.readonly()
+    {
+        let name = real
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
+        return Err(refused(format!(
+            "{name} is read-only — faf left it unchanged."
+        )));
+    }
+    let dir = real.parent().unwrap_or(Path::new("."));
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.subsec_nanos())
+        .unwrap_or(0);
+    let tmp = dir.join(format!(".faf-tmp-{}-{nanos}", std::process::id()));
+    let result = (|| {
+        fs::write(&tmp, text)?;
+        if let Some(p) = perms {
+            fs::set_permissions(&tmp, p)?;
+        }
+        fs::rename(&tmp, real)
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(&tmp);
+    }
+    result
+}
+
+/// faf's marked range in `hay`: the last whole-line START before the first
+/// whole-line END after it, both outside fenced code (``` or ~~~). Returns the
+/// byte range from the START line's first byte to just after the END marker
+/// (its line ending excluded), or None. Mid-line mentions never count.
+fn find_block(hay: &str, start: &str, end: &str) -> Option<(usize, usize)> {
     let mut offset = 0usize;
-    for line in hay.split_inclusive('\n') {
-        let body = line.trim_end_matches(['\n', '\r']);
+    let mut fence: Option<&str> = None;
+    let mut start_at: Option<usize> = None;
+    for (i, line) in hay.split_inclusive('\n').enumerate() {
+        let mut body = line.trim_end_matches(['\n', '\r']);
+        let mut bom = 0;
+        if i == 0
+            && let Some(rest) = body.strip_prefix('\u{feff}')
+        {
+            bom = '\u{feff}'.len_utf8();
+            body = rest;
+        }
         let stripped = body.trim_start();
-        if stripped == marker {
-            let indent = body.len() - stripped.len();
-            return Some(offset + indent);
+        let indent = body.len() - stripped.len();
+        let opener = if stripped.starts_with("```") {
+            Some("```")
+        } else if stripped.starts_with("~~~") {
+            Some("~~~")
+        } else {
+            None
+        };
+        match (fence, opener) {
+            (None, Some(f)) if indent <= 3 => fence = Some(f),
+            (Some(f), _) if stripped.starts_with(f) => fence = None,
+            (None, _) => {
+                if stripped == start {
+                    start_at = Some(offset + bom + indent);
+                } else if stripped == end
+                    && let Some(s) = start_at
+                {
+                    return Some((s, offset + bom + indent + end.len()));
+                }
+            }
+            _ => {}
         }
         offset += line.len();
     }
@@ -197,5 +348,143 @@ mod tests {
         assert!(content.contains("new-block"), "{content}");
         assert!(!content.contains("old-block"), "{content}");
         assert_eq!(content.matches(FAF_START).count(), 1);
+    }
+
+    // ── The injector Master (grok-faf-mcp #186): the WJTTC audit's cases ──
+
+    #[test]
+    fn master_1_legacy_looking_first_line_is_kept() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        fs::write(
+            &path,
+            "<!-- faf: my own note, hand-written -->\n# Team rules\nNever deploy on Friday.\n",
+        )
+        .unwrap();
+        inject_faf_block(&path, "generated block").unwrap();
+        let out = fs::read_to_string(&path).unwrap();
+        assert!(out.contains("Never deploy on Friday."));
+        assert!(out.contains("<!-- faf: my own note, hand-written -->"));
+        assert_eq!(out.matches(FAF_START).count(), 1);
+    }
+
+    #[test]
+    fn master_2_start_without_end_cuts_nothing() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        fs::write(
+            &path,
+            format!("{FAF_START}\nold block\n## My notes\nKeep this line.\n"),
+        )
+        .unwrap();
+        inject_faf_block(&path, "new block").unwrap();
+        let out = fs::read_to_string(&path).unwrap();
+        assert!(out.contains("Keep this line."));
+        assert!(out.contains("new block"));
+    }
+
+    #[test]
+    fn master_3_marker_in_a_code_fence_is_not_a_marker() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        fs::write(
+            &path,
+            format!("```\n{FAF_START}\nexample\n{FAF_END}\n```\n\n{FAF_START}\nv1\n{FAF_END}\n"),
+        )
+        .unwrap();
+        inject_faf_block(&path, "v2").unwrap();
+        let out = fs::read_to_string(&path).unwrap();
+        assert!(out.contains("example"));
+        assert!(out.contains("v2") && !out.contains("v1"));
+    }
+
+    #[test]
+    fn master_4_not_utf8_is_refused_byte_identical() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        let bytes = b"# Notes\nCaf\xe9 au lait\n".to_vec();
+        fs::write(&path, &bytes).unwrap();
+        let err = inject_faf_block(&path, "block").unwrap_err();
+        assert!(err.to_string().contains("not UTF-8"));
+        assert_eq!(fs::read(&path).unwrap(), bytes);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn master_5_dangling_link_is_refused_nothing_written() {
+        let dir = tempdir().unwrap();
+        let elsewhere = tempdir().unwrap();
+        let target = elsewhere.path().join("elsewhere.txt");
+        std::os::unix::fs::symlink(&target, dir.path().join("AGENTS.md")).unwrap();
+        assert!(inject_faf_block(&dir.path().join("AGENTS.md"), "block").is_err());
+        assert!(!target.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn master_5b_link_out_of_the_project_is_refused() {
+        let dir = tempdir().unwrap();
+        let elsewhere = tempdir().unwrap();
+        let target = elsewhere.path().join("theirs.md");
+        fs::write(&target, "theirs\n").unwrap();
+        std::os::unix::fs::symlink(&target, dir.path().join("AGENTS.md")).unwrap();
+        assert!(inject_faf_block(&dir.path().join("AGENTS.md"), "block").is_err());
+        assert_eq!(fs::read_to_string(&target).unwrap(), "theirs\n");
+    }
+
+    #[test]
+    fn master_6_update_in_place_is_idempotent() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        fs::write(
+            &path,
+            format!("# Mine\n\n{FAF_START}\nv1\n{FAF_END}\n\nTail notes.\n"),
+        )
+        .unwrap();
+        inject_faf_block(&path, "v2").unwrap();
+        let first = fs::read_to_string(&path).unwrap();
+        inject_faf_block(&path, "v2").unwrap();
+        assert_eq!(fs::read_to_string(&path).unwrap(), first);
+        assert!(first.contains("# Mine") && first.contains("Tail notes."));
+    }
+
+    // ── CLAUDE.md sync section (faf_sync, faf_auto) ──
+
+    fn section(body: &str) -> String {
+        format!("{SYNC_START}\n{body}\n{SYNC_END}\n")
+    }
+
+    #[test]
+    fn sync_not_utf8_claude_md_is_refused_not_wiped() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        let bytes = b"# Hand notes\nCaf\xe9\n".to_vec();
+        fs::write(&path, &bytes).unwrap();
+        assert!(sync_section(&path, &section("s")).is_err());
+        assert_eq!(fs::read(&path).unwrap(), bytes);
+    }
+
+    #[test]
+    fn sync_marker_quoted_in_prose_deletes_nothing() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        fs::write(
+            &path,
+            format!("## Rule\nThe sync block starts at `{SYNC_START}`.\n\n## Rule two\nKeep me.\n"),
+        )
+        .unwrap();
+        assert_eq!(
+            sync_section(&path, &section("s1")).unwrap(),
+            SectionOutcome::Appended
+        );
+        let out = fs::read_to_string(&path).unwrap();
+        assert!(out.contains("## Rule\n") && out.contains("Keep me."));
+        assert_eq!(
+            sync_section(&path, &section("s2")).unwrap(),
+            SectionOutcome::Updated
+        );
+        let out = fs::read_to_string(&path).unwrap();
+        assert!(out.contains("s2") && !out.contains("s1"));
+        assert!(out.contains("Keep me."));
     }
 }

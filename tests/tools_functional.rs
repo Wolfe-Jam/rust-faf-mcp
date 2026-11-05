@@ -723,3 +723,59 @@ fn test_faf_go_apply_writes_human_and_context_check() {
     assert!(faf.contains("interval_days:"));
     assert!(!faf.contains("intent:"));
 }
+
+// ─── CLAUDE.md through the injector rules (WJTTC audit B3, the Master) ──
+
+fn sync_in(dir: &std::path::Path) -> String {
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_sync","arguments":{{"path":"{}"}}}}}}"#,
+        dir.display()
+    );
+    extract_text(&mcp_request(&req))
+}
+
+const SYNC_FAF: &str = "faf_version: \"3.3\"\nproject:\n  name: \"master-test\"\n";
+
+#[test]
+fn test_faf_sync_refuses_non_utf8_claude_md_and_leaves_it() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("project.faf"), SYNC_FAF).unwrap();
+    let bytes = b"# Hand notes\nCaf\xe9 au lait\nKeep all of this.\n".to_vec();
+    fs::write(dir.path().join("CLAUDE.md"), &bytes).unwrap();
+    let text = sync_in(dir.path());
+    assert!(text.contains("not UTF-8"), "reply: {text}");
+    assert_eq!(fs::read(dir.path().join("CLAUDE.md")).unwrap(), bytes);
+}
+
+#[test]
+fn test_faf_sync_marker_in_prose_deletes_nothing() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("project.faf"), SYNC_FAF).unwrap();
+    fs::write(
+        dir.path().join("CLAUDE.md"),
+        "## Rule\nNever edit below `<!-- FAF-SYNC-START -->` by hand.\n\n## Rule two\nKeep me.\n\n<!-- FAF-SYNC-START -->\nold section\n<!-- FAF-SYNC-END -->\n",
+    )
+    .unwrap();
+    sync_in(dir.path());
+    let out = fs::read_to_string(dir.path().join("CLAUDE.md")).unwrap();
+    assert!(out.contains("## Rule\n"), "first rule lost:\n{out}");
+    assert!(out.contains("Keep me."), "second rule lost:\n{out}");
+    assert!(out.contains("master-test"));
+    assert!(!out.contains("old section"));
+}
+
+#[cfg(unix)]
+#[test]
+fn test_faf_init_refuses_a_linked_project_faf() {
+    let dir = tempfile::tempdir().unwrap();
+    let elsewhere = tempfile::tempdir().unwrap();
+    let target = elsewhere.path().join("elsewhere.txt");
+    std::os::unix::fs::symlink(&target, dir.path().join("project.faf")).unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_init","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let text = extract_text(&mcp_request(&req));
+    assert!(text.contains("link"), "reply: {text}");
+    assert!(!target.exists(), "faf_init wrote through the link");
+}

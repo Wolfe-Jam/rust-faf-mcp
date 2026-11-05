@@ -353,8 +353,16 @@ fn faf_init_create(dir: &Path) -> Value {
         backend: backend.as_deref(),
     });
 
-    // Write project.faf
+    // Write project.faf — never through a link (a dangling one would write elsewhere).
     let faf_path = dir.join("project.faf");
+    if fs::symlink_metadata(&faf_path)
+        .map(|m| m.file_type().is_symlink())
+        .unwrap_or(false)
+    {
+        return error_response(
+            "project.faf is a link — refused. Replace it with a real file to init here.",
+        );
+    }
     if let Err(e) = fs::write(&faf_path, &faf_yaml) {
         return error_response(&format!("Failed to write project.faf: {}", e));
     }
@@ -833,48 +841,26 @@ pub fn faf_sync(arguments: &Value) -> Value {
     let claude_content = generate_claude_md(&faf, score, &tier);
 
     if claude_path.exists() {
-        // Read existing CLAUDE.md
-        let existing = fs::read_to_string(&claude_path).unwrap_or_default();
-
-        // Check if sync section already exists — update it
-        if let Some(start) = existing.find("<!-- FAF-SYNC-START -->")
-            && let Some(end) = existing.find("<!-- FAF-SYNC-END -->")
-        {
-            // Replace sync section, preserve everything else
-            let mut updated = String::new();
-            updated.push_str(&existing[..start]);
-            updated.push_str(&claude_content);
-            updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
-
-            if let Err(e) = fs::write(&claude_path, &updated) {
-                return error_response(&format!("Failed to write CLAUDE.md: {}", e));
-            }
-
-            return text_response(&format!(
+        // The injector rules: replace only a whole-line sync-marker pair, else
+        // append; a file that isn't UTF-8 or isn't safe to write is refused and
+        // left as it was — never read as empty.
+        match crate::inject::sync_section(&claude_path, &claude_content) {
+            Ok(crate::inject::SectionOutcome::Updated) => text_response(&format!(
                 "Synced project.faf → CLAUDE.md\n\
                      Score: {}% {}\n\
-                     Updated sync section (preserved custom content).\n",
+                     Updated the sync section; the rest of the file is as you had it.\n",
                 score,
                 tier_badge(&tier)
-            ));
+            )),
+            Ok(crate::inject::SectionOutcome::Appended) => text_response(&format!(
+                "Synced project.faf → CLAUDE.md\n\
+                     Score: {}% {}\n\
+                     Appended the sync section; the rest of the file is as you had it.\n",
+                score,
+                tier_badge(&tier)
+            )),
+            Err(e) => error_response(&format!("CLAUDE.md not written: {}", e)),
         }
-
-        // No sync section — append it
-        let mut updated = existing;
-        updated.push_str("\n\n");
-        updated.push_str(&claude_content);
-
-        if let Err(e) = fs::write(&claude_path, &updated) {
-            return error_response(&format!("Failed to write CLAUDE.md: {}", e));
-        }
-
-        text_response(&format!(
-            "Synced project.faf → CLAUDE.md\n\
-             Score: {}% {}\n\
-             Appended sync section to existing CLAUDE.md.\n",
-            score,
-            tier_badge(&tier)
-        ))
     } else {
         // Create new CLAUDE.md
         let header = format!(
@@ -1198,23 +1184,14 @@ pub fn faf_auto(arguments: &Value) -> Value {
         let claude_path = dir.join("CLAUDE.md");
 
         if claude_path.exists() {
-            let existing = fs::read_to_string(&claude_path).unwrap_or_default();
-            if let (Some(start), Some(end)) = (
-                existing.find("<!-- FAF-SYNC-START -->"),
-                existing.find("<!-- FAF-SYNC-END -->"),
-            ) {
-                let mut updated = String::new();
-                updated.push_str(&existing[..start]);
-                updated.push_str(&claude_md);
-                updated.push_str(&existing[end + "<!-- FAF-SYNC-END -->".len()..]);
-                let _ = fs::write(&claude_path, &updated);
-                steps.push("Updated CLAUDE.md sync section".to_string());
-            } else {
-                let mut updated = existing;
-                updated.push_str("\n\n");
-                updated.push_str(&claude_md);
-                let _ = fs::write(&claude_path, &updated);
-                steps.push("Appended sync to CLAUDE.md".to_string());
+            match crate::inject::sync_section(&claude_path, &claude_md) {
+                Ok(crate::inject::SectionOutcome::Updated) => {
+                    steps.push("Updated CLAUDE.md sync section".to_string())
+                }
+                Ok(crate::inject::SectionOutcome::Appended) => {
+                    steps.push("Appended sync to CLAUDE.md".to_string())
+                }
+                Err(e) => steps.push(format!("CLAUDE.md not written: {}", e)),
             }
         } else {
             let header = format!("# CLAUDE.md - {}\n\n{}\n", faf.project_name(), claude_md);
