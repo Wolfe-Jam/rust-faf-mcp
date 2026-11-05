@@ -66,6 +66,17 @@ fn extract_text(resp: &serde_json::Value) -> String {
 
 #[test]
 fn t1_path_traversal_parent_dirs() {
+    // As root this would really write project.faf and .faf-dna into /etc
+    // (the WJTTC audit and the #22 review both hit it). Run it only unprivileged.
+    let euid = std::process::Command::new("id")
+        .arg("-u")
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_default();
+    if euid == "0" {
+        eprintln!("skipped as root: faf_init on ../../../etc would write /etc");
+        return;
+    }
     let req = r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"faf_init","arguments":{"path":"../../../etc"}}}"#;
     let resp = mcp_request(req);
     let text = extract_text(&resp);
