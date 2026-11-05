@@ -1207,8 +1207,13 @@ pub fn faf_auto(arguments: &Value) -> Value {
         String::new()
     };
 
+    let headline = if refusals.is_empty() {
+        "faf_auto complete"
+    } else {
+        "faf_auto finished — something was not written"
+    };
     let mut output = format!(
-        "faf_auto complete\n\
+        "{headline}\n\
          ━━━━━━━━━━━━━━━━━\n\
          Score: {}% → {}%{} {}\n\
          Steps:\n",

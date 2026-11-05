@@ -47,10 +47,10 @@ pub fn inject_faf_block_with_markers(
 ) -> io::Result<()> {
     let real = safe_target(path)?;
     let body = block.trim();
-    if body
-        .lines()
-        .any(|l| l.trim_end_matches('\r') == start || l.trim_end_matches('\r') == end)
-    {
+    if body.lines().any(|l| {
+        let l = l.trim_end_matches('\r');
+        is_marker(l, start) || is_marker(l, end)
+    }) {
         return Err(refused(format!(
             "{}: the generated block contains a faf marker line — nothing written.",
             shown_name(path)
@@ -110,6 +110,21 @@ pub enum SectionOutcome {
 pub fn sync_section(path: &Path, section: &str, header: &str) -> io::Result<SectionOutcome> {
     let real = safe_target(path)?;
     let section = section.trim_end_matches(['\n', '\r']);
+    // The section's own first and last lines are its markers; a marker line
+    // anywhere between them (from a project.faf value) would pair wrongly on
+    // the next run and grow the file. Refuse it.
+    let inner: Vec<&str> = section.lines().collect();
+    if inner.len() > 2
+        && inner[1..inner.len() - 1].iter().any(|l| {
+            let l = l.trim_end_matches('\r');
+            is_marker(l, SYNC_START) || is_marker(l, SYNC_END)
+        })
+    {
+        return Err(refused(format!(
+            "{}: the generated section contains a faf marker line — nothing written.",
+            shown_name(path)
+        )));
+    }
     let Some(existing) = read_utf8(&real, path)? else {
         atomic_write(&real, &format!("{header}{section}\n"))?;
         return Ok(SectionOutcome::Created);
@@ -277,7 +292,8 @@ fn fence_open(line: &str) -> Option<(char, usize)> {
     if indent > 3 {
         return None;
     }
-    let rest = &line[indent..];
+    // A fence can open right after a list marker ("- ```md", "1. ```").
+    let rest = strip_list_marker(&line[indent..]);
     for ch in ['`', '~'] {
         let n = rest.len() - rest.trim_start_matches(ch).len();
         if n >= 3 {
@@ -288,6 +304,27 @@ fn fence_open(line: &str) -> Option<(char, usize)> {
         }
     }
     None
+}
+
+/// The text after a leading list marker (`-`, `*`, `+`, or `N.` / `N)` then a
+/// space), or the line unchanged.
+fn strip_list_marker(s: &str) -> &str {
+    let bullet = s
+        .strip_prefix("- ")
+        .or_else(|| s.strip_prefix("* "))
+        .or_else(|| s.strip_prefix("+ "));
+    if let Some(rest) = bullet {
+        return rest.trim_start_matches(' ');
+    }
+    let digits = s.len() - s.trim_start_matches(|c: char| c.is_ascii_digit()).len();
+    if (1..=9).contains(&digits)
+        && let Some(rest) = s[digits..]
+            .strip_prefix(". ")
+            .or_else(|| s[digits..].strip_prefix(") "))
+    {
+        return rest.trim_start_matches(' ');
+    }
+    s
 }
 
 /// A closing fence: up to 3 spaces, the opener's character at least as many
@@ -723,6 +760,37 @@ mod tests {
         let path = dir.path().join("AGENTS.md");
         fs::write(&path, "# Mine\n").unwrap();
         assert!(inject_faf_block(&path, &format!("x\n{FAF_END}\ny")).is_err());
+        assert_eq!(fs::read_to_string(&path).unwrap(), "# Mine\n");
+    }
+
+    // ── From the re-check of #22 ──
+
+    #[test]
+    fn recheck_n1_fence_opened_on_a_list_item_line() {
+        keep_example(&format!(
+            "- ```md\n  {FAF_START}\n  KEEP_EX\n  {FAF_END}\n  ```\n"
+        ));
+        keep_example(&format!(
+            "1. ```\n   {FAF_START}\n   KEEP_EX\n   {FAF_END}\n   ```\n"
+        ));
+    }
+
+    #[test]
+    fn recheck_n2_section_with_an_inner_marker_line_is_refused() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("CLAUDE.md");
+        fs::write(&path, "# Mine\n").unwrap();
+        let bad = format!("{SYNC_START}\nfirst\n{SYNC_END}\ntail\n{SYNC_END}\n");
+        assert!(sync_section(&path, &bad, "").is_err());
+        assert_eq!(fs::read_to_string(&path).unwrap(), "# Mine\n");
+    }
+
+    #[test]
+    fn recheck_n2_block_with_an_indented_marker_line_is_refused() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("AGENTS.md");
+        fs::write(&path, "# Mine\n").unwrap();
+        assert!(inject_faf_block(&path, &format!("x\n {FAF_END}\ny")).is_err());
         assert_eq!(fs::read_to_string(&path).unwrap(), "# Mine\n");
     }
 }

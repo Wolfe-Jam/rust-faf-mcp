@@ -823,3 +823,23 @@ fn test_faf_auto_reports_a_refused_project_faf_and_claude_md() {
     assert!(!text.contains("created project.faf"), "false claim: {text}");
     assert_eq!(resp["result"]["isError"], true, "reply: {text}");
 }
+
+#[test]
+fn test_faf_sync_marker_in_a_goal_never_grows_claude_md() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("project.faf"),
+        "faf_version: \"3.3\"\nproject:\n  name: probe\n  goal: |\n    first line\n    <!-- FAF-SYNC-END -->\n    tail\n",
+    )
+    .unwrap();
+    fs::write(dir.path().join("CLAUDE.md"), "# Mine\n").unwrap();
+    let mut sizes = Vec::new();
+    for _ in 0..3 {
+        sync_in(dir.path());
+        sizes.push(fs::read(dir.path().join("CLAUDE.md")).unwrap().len());
+    }
+    assert!(
+        sizes.windows(2).all(|w| w[0] == w[1]),
+        "CLAUDE.md grew: {sizes:?}"
+    );
+}
