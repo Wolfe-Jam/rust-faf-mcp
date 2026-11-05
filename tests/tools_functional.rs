@@ -779,3 +779,47 @@ fn test_faf_init_refuses_a_linked_project_faf() {
     assert!(text.contains("link"), "reply: {text}");
     assert!(!target.exists(), "faf_init wrote through the link");
 }
+
+// ─── From the independent review of #22: create branches and faf_auto ──
+
+#[cfg(unix)]
+#[test]
+fn test_faf_sync_never_creates_claude_md_through_a_dangling_link() {
+    let dir = tempfile::tempdir().unwrap();
+    let elsewhere = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("project.faf"), SYNC_FAF).unwrap();
+    let target = elsewhere.path().join("elsewhere.md");
+    std::os::unix::fs::symlink(&target, dir.path().join("CLAUDE.md")).unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_sync","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    assert_eq!(
+        resp["result"]["isError"],
+        true,
+        "reply: {}",
+        extract_text(&resp)
+    );
+    assert!(!target.exists(), "faf_sync wrote through the link");
+}
+
+#[cfg(unix)]
+#[test]
+fn test_faf_auto_reports_a_refused_project_faf_and_claude_md() {
+    let dir = tempfile::tempdir().unwrap();
+    let elsewhere = tempfile::tempdir().unwrap();
+    std::os::unix::fs::symlink(
+        elsewhere.path().join("x.faf"),
+        dir.path().join("project.faf"),
+    )
+    .unwrap();
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"faf_auto","arguments":{{"path":"{}"}}}}}}"#,
+        dir.path().display()
+    );
+    let resp = mcp_request(&req);
+    let text = extract_text(&resp);
+    assert!(!text.contains("created project.faf"), "false claim: {text}");
+    assert_eq!(resp["result"]["isError"], true, "reply: {text}");
+}
