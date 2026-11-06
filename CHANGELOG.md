@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-05 — The Your-Files-Stay-Yours Edition
+
+`faf_sync` keeps your hand-written CLAUDE.md, refuses what it can't write safely, and says so.
+
+### Fixed
+- **CLAUDE.md sync follows the injector rules faf-cli and the other FAF servers use (#22).** Only a whole-line `<!-- FAF-SYNC-START -->` / `<!-- FAF-SYNC-END -->` pair outside code counts; markers quoted in prose, fences or indented code are left alone. A CLAUDE.md that isn't UTF-8 text, a dangling link, a link out of the project or into `.git`, a link to a differently named file (except between AI context files), and a section that would itself contain a marker line are all refused with nothing written and `isError`. Writes are atomic and keep permissions, a BOM and CRLF. `faf_init` and `faf_auto` refuse a linked `project.faf`; `faf_auto` and `faf_go` report any refusal instead of claiming success.
+- **rustls 0.23.46 + rustls-webpki 0.103.16** (RUSTSEC-2026-0346..0349, 0382), lockfile only (#16).
+
+### Added
+- **Server instructions** on how the tools fit together, sent at initialize (634 characters, under the 1,000 limit) (#17).
+- **App types `skills` (9 slots) and `skills-plugin` (12 slots)**, the same rows as faf-cli, for what `faf_init` / `faf_auto` write (#18).
+- **Business card:** `agent.fafa` and the README badge (#14).
+
+### Changed
+- CI pins `mcp-publisher` v1.8.6 with a checksum (#19). Docs: leftover two-way sync wording dropped (#20); a star line (#21).
+
 ## [0.8.3] - 2026-10-06
 
 `--version` and `--help` answer instead of starting the server.
