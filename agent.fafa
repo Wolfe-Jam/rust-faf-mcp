@@ -3,7 +3,7 @@ agent:
   name: rust-faf-mcp
   displayName: rust-faf-mcp
   id: urn:air:faf.one:agent:rust-faf-mcp
-  version: 0.8.3
+  version: 0.9.0
   description: "A Rust MCP server for .faf project context: it writes, reads, scores and syncs project.faf over stdio, as a single binary from cargo install."
   homepage: https://faf.one
 capabilities:
