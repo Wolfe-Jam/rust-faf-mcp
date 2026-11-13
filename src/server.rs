@@ -239,13 +239,13 @@ impl FafServer {
 // point it at the cached field to keep build-once routing.
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for FafServer {
-    fn get_info(&self) -> ServerInfo {
+    fn get_info(&self) -> ServerConfig {
         let mut extensions = ExtensionCapabilities::new();
         extensions.insert(
             SKILLS_EXTENSION_ID.to_string(),
             serde_json::from_value(json!({})).expect("empty object"),
         );
-        let mut info = ServerInfo::new(
+        let mut info = ServerConfig::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
