@@ -23,11 +23,9 @@ const INIT_REQUEST: &str = r#"{"jsonrpc":"2.0","id":0,"method":"initialize","par
 const INIT_NOTIFICATION: &str = r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#;
 
 fn binary_path() -> std::path::PathBuf {
-    let mut path = std::env::current_exe().unwrap();
-    path.pop();
-    path.pop();
-    path.push("rust-faf-mcp");
-    path
+    // Cargo sets this for integration tests, wherever the test binary is
+    // built (since Cargo 1.100 that is no longer next to the server).
+    std::path::PathBuf::from(env!("CARGO_BIN_EXE_rust-faf-mcp"))
 }
 
 fn mcp_request(json: &str) -> serde_json::Value {
