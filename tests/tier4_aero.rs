@@ -22,11 +22,9 @@ fn project_root() -> std::path::PathBuf {
 }
 
 fn binary_path() -> std::path::PathBuf {
-    let mut path = std::env::current_exe().unwrap();
-    path.pop();
-    path.pop();
-    path.push("rust-faf-mcp");
-    path
+    // Cargo sets this for integration tests, wherever the test binary is
+    // built (since Cargo 1.100 that is no longer next to the server).
+    std::path::PathBuf::from(env!("CARGO_BIN_EXE_rust-faf-mcp"))
 }
 
 fn read_manifest() -> serde_json::Value {
