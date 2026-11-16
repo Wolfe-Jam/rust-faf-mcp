@@ -1,4 +1,4 @@
-<!-- faf: rust-faf-mcp | Rust | mcp-server | RMCP — the Rust-native MCP server for FAF (Foundational AI-context Format). Single binary, stdio transport, 4.3 MB stripped. cargo install rust-faf-mcp. Built on the rmcp Rust MCP SDK + faf-rust-sdk. -->
+<!-- faf: rust-faf-mcp | Rust | mcp-server | RMCP — the Rust-native MCP server for FAF (Foundational AI-context Format). Single binary (about 5 MB), stdio transport. cargo install rust-faf-mcp. Built on the rmcp Rust MCP SDK + faf-rust-sdk. -->
 <!-- mcp-name: one.faf/rust-faf-mcp -->
 
 
@@ -23,7 +23,7 @@
 [![License](https://img.shields.io/crates/l/rust-faf-mcp?style=flat-square)](LICENSE)
 [![Business card · Get yours →](https://wolfe-jam.github.io/agent-business-card/badge.svg)](https://wolfe-jam.github.io/agent-business-card/?repo=Wolfe-Jam/rust-faf-mcp)
 
-Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server for [FAF](https://faf.one) — structured AI project context in YAML (`application/vnd.faf+yaml`). Single binary, stdio transport, 4.3 MB stripped. Built on [`rmcp`](https://crates.io/crates/rmcp) and [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk).
+Rust-native [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server for [FAF](https://faf.one) — structured AI project context in YAML (`application/vnd.faf+yaml`). Single binary (about 5 MB), stdio transport. Built on [`rmcp`](https://crates.io/crates/rmcp) and [`faf-rust-sdk`](https://crates.io/crates/faf-rust-sdk).
 
 ## Quickstart
 
@@ -74,44 +74,47 @@ brew upgrade Wolfe-Jam/faf/rust-faf-mcp
 ```
 faf_auto complete
 ━━━━━━━━━━━━━━━━━
-Score: 0% → 42% (+42) ● GREEN
+Score: 0% → 25% (+25) ○ Red
 Steps:
   1. Setup — created project.faf
   2. Created CLAUDE.md
 
-Path: /home/user/my-project
+Path: /home/user/my-api
 
 Confirm setup (sweeps)
 Walk these. Detection is already a fact. Not a second write-gate.
-  project.name           my-api
-  project.main_language  Rust
-  stack.backend          Rust
+  project.name                  my-api
+  project.type                  cli
+  project.main_language         Rust
+  project.version               0.1.0
+  stack.build                   cargo
+  …
+Add Human Context to score 100. Run faf_go.
 ```
 
 What it produces:
 
 ```yaml
-# project.faf — your project, machine-readable
+# project.faf — written by faf_auto (rust-faf-mcp 0.9.0), excerpt
 faf_version: "3.3"
 project:
-  name: my-api
-  goal: REST API for user management
-  main_language: Rust
+  name: "my-api"
+  type: "cli"
+  main_language: "Rust"
   version: "0.1.0"
-  license: MIT
 instant_context:
-  what_building: REST API for user management
-  tech_stack: Rust 2024
+  tech_stack: "Rust 2024"
   key_files:
-    - Cargo.toml
-    - src/main.rs
-    - README.md
+    - "Cargo.toml"
+    - "src/main.rs"
+    - "README.md"
   commands:
-    build: cargo build
-    test: cargo test
+    build: "cargo build"
+    test: "cargo test"
 stack:
-  backend: Rust
-  build: cargo
+  build: "cargo"
+  frontend: slotignored
+  …
 ```
 
 Every AI agent reads this once and knows exactly what you're building. No 20-minute onboarding. No wrong assumptions.
