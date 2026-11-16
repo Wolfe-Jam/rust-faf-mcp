@@ -47,4 +47,4 @@ gh workflow run publish-npm.yml --repo Wolfe-Jam/rust-faf-mcp --ref v0.4.1
 ## Related
 
 - crates OIDC: `docs/TRUSTED-PUBLISHING.md` (env `crates-io`, workflow `publish-crate.yml`)  
-- Registry DNS: repo secret `FAF_ONE_MCP_PRIVATE_KEY` + `publish-mcp-registry.yml`  
+- Registry DNS: `publish-mcp-registry.yml` hands off to `Wolfe-Jam/mcp-registry-publisher` (repo secret `REGISTRY_PUBLISHER_DISPATCH_TOKEN`), which holds the faf.one key  
