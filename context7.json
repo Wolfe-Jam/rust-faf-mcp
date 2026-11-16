@@ -1,0 +1,22 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "rust-faf-mcp",
+  "description": "Rust MCP server, a single binary over stdio. Keeps a project's facts (stack, goal, commands) in project.faf, an IANA-registered YAML file (application/vnd.faf+yaml), with tools to create, score and fill it, write CLAUDE.md and AGENTS.md from it, and estimate or compress its tokens. Install with cargo or npx.",
+  "excludeFolders": ["tests", "scripts", ".github", "lib", "npm", "target", "node_modules", "archive", "deprecated", "legacy"],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "LICENSE.md",
+    "CODE_OF_CONDUCT.md",
+    "CLAUDE.md",
+    "AGENTS.md",
+    "DUAL-PACKAGE.md",
+    "TRUSTED-PUBLISHING.md",
+    "TRUSTED-PUBLISHING-NPM.md"
+  ],
+  "includeExtensions": [".faf"],
+  "rules": [
+    "Call faf_init or faf_auto to create project.faf, then faf_score to see which slots are empty; faf_go fills the human slots with the user.",
+    "faf_init refuses to overwrite an existing project.faf, and the human slots stay empty until faf_go.",
+    "Treat project.faf as the source of the project's facts; faf_sync writes CLAUDE.md from it and faf_agents writes AGENTS.md, keeping hand-written content."
+  ]
+}
