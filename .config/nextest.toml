@@ -1,0 +1,3 @@
+# The ci profile writes a JUnit report: faf-taf-git reads it to print a test receipt.
+[profile.ci.junit]
+path = "junit.xml"
