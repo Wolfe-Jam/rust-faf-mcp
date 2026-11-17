@@ -1,4 +1,12 @@
 format_version: 1.0.0
 project: rust-faf-mcp
 created: 2026-11-17T17:30:22.583Z
-test_history: []
+test_history:
+  - timestamp: 2026-11-17T17:30:22.629Z
+    result: PASSED
+    tests:
+      total: 223
+      passed: 223
+      failed: 0
+    trigger: github-actions
+last_updated: 2026-11-17T17:30:22.629Z
