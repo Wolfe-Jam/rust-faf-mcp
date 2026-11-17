@@ -9,15 +9,44 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Read-only: the tests never run with write access. Only the receipt job writes.
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.151
       - run: cargo fmt --all -- --check
       - run: cargo clippy -- -D warnings
-      - run: cargo test
+      # nextest writes a JUnit report (.config/nextest.toml) for the receipt.
+      # The crate has no library, so there are no doctests for nextest to miss.
+      - name: Run tests
+        run: cargo nextest run --profile ci --no-fail-fast
+      - name: Upload the test output
+        # main only, and after a red run too: the receipt job records it.
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: taf-test-output
+          path: target/nextest/ci/junit.xml
       - run: cargo build --release
+
+  # TAF receipt: one per push to main, red runs included (FAILED), saved to the
+  # taf-receipts branch by faf-taf-git's receipt job, the only job that writes.
+  receipt:
+    needs: test
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write
+    uses: Wolfe-Jam/faf-taf-git/.github/workflows/receipt.yml@v2.7.0
+    with:
+      artifact-name: taf-test-output
+      test-output-file: junit.xml
+      test-result: ${{ needs.test.result }}
 
   # MSRV — builds on the rust-version Cargo.toml declares, read from Cargo.toml
   # so the claim and the gate can't drift. rust-toolchain.toml pins stable, so
