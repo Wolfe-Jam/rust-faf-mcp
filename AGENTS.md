@@ -18,7 +18,7 @@ Read `project.faf` first. Do not edit the BLOCK. Refresh it with `faf_agents`. E
 
 # AGENTS.md — rust-faf-mcp
 
-Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.9.0
+Rust MCP server for FAF (Foundational AI-context Format) — IANA-registered application/vnd.faf+yaml — Rust · v0.9.1
 
 > Authored by faf — do not edit the managed block; refresh with `faf export --agents`. Hand content outside `<!-- faf:start -->` … `<!-- faf:end -->` is preserved.
 
@@ -76,7 +76,7 @@ Ask a clarifying question, propose a short plan, or open a draft PR with notes �
 
 ## Working in this tree
 
-**0.9.0 — The Your-Files-Stay-Yours Edition.** `faf_sync` keeps your hand-written CLAUDE.md, refuses what it can't write safely, and says so. `.faf-dna` lineage (0.8): `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. Pin the install: PATH `rust-faf-mcp` is not the pin. Edition **2024** · MSRV **1.88** (rmcp 3 requires it; CI builds on it). 12 tools. 223 tests. Live pin: crates.io + npm `@0.9.0`.
+**0.9.1 — The Your-Files-Stay-Yours Edition.** rmcp 3.10.0 clears three rmcp security advisories (RUSTSEC-2026-0457, 0461, 0462); this server runs over stdio and never compiled the affected code. `faf_sync` keeps your hand-written CLAUDE.md, refuses what it can't write safely, and says so. `.faf-dna` lineage (0.8): `faf_init` births it, `faf_auto` grows it, `faf_dna` shows the journey. Pin the install: PATH `rust-faf-mcp` is not the pin. Edition **2024** · MSRV **1.88** (rmcp 3 requires it; CI builds on it). 12 tools. 223 tests. Live pin: crates.io + npm `@0.9.1`.
 
 
 ### Setup (what we actually run)
