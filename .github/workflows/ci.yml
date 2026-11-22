@@ -36,13 +36,13 @@ jobs:
       - run: cargo build --release
 
   # TAF receipt: one per push to main, red runs included (FAILED), saved to the
-  # taf-receipts branch by faf-taf-git's receipt job, the only job that writes.
+  # taf-receipts branch by taf-git's receipt job, the only job that writes.
   receipt:
     needs: test
     if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write
-    uses: Wolfe-Jam/faf-taf-git/.github/workflows/receipt.yml@v2.7.0
+    uses: Wolfe-Jam/taf-git/.github/workflows/receipt.yml@v3.0.0
     with:
       artifact-name: taf-test-output
       test-output-file: junit.xml
