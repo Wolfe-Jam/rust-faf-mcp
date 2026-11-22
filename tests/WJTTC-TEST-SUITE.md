@@ -1,6 +1,6 @@
 # WJTTC Test Suite — rust-faf-mcp
 
-**Project:** rust-faf-mcp v0.9.0 — The Your-Files-Stay-Yours Edition
+**Project:** rust-faf-mcp v0.9.1 — The Your-Files-Stay-Yours Edition
 **Date:** 2026-09-13
 **Tester:** WJTTC Championship
 **Target:** 95%+ (Championship)

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-22 — The Your-Files-Stay-Yours Edition
+
+rmcp 3.10.0 clears three rmcp security advisories (RUSTSEC-2026-0457, 0461, 0462); this server runs over stdio and never compiled the affected code.
+
+### Security
+- **rmcp 3.10.0** (from 3.0.1): RUSTSEC-2026-0457 (OAuth client SSRF filter checks host strings, not resolved addresses), RUSTSEC-2026-0461 (unbounded tool schema cache in the Streamable HTTP server transport), RUSTSEC-2026-0462 (unbounded response body buffering in Streamable HTTP clients). rust-faf-mcp enables only `server`, `transport-io`, `macros` and `schemars`, so none of these paths is in the binary; the update keeps `cargo audit` on the published crate clean. `get_info` now uses `ServerConfig`, the name 3.10 keeps.
+
+### Changed
+- README: the example is real 0.9.0 output; the binary is about 5 MB (#27). Tests find the server with `CARGO_BIN_EXE` (#24). Docs say rmcp 3.10.0, not 3.0.1.
+- CI only (not in the package): TAF test receipts on every push to main, from taf-git v3.0.0 (#29, #30); Context7 refresh (#25, #28); MCP Registry publish handed to mcp-registry-publisher (#26).
+
 ## [0.9.0] - 2026-11-05 — The Your-Files-Stay-Yours Edition
 
 `faf_sync` keeps your hand-written CLAUDE.md, refuses what it can't write safely, and says so.
